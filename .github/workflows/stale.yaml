@@ -1,0 +1,20 @@
+# This workflow warns and then comments on the issues and PRs that have had no activity for last 60 days.
+#
+# You can adjust the behavior by modifying this file.
+# For more information, see:
+# https://github.com/actions/stale
+name: Mark stale issues and PRs
+
+on:
+  schedule:
+    #weekly At 00:00 on Sunday
+    - cron: 0 0 * * 0
+
+# Add permissions configuration
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  call-stale-workflow:
+    uses: atlanhq/application-sdk/.github/workflows/stale.yml@develop

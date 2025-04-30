@@ -1,0 +1,29 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Trivy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Run at 21:35 (9:35 PM UTC) every Wednesday
+    - cron: "35 21 * * 3"
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+  security-events: write
+
+jobs:
+  build:
+    uses: atlanhq/application-sdk/.github/workflows/trivy-container.yaml@main
+    secrets:
+        ORG_PAT_GITHUB: ${{ secrets.ORG_PAT_GITHUB }}

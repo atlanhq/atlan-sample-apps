@@ -1,0 +1,75 @@
+from datetime import timedelta
+from typing import Any, Callable, Dict, Sequence
+
+from application_sdk.activities import ActivitiesInterface
+from application_sdk.common.logger_adaptors import get_logger
+from application_sdk.inputs.statestore import StateStoreInput
+from application_sdk.workflows import WorkflowInterface
+from temporalio import workflow
+
+from giphy.activities import GiphyActivities
+
+workflow.logger = get_logger(__name__)
+
+
+@workflow.defn
+class GiphyWorkflow(WorkflowInterface):
+    @workflow.run
+    async def run(self, workflow_config: Dict[str, Any]) -> None:
+        """
+        This workflow is used to send a GIF to a list of recipients.
+
+        Args:
+            workflow_config (Dict[str, Any]): The workflow configuration
+
+        Returns:
+            None
+        """
+        workflow_id = workflow_config["workflow_id"]
+        workflow_id = workflow_config["workflow_id"]
+        workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
+            workflow_id
+        )
+
+        activities_instance = GiphyActivities()
+
+        search_term: str = workflow_args.get("search_term", "funny cat")
+        recipients: str = workflow_args.get("recipients")  # pyright: ignore[reportAssignmentType]
+
+        # Step 1: Fetch the GIF
+        gif_url = await workflow.execute_activity(
+            activities_instance.fetch_gif,
+            search_term,
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+        workflow.logger.info(f"Fetched GIF: {gif_url}")
+
+        # Step 2: Send the email with the GIF
+        await workflow.execute_activity(
+            activities_instance.send_email,
+            {"recipients": recipients, "gif_url": gif_url},
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+        workflow.logger.info("Giphy workflow completed")
+
+    @staticmethod
+    def get_activities(activities: ActivitiesInterface) -> Sequence[Callable[..., Any]]:
+        """Get the sequence of activities to be executed by the workflow.
+
+        Args:
+            activities (ActivitiesInterface): The activities instance
+                containing the hello world operations.
+
+        Returns:
+            Sequence[Callable[..., Any]]: A sequence of activity methods to be executed
+                in order.
+        """
+        if not isinstance(activities, GiphyActivities):
+            raise TypeError("Activities must be an instance of HelloWorldActivities")
+
+        return [
+            activities.get_workflow_args,
+            activities.fetch_gif,
+            activities.send_email,
+        ]
