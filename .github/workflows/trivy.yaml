@@ -23,7 +23,19 @@ permissions:
   security-events: write
 
 jobs:
-  build:
-    uses: atlanhq/application-sdk/.github/actions/trivy@main
-    secrets:
-        ORG_PAT_GITHUB: ${{ secrets.ORG_PAT_GITHUB }}
+  scan:
+    name: Trivy Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Using GITHUB_TOKEN instead for basic checkout
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: atlanhq/application-sdk/.github/actions/trivy@main
+        with:
+          add-report-comment-to-pr: "true"
+        env:
+          GITHUB_TOKEN: ${{ secrets.ORG_PAT_GITHUB }}
