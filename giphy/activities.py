@@ -117,20 +117,3 @@ class GiphyActivities(ActivitiesInterface):
                 f"Email failed to send to {', '.join(recipients)}: {e}"
             )
 
-    @activity.defn
-    async def get_workflow_args(self, workflow_id: str) -> Dict[str, Any]:
-        """
-        Retrieves workflow arguments from the state store for a given workflow ID.
-
-        Args:
-            workflow_id (str): The unique identifier of the workflow
-
-        Returns:
-            Dict[str, Any]: Configuration and arguments associated with the workflow
-
-        Note:
-            This activity uses StateStoreInput to extract configuration data
-            stored during workflow initialization.
-        """
-        workflow_args = StateStoreInput.extract_configuration(workflow_id)
-        return workflow_args

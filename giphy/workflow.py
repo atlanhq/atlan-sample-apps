@@ -69,7 +69,6 @@ class GiphyWorkflow(WorkflowInterface):
             raise TypeError("Activities must be an instance of HelloWorldActivities")
 
         return [
-            activities.get_workflow_args,
             activities.fetch_gif,
             activities.send_email,
         ]

@@ -42,7 +42,6 @@ install:
 	poetry update application-sdk --dry-run
 
 
-
 # Stop all services
 stop-all:
 	@echo "Stopping all detached processes..."
