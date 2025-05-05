@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-application-sdk = {git = "git@github.com:atlanhq/application-sdk.git", rev = "e9fab1526223cdccb3649edde5e82d28dac1438d", extras = ["workflows"]}
+application-sdk = {git = "git@github.com:atlanhq/application-sdk.git", tag = "v0.1.0", extras = ["workflows"]}
 
 
 [tool.poetry.group.test.dependencies]
