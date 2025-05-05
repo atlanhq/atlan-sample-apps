@@ -8,7 +8,7 @@ from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
-from hello_world.activities import HelloWorldActivities
+from activities import HelloWorldActivities
 
 workflow.logger = get_logger(__name__)
 
