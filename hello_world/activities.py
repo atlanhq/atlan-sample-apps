@@ -15,7 +15,3 @@ class HelloWorldActivities(ActivitiesInterface):
         activity.logger.info(f"Saying hello to {name}")
         return f"Hello, {name}!"
 
-    @activity.defn
-    async def get_workflow_args(self, workflow_id: str) -> Dict[str, Any]:
-        workflow_args = StateStoreInput.extract_configuration(workflow_id)
-        return workflow_args

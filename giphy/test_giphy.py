@@ -81,19 +81,3 @@ class TestGiphyWorkflowWorker:
 
         with pytest.raises(ValueError, match="No valid recipients provided"):
             await activities.send_email(config)
-
-    @staticmethod
-    @pytest.mark.asyncio
-    async def test_get_workflow_args(activities: GiphyActivities) -> None:
-        """Test retrieval of workflow arguments from state store."""
-        expected_args = {"search_term": "test", "recipients": "test@example.com"}
-
-        with patch(
-            "application_sdk.inputs.statestore.StateStoreInput.extract_configuration"
-        ) as mock_extract:
-            mock_extract.return_value = expected_args
-
-            result = await activities.get_workflow_args("test-workflow-id")
-
-            assert result == expected_args
-            mock_extract.assert_called_once_with("test-workflow-id")
