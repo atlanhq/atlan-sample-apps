@@ -2,7 +2,7 @@
 
 An app that sends gifs to your friends via email. Built with Application SDK.
 
-![Demo](https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6)
+https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
 
 ## Features
 
