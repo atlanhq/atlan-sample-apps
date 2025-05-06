@@ -7,9 +7,9 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 ### Setting up your environment
 
 - Follow the setup instructions for your platform:
-   - [Windows](https://github.com/atlanhq/application-sdk/docs/docs/setup/WINDOWS.md)
-   - [Mac](https://github.com/atlanhq/application-sdk/docs/docs/setup/MAC.md)
-   - [Linux](https://github.com/atlanhq/application-sdk/docs/docs/setup/LINUX.md)
+   - [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+   - [Mac](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+   - [Linux](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
 
 
 ### Follow instructions for each sample app
