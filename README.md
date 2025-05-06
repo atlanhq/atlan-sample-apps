@@ -29,7 +29,7 @@ Get support through any of these channels:
 
 - Email: **apps@atlan.com**
 - Slack: **#pod-app-framework**
-- Issues: [GitHub Issues](https://github.com/atlanhq/application-sdk/issues)
+- Issues: [GitHub Issues](https://github.com/atlanhq/atlan-sample-apps/issues)
 
 ## Security
 
