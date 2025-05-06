@@ -7,7 +7,6 @@ from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
-# Import AIGiphyActivities from the activities.py file in the same directory
 from activities import AIGiphyActivities
 
 workflow.logger = get_logger(__name__)
