@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giphy App 🤖</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Giphy App 🤖</h1>
+        <p class="subtitle">send gifs to your friends</p>
+      </div>
+
+      <form id="nameForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="ai_input_string">What do you want the AI to do? 🤖</label>
+          <input
+            type="text"
+            id="ai_input_string"
+            name="ai_input_string"
+            placeholder="E.g., Fetch an ironman gif and send it to test@example.com"
+            required
+          />
+          <p class="helper-text">
+            Describe what GIF to fetch and who to send it to.
+          </p>
+        </div>
+
+        <button type="submit" id="submitBtn">✨ Send Magic ✨</button>
+      </form>
+
+      <div id="logsContainer" class="logs-container" style="display: none;">
+        <h3>Server Logs</h3>
+        <div id="logMessages" class="log-messages"></div>
+      </div>
+    </div>
+
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <div class="success-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <h2>GIF sent! 🎉</h2>
+        <p>Your GIF is on its way to make someone smile!</p>
+        <a id="dashboard-link" class="view-status-link" target="_blank"
+           href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows">
+          View Status <span class="sparkle-icon">✨</span>
+        </a>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+  </body>
+</html>
