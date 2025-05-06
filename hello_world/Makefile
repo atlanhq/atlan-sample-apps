@@ -11,7 +11,7 @@ start-temporal-dev:
 
 # Run Dapr locally
 start-dapr:
-	dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components
+	dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path .venv/src/application-sdk/components
 
 # Start all services in detached mode
 start-deps:
@@ -35,7 +35,7 @@ install:
 
 	# Configure poetry to use project-specific virtualenv
 	poetry config virtualenvs.in-project true
-	poetry config experimental.system-git-client true
+	poetry config system-git-client true
 
 	# Install the dependencies
 	poetry install -vv

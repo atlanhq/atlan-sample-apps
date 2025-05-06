@@ -2,9 +2,10 @@
 
 An app that sends gifs to your friends via email. Built with Application SDK.
 
-![Demo](https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6)
+https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
 
 ## Features
+
 - Search and send GIFs to multiple recipients
 - Real-time workflow status tracking
 - Support for multiple email recipients
@@ -21,6 +22,7 @@ An app that sends gifs to your friends via email. Built with Application SDK.
    - [Linux](https://github.com/atlanhq/application-sdk/docs/docs/setup/LINUX.md)
 
 ### Environment Variables
+
 Update the `.env` file in the root directory with the following variables:
 
 ```env
@@ -34,17 +36,20 @@ SMTP_PASSWORD=your_sendgrid_api_key
 ### Installation
 
 1. Clone this repository:
+
 ```bash
 git clone https://github.com/atlanhq/atlan-sample-apps.git
 cd giphy
 ```
 
 2. Install dependencies:
+
 ```bash
 make install
 ```
 
 This will:
+
 - Configure git to use HTTPS
 - Set up poetry with project-specific virtualenv
 - Install all dependencies
@@ -52,30 +57,38 @@ This will:
 ## Running the Application
 
 ### Start Dependencies
+
 Start Temporal and Dapr services:
+
 ```bash
 make start-deps
 ```
 
 ### Run the Application
+
 1. Activate the virtual environment:
+
 ```bash
 source .venv/bin/activate
 ```
 
 2. Start the application:
+
 ```bash
 make run
 ```
 
 ### Access the Application
+
 Once running, access the application at:
+
 - Web Interface: `http://localhost:8000`
 - Temporal UI: `http://localhost:8233`
 
 ## Development
 
 ### Project Structure
+
 ```
 giphy/
 ├── frontend/           # Frontend assets
@@ -87,12 +100,14 @@ giphy/
 ```
 
 ### Available Make Commands
+
 - `make install` - Install dependencies and set up the development environment
 - `make start-deps` - Start Temporal and Dapr services
 - `make run` - Run the application
 - `make stop-all` - Stop all services
 
 ## Learning Resources
+
 - [Temporal Documentation](https://docs.temporal.io/)
 - [Atlan Application SDK Documentation](https://github.com/atlanhq/application-sdk/tree/main/docs)
 - [Python FastAPI Documentation](https://fastapi.tiangolo.com/)
@@ -100,5 +115,5 @@ giphy/
 - [SendGrid Documentation](https://docs.sendgrid.com/)
 
 ## Contributing
-We welcome contributions! Please feel free to submit a Pull Request.
 
+We welcome contributions! Please feel free to submit a Pull Request.

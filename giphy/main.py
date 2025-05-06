@@ -4,8 +4,8 @@ from typing import Any, Dict
 from application_sdk.application import BaseApplication
 from application_sdk.common.logger_adaptors import get_logger
 
-from giphy.activities import GiphyActivities
-from giphy.workflow import GiphyWorkflow
+from activities import GiphyActivities
+from workflow import GiphyWorkflow
 
 APPLICATION_NAME = "giphy"
 
@@ -22,6 +22,7 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
     await app.setup_workflow(
         workflow_classes=[GiphyWorkflow],
         activities_class=GiphyActivities,
+        passthrough_modules=["requests", "urllib3"],
     )
 
     # start worker

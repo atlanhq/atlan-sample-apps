@@ -7,7 +7,9 @@ from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
-from giphy.activities import GiphyActivities
+# Import GiphyActivities outside of the workflow code
+from activities import GiphyActivities
+
 
 workflow.logger = get_logger(__name__)
 
@@ -25,7 +27,6 @@ class GiphyWorkflow(WorkflowInterface):
         Returns:
             None
         """
-        workflow_id = workflow_config["workflow_id"]
         workflow_id = workflow_config["workflow_id"]
         workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
             workflow_id
