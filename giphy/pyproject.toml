@@ -4,10 +4,11 @@ version = "0.1.0"
 description = "Giphy: A sample app built using Atlan Application SDK"
 authors = ["Atlan Apps Team <apps@atlan.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-application-sdk = {git = "git@github.com:atlanhq/application-sdk.git", rev = "98e1c2ac40fec128061651ac15f6d13859ba34ee", extras = ["workflows"]}
+application-sdk = {git = "git@github.com:atlanhq/application-sdk.git", tag = "v0.1.0-rc.1", extras = ["workflows"]}
 
 
 [tool.poetry.group.test.dependencies]

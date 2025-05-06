@@ -2,7 +2,7 @@
 
 A simple starter application demonstrating how to build apps with Application SDK.
 
-![Image](https://github.com/user-attachments/assets/416be4d4-e137-42c4-9537-869df2c8f87e)
+https://github.com/user-attachments/assets/416be4d4-e137-42c4-9537-869df2c8f87e
 
 ## Features
 - Simple web interface to input your name
