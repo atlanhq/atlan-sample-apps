@@ -2,6 +2,8 @@
 
 An intelligent application that uses an AI agent to fetch relevant GIFs based on your descriptions and sends them to your friends via email. Built with the Application SDK, Langchain, and Temporal.
 
+https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
+
 ## Features
 
 - **AI-Powered GIF Selection**: Describe the GIF you want (e.g., "a happy cat dancing") and the AI agent will find a suitable one.
@@ -9,6 +11,9 @@ An intelligent application that uses an AI agent to fetch relevant GIFs based on
 - **Workflow Management**: Leverages Temporal for robust workflow orchestration.
 - **Extensible Agent**: Utilizes Langchain for building the AI agent, allowing for easy extension of its capabilities.
 - **Clear UI**: Simple web interface to interact with the AI agent.
+
+
+
 
 ## Usage
 
