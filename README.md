@@ -6,6 +6,22 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 
 ### Setting up your environment
 
+
+```
+uv venv
+uv sync
+
+poe download-components
+poe start-deps
+
+poe stop-deps
+
+
+cd hello_world
+
+uv run main.py
+```
+
 - Follow the setup instructions for your platform:
    - [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
    - [Mac](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
@@ -27,7 +43,7 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 
 Get support through any of these channels:
 
-- Email: **apps@atlan.com**
+- Email: **connect@atlan.com**
 - Slack: **#pod-app-framework**
 - Issues: [GitHub Issues](https://github.com/atlanhq/atlan-sample-apps/issues)
 

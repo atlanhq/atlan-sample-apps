@@ -17,4 +17,4 @@
 <!-- for any cautionary notes, use https://github.com/orgs/community/discussions/16925 -->
 
 
-<!-- for any questions, reachout to #pod-app-framework or apps@atlan.com -->
+<!-- for any questions, reachout to #pod-app-framework or connect@atlan.com -->
