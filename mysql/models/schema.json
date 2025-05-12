@@ -1,0 +1,76 @@
+{
+    "entityDefs": [
+        {
+            "superTypes": [
+                "SQL"
+            ],
+            "name": "Schema",
+            "description": "Instance of a database schema in Atlan.",
+            "typeVersion": "1.0",
+            "serviceType": "atlan",
+            "attributeDefs": [
+                {
+                    "name": "tableCount",
+                    "description": "Number of tables in this schema.",
+                    "typeName": "int",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": true,
+                    "includeInNotification": true
+                },
+                {
+                    "name": "viewsCount",
+                    "description": "Number of views in this schema.",
+                    "typeName": "int",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": true,
+                    "includeInNotification": true
+                },
+                {
+                    "name": "linkedSchemaQualifiedName",
+                    "description": "Unique name of the Linked Schema on which this Schema is dependent. This concept is mostly applicable for linked datasets/datasource in Google BigQuery via Analytics Hub Listing",
+                    "typeName": "string",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": false,
+                    "indexType": "STRING",
+                    "includeInNotification": true
+                }
+            ]
+        }
+    ],
+    "relationshipDefs": [
+        {
+            "name": "database_schemas",
+            "description": "Containment relationship between database (parent) and schemas (children).",
+            "typeVersion": "1.0",
+            "relationshipCategory": "AGGREGATION",
+            "relationshipLabel": "__Database.schemas",
+            "serviceType": "atlan",
+            "endDef1": {
+                "type": "Database",
+                "name": "schemas",
+                "description": "Schemas that exist within this database.",
+                "isContainer": true,
+                "cardinality": "SET",
+                "isLegacyAttribute": true
+            },
+            "endDef2": {
+                "type": "Schema",
+                "name": "database",
+                "description": "Database in which this schema exists.",
+                "isContainer": false,
+                "cardinality": "SINGLE",
+                "isLegacyAttribute": true
+            },
+            "propagateTags": "ONE_TO_TWO"
+        }
+    ]
+}

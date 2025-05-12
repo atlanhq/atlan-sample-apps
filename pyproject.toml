@@ -7,15 +7,18 @@ requires-python = ">=3.11"
 license = { file = "LICENSE" }
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows]==0.1.1rc1"
+    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc1",
+    "poethepoet"
 ]
 
 # If you have development dependencies, you can add them like this:
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pre-commit>=4.2.0,<5.0.0",
-    "poethepoet",
     "requests"
+]
+mysql = [
+    "pymysql>=1.1.1",
 ]
 test = [
     "pytest",
