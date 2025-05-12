@@ -1,0 +1,47 @@
+[project]
+name = "atlan-sample-apps"
+version = "0.1.0"
+description = "Atlan Sample Apps: Sample apps built using Atlan Application SDK"
+authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+readme = "README.md"
+dependencies = [
+    "atlan-application-sdk[workflows]==0.1.1rc1"
+]
+
+# If you have development dependencies, you can add them like this:
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.2.0,<5.0.0",
+    "poethepoet",
+    "requests"
+]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "coverage",
+]
+
+[tool.poe.tasks]
+download-components = "python scripts/download_components.py --ref v0.1.1rc1"
+
+# Dapr and Temporal service tasks
+start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components"
+start-temporal = "temporal server start-dev --db-filename /tmp/temporal.db"
+start-deps.shell = "poe start-dapr & poe start-temporal &"
+stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || true"
+
+[tool.hatch.build.targets.sdist]
+include = ["./**/*.py"]
+
+[tool.hatch.build.targets.wheel]
+include = ["./**/*.py"]
+packages = [
+    "hello_world",
+    "giphy"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
