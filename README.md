@@ -6,21 +6,6 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 
 ### Setting up your environment
 
-
-```
-uv sync --all-groups
-
-poe download-components
-poe start-deps
-
-poe stop-deps
-
-
-cd hello_world
-
-uv run main.py
-```
-
 - Follow the setup instructions for your platform:
    - [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
    - [Mac](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)

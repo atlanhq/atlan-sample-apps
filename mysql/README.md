@@ -34,8 +34,8 @@ uv sync --group mysql
 
 1. Start the dependencies in a separate terminal:
 ```bash
-poe download-components
-poe start-deps
+uv run poe download-components
+uv run poe start-deps
 ```
 
 2. Run the application in the main terminal:
