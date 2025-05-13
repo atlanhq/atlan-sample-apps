@@ -21,17 +21,6 @@ https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
    - [Mac](https://github.com/atlanhq/application-sdk/docs/docs/setup/MAC.md)
    - [Linux](https://github.com/atlanhq/application-sdk/docs/docs/setup/LINUX.md)
 
-### Environment Variables
-
-Update the `.env` file in the root directory with the following variables:
-
-```env
-GIPHY_API_KEY=your_giphy_api_key
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USERNAME=apikey
-SMTP_PASSWORD=your_sendgrid_api_key
-```
 
 ### Installation
 
@@ -45,13 +34,13 @@ cd giphy
 2. Install dependencies:
 
 ```bash
-make install
+uv sync
 ```
 
 This will:
 
 - Configure git to use HTTPS
-- Set up poetry with project-specific virtualenv
+- Set up uv with project-specific virtualenv
 - Install all dependencies
 
 ## Running the Application
@@ -61,21 +50,15 @@ This will:
 Start Temporal and Dapr services:
 
 ```bash
-make start-deps
+uv run poe start-deps
 ```
 
 ### Run the Application
 
-1. Activate the virtual environment:
+Start the application:
 
 ```bash
-source .venv/bin/activate
-```
-
-2. Start the application:
-
-```bash
-make run
+uv run main.py
 ```
 
 ### Access the Application
@@ -99,12 +82,9 @@ giphy/
 └── main.py            # Application entry point
 ```
 
-### Available Make Commands
+> [!NOTE]
+> Make sure you have a `.env` file that matches the [.env.example](.env.example) file in this directory.
 
-- `make install` - Install dependencies and set up the development environment
-- `make start-deps` - Start Temporal and Dapr services
-- `make run` - Run the application
-- `make stop-all` - Stop all services
 
 ## Learning Resources
 

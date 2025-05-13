@@ -171,3 +171,6 @@ docs/reference/*.rst
 
 # Interrogate coverage report
 docstring-cov.md
+
+
+components/
