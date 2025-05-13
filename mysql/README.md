@@ -72,6 +72,9 @@ mysql/
 └── frontend/         # Web interface assets
 ```
 
+> [!NOTE]
+> Make sure you have a `.env` file that matches the [.env.example](.env.example) file in this directory.
+
 ## 🔄 Workflow Process
 
 1. **Initialization**: The application sets up the SQL client and workflow components
@@ -83,16 +86,6 @@ mysql/
    - Gathers column information
 4. **Transformation**: Converts raw metadata into standardized format
 5. **Output**: Saves the transformed metadata to specified location
-
-## 🛠️ Configuration
-
-Copy the example environment file and update it with your MySQL connection details:
-
-```bash
-cp .env.sample .env
-```
-
-Update the `.env` file with your MySQL connection details:
 
 
 ## 📚 Learning Resources

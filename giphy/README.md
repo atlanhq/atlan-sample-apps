@@ -21,17 +21,6 @@ https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
    - [Mac](https://github.com/atlanhq/application-sdk/docs/docs/setup/MAC.md)
    - [Linux](https://github.com/atlanhq/application-sdk/docs/docs/setup/LINUX.md)
 
-### Environment Variables
-
-Update the `.env` file in the root directory with the following variables:
-
-```env
-GIPHY_API_KEY=your_giphy_api_key
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USERNAME=apikey
-SMTP_PASSWORD=your_sendgrid_api_key
-```
 
 ### Installation
 
@@ -92,6 +81,10 @@ giphy/
 ├── workflow.py        # Workflow definitions
 └── main.py            # Application entry point
 ```
+
+> [!NOTE]
+> Make sure you have a `.env` file that matches the [.env.example](.env.example) file in this directory.
+
 
 ## Learning Resources
 

@@ -113,6 +113,9 @@ ai_giphy/
 └── README.md           # This file
 ```
 
+> [!NOTE]
+> Make sure you have a `.env` file that matches the [.env.example](.env.example) file in this directory.
+
 ## Learning Resources
 
 -   [Temporal Documentation](https://docs.temporal.io/)

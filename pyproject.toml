@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Atlan Sample Apps: Sample apps built using Atlan Application SDK"
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
     "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc1",
@@ -47,7 +47,9 @@ include = ["./**/*.py"]
 include = ["./**/*.py"]
 packages = [
     "hello_world",
-    "giphy"
+    "giphy",
+    "ai_giphy",
+    "mysql"
 ]
 
 [build-system]
