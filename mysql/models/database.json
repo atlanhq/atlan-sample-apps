@@ -1,0 +1,26 @@
+{
+    "entityDefs": [
+        {
+            "superTypes": [
+                "SQL"
+            ],
+            "name": "Database",
+            "description": "Instance of a (relational) database in Atlan.",
+            "typeVersion": "1.0",
+            "serviceType": "atlan",
+            "attributeDefs": [
+                {
+                    "name": "schemaCount",
+                    "description": "Number of schemas in this database.",
+                    "typeName": "int",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": true,
+                    "includeInNotification": true
+                }
+            ]
+        }
+    ]
+}
