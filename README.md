@@ -18,6 +18,7 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 |------------|-------------|-----------|
 | 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK | [hello_world](./hello_world) |
 | 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [giphy](./giphy) |
+| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [ai_giphy](./ai_giphy) |
 | 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [mysql](./mysql) |
 
 ## Contributing
