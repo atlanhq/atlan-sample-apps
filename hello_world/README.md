@@ -29,12 +29,12 @@ cd hello_world
 
 2. Install dependencies:
 ```bash
-make install
+uv sync
 ```
 
 This will:
 - Configure git to use HTTPS
-- Set up poetry with project-specific virtualenv
+- Set up uv with project-specific virtualenv
 - Install all dependencies
 
 ## Running the Application
@@ -42,18 +42,13 @@ This will:
 ### Start Dependencies
 Start Temporal and Dapr services:
 ```bash
-make start-deps
+uv run poe start-deps
 ```
 
 ### Run the Application
-1. Activate the virtual environment:
+Start the application:
 ```bash
-source .venv/bin/activate
-```
-
-2. Start the application:
-```bash
-make run
+uv run main.py
 ```
 
 ### Access the Application
@@ -73,12 +68,6 @@ hello_world/
 ├── workflow.py        # Workflow definitions
 └── main.py            # Application entry point
 ```
-
-### Available Make Commands
-- `make install` - Install dependencies and set up the development environment
-- `make start-deps` - Start Temporal and Dapr services
-- `make run` - Run the application
-- `make stop-all` - Stop all services
 
 ## Learning Resources
 - [Temporal Documentation](https://docs.temporal.io/)

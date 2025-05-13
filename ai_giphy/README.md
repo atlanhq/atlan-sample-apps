@@ -12,14 +12,11 @@ https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 - **Extensible Agent**: Utilizes Langchain for building the AI agent, allowing for easy extension of its capabilities.
 - **Clear UI**: Simple web interface to interact with the AI agent.
 
-
-
-
 ## Usage
 
 ### Setting up your environment
 
-1.  Ensure you have Python 3.10+ and Poetry installed.
+1.  Ensure you have Python >=3.11 and uv installed.
 2.  Follow the general setup instructions for the Application SDK for your platform:
     *   [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/setup/WINDOWS.md)
     *   [Mac](https://github.com/atlanhq/application-sdk/blob/main/docs/setup/MAC.md)
@@ -58,11 +55,10 @@ APP_AZURE_OPENAI_DEPLOYMENT_NAME=your_azure_openai_deployment_name
 
 2.  Install dependencies using Make:
     ```bash
-    make install
+    uv sync --group ai-giphy
     ```
     This command typically:
-    - Configures git to use HTTPS (if applicable).
-    - Sets up Poetry to create a virtual environment within the project directory.
+    - Sets up uv to create a virtual environment within the project directory.
     - Installs all Python dependencies specified in `pyproject.toml`.
 
 ## Running the Application
@@ -71,7 +67,7 @@ APP_AZURE_OPENAI_DEPLOYMENT_NAME=your_azure_openai_deployment_name
 
 Ensure your Temporal development server and Dapr sidecar are running. The Application SDK often provides a way to start these:
 ```bash
-make start-deps
+uv run poe start-deps
 ```
 (If this command is not available or doesn't work in your setup, you'll need to start Temporal and Dapr manually according to their documentation.)
 
@@ -85,7 +81,7 @@ make start-deps
 
 2.  Start the AI Giphy application:
     ```bash
-    make run
+    uv run main.py
     ```
     This will start the Temporal worker and the FastAPI web server.
 
@@ -102,7 +98,7 @@ Once the application is running:
 
 ```
 ai_giphy/
-├── .venv/              # Virtual environment (created by Poetry)
+├── .venv/              # Virtual environment (created by uv)
 ├── frontend/           # Frontend assets
 │   ├── static/         # Static files (CSS, JS - if any)
 │   └── templates/      # HTML templates (e.g., index.html)
@@ -110,22 +106,12 @@ ai_giphy/
 ├── ai_agent.py         # Core logic for the AI agent (Langchain tools, LLM interaction)
 ├── workflow.py         # Temporal workflow definition
 ├── main.py             # Application entry point (FastAPI server, Temporal worker setup)
-├── pyproject.toml      # Project metadata and dependencies for Poetry
-├── poetry.lock         # Exact versions of dependencies
+├── pyproject.toml      # Project metadata and dependencies for uv
+├── uv.lock         # Exact versions of dependencies
 ├── Makefile            # Make commands for common tasks
 ├── .env                # Environment variables (create this file)
 └── README.md           # This file
 ```
-
-### Available Make Commands
-
-(These are common commands; adapt if your `Makefile` differs)
--   `make install`: Sets up the development environment and installs dependencies.
--   `make start-deps`: Starts essential services like Temporal and Dapr.
--   `make run`: Runs the main application (worker and server).
--   `make stop-all`: Stops all running services (application, Temporal, Dapr).
--   `make lint`: Runs linters to check code quality.
--   `make format`: Formats the code according to defined styles.
 
 ## Learning Resources
 
