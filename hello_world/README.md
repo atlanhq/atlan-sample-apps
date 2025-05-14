@@ -12,49 +12,21 @@ A simple starter application demonstrating how to build apps with Application SD
 
 ## Usage
 
-### Setting up your environment
+> [!NOTE]
+> To run, first see [README.md](../README.md) for prerequisites.
 
-1. Follow the setup instructions for your platform:
-   - [Windows](https://github.com/atlanhq/application-sdk/docs/docs/setup/WINDOWS.md)
-   - [Mac](https://github.com/atlanhq/application-sdk/docs/docs/setup/MAC.md)
-   - [Linux](https://github.com/atlanhq/application-sdk/docs/docs/setup/LINUX.md)
+### Run the Hello World Application
 
-### Installation
-
-1. Clone this repository:
-```bash
-git clone https://github.com/atlanhq/atlan-sample-apps.git
-cd hello_world
-```
-
-2. Install dependencies:
-```bash
-uv sync
-```
-
-This will:
-- Configure git to use HTTPS
-- Set up uv with project-specific virtualenv
-- Install all dependencies
-
-## Running the Application
-
-### Start Dependencies
-Start Temporal and Dapr services:
-```bash
-uv run poe start-deps
-```
-
-### Run the Application
-Start the application:
 ```bash
 uv run main.py
 ```
 
 ### Access the Application
-Once running, access the application at:
-- Web Interface: `http://localhost:8000`
-- Temporal UI: `http://localhost:8233`
+
+Once the application is running:
+
+-   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
+-   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
 
 ## Development
 

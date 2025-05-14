@@ -38,7 +38,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ref",
-        default="v0.1.1rc1",
+        default="v0.1.1rc5",
         help="Git reference (tag, branch, or commit) to download from",
     )
     args = parser.parse_args()

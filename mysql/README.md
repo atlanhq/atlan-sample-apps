@@ -2,7 +2,7 @@
 
 A powerful application that extracts metadata from MySQL databases and transforms it into a standardized format. Built with Application SDK for robust workflow management.
 
-## 🌟 Features
+## Features
 
 - Automated metadata extraction from MySQL databases
 - Structured workflow for database, schema, table, and column extraction
@@ -10,44 +10,25 @@ A powerful application that extracts metadata from MySQL databases and transform
 - Robust error handling and retry mechanisms
 - Standardized metadata transformation
 
-## 🚀 Quick Start
+## Usage
 
-### Prerequisites
+> [!NOTE]
+> To run, first see [README.md](../README.md) for prerequisites.
 
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- Python 3.11.10
-- MySQL database access
-
-### Installation
-
-1. Install Python 3.11.10 using uv:
-```bash
-uv python install 3.11.10
-```
-
-2. Install dependencies:
-```bash
-uv sync --group mysql
-```
-
-### Running the Application
-
-1. Start the dependencies in a separate terminal:
-```bash
-uv run poe download-components
-uv run poe start-deps
-```
-
-2. Run the application in the main terminal:
+### Run the MySQL Application
+Run the application in the main terminal:
 ```bash
 uv run main.py
 ```
 
-3. Access the application:
-   - Web Interface: Navigate to `http://localhost:8000` in your browser
-   - Workflow Output: Check `/tmp/dapr/objectstore` for extracted metadata files
+### Access the Application
 
-## 📁 Project Structure
+Once the application is running:
+
+-   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
+-   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
+
+## Project Structure
 
 ```mermaid
 graph TD
@@ -75,7 +56,7 @@ mysql/
 > [!NOTE]
 > Make sure you have a `.env` file that matches the [.env.example](.env.example) file in this directory.
 
-## 🔄 Workflow Process
+## Workflow Process
 
 1. **Initialization**: The application sets up the SQL client and workflow components
 2. **Preflight Check**: Validates database connectivity and permissions
@@ -88,12 +69,12 @@ mysql/
 5. **Output**: Saves the transformed metadata to specified location
 
 
-## 📚 Learning Resources
+## Learning Resources
 
 - [Atlan Application SDK Documentation](https://github.com/atlanhq/application-sdk/tree/main/docs)
 - [MySQL Documentation](https://dev.mysql.com/doc/)
 - [Python FastAPI Documentation](https://fastapi.tiangolo.com/)
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please feel free to submit a Pull Request.

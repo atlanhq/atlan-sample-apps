@@ -14,14 +14,9 @@ https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 
 ## Usage
 
-### Setting up your environment
+> [!NOTE]
+> To run, first see [README.md](../README.md) for prerequisites.
 
-1.  Ensure you have Python >=3.11 and uv installed.
-2.  Follow the general setup instructions for the Application SDK for your platform:
-    *   [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/setup/WINDOWS.md)
-    *   [Mac](https://github.com/atlanhq/application-sdk/blob/main/docs/setup/MAC.md)
-    *   [Linux](https://github.com/atlanhq/application-sdk/blob/main/docs/setup/LINUX.md)
-    *   (Ensure Dapr and Temporal development server can be started)
 
 ### Environment Variables
 
@@ -46,46 +41,14 @@ APP_AZURE_OPENAI_DEPLOYMENT_NAME=your_azure_openai_deployment_name
 
 ```
 
-### Installation
+### Run the AI Giphy Application
 
-1.  Navigate to the `ai_giphy` directory:
-    ```bash
-    cd path/to/your/atlan-sample-apps/ai_giphy
-    ```
-
-2.  Install dependencies using Make:
-    ```bash
-    uv sync --group ai-giphy
-    ```
-    This command typically:
-    - Sets up uv to create a virtual environment within the project directory.
-    - Installs all Python dependencies specified in `pyproject.toml`.
-
-## Running the Application
-
-### 1. Start Dependencies
-
-Ensure your Temporal development server and Dapr sidecar are running. The Application SDK often provides a way to start these:
 ```bash
-uv run poe start-deps
+uv run main.py
 ```
-(If this command is not available or doesn't work in your setup, you'll need to start Temporal and Dapr manually according to their documentation.)
+This will start the Temporal worker and the FastAPI web server.
 
-### 2. Run the Application
-
-1.  Activate the virtual environment (if not already active):
-    ```bash
-    source .venv/bin/activate
-    # For Windows: .venv\Scripts\activate
-    ```
-
-2.  Start the AI Giphy application:
-    ```bash
-    uv run main.py
-    ```
-    This will start the Temporal worker and the FastAPI web server.
-
-### 3. Access the Application
+### Access the Application
 
 Once the application is running:
 

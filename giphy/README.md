@@ -14,43 +14,23 @@ https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
 
 ## Usage
 
-### Setting up your environment
+> [!NOTE]
+> To run, first see [README.md](../README.md) for prerequisites.
 
-1. Follow the setup instructions for your platform:
-   - [Windows](https://github.com/atlanhq/application-sdk/docs/docs/setup/WINDOWS.md)
-   - [Mac](https://github.com/atlanhq/application-sdk/docs/docs/setup/MAC.md)
-   - [Linux](https://github.com/atlanhq/application-sdk/docs/docs/setup/LINUX.md)
+## Environment Variables
 
+Create a `.env` file in the `giphy` root directory and populate it with the following variables. Obtain the necessary API keys from their respective services.
 
-### Installation
+```env
+# Giphy API Key
+GIPHY_API_KEY=your_giphy_api_key
 
-1. Clone this repository:
-
-```bash
-git clone https://github.com/atlanhq/atlan-sample-apps.git
-cd giphy
-```
-
-2. Install dependencies:
-
-```bash
-uv sync
-```
-
-This will:
-
-- Configure git to use HTTPS
-- Set up uv with project-specific virtualenv
-- Install all dependencies
-
-## Running the Application
-
-### Start Dependencies
-
-Start Temporal and Dapr services:
-
-```bash
-uv run poe start-deps
+# SMTP Configuration
+SMTP_HOST=your_smtp_host (e.g., smtp.sendgrid.net)
+SMTP_PORT=your_smtp_port (e.g., 587)
+SMTP_USERNAME=your_smtp_username (e.g., apikey for SendGrid)
+SMTP_PASSWORD=your_smtp_password_or_api_key
+SMTP_SENDER=your_sender_email (e.g., support@yourdomain.com)
 ```
 
 ### Run the Application
@@ -63,10 +43,10 @@ uv run main.py
 
 ### Access the Application
 
-Once running, access the application at:
+Once the application is running:
 
-- Web Interface: `http://localhost:8000`
-- Temporal UI: `http://localhost:8233`
+-   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
+-   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
 
 ## Development
 

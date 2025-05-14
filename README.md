@@ -6,19 +6,48 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 
 ### Setting up your environment
 
-- Follow the setup instructions for your platform:
-   - [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
-   - [Mac](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
-   - [Linux](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/atlanhq/atlan-sample-apps.git
+   cd atlan-sample-apps
+   ```
+
+2. Follow the setup instructions for your platform:
+   - [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+   - [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
+   - [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+3. Install dependencies:
+   ```bash
+   uv sync --all-groups
+   ```
+
+3. Download required components:
+   ```bash
+   uv run poe download-components
+   ```
+
+4. Start the dependencies (in a separate terminal):
+   ```bash
+   uv run poe start-deps
+   ```
+
+5. That loads all required dependencies. To run a sample, you just run the command in the main terminal. For example:
+   ```bash
+   cd hello_world
+   uv run main.py
+   ```
+
+Some examples require extra dependencies. See each sample's directory for specific instructions.
 
 
-### Follow instructions for each sample app
+### Sample Apps
 
 | Sample App | Description | Directory |
 |------------|-------------|-----------|
+| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [ai_giphy](./ai_giphy) |
 | 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK | [hello_world](./hello_world) |
 | 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [giphy](./giphy) |
-| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [ai_giphy](./ai_giphy) |
 | 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [mysql](./mysql) |
 
 ## Contributing
@@ -30,7 +59,6 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 Get support through any of these channels:
 
 - Email: **connect@atlan.com**
-- Slack: **#pod-app-framework**
 - Issues: [GitHub Issues](https://github.com/atlanhq/atlan-sample-apps/issues)
 
 ## Security
