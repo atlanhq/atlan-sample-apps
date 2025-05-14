@@ -166,7 +166,7 @@ class SQLAtlasTransformer(AtlasTransformer):
         self.entity_class_definitions["TABLE"] = MySQLTable
         self.entity_class_definitions["COLUMN"] = MySQLColumn
 
-    def transform_metadata(
+    def transform_row(
         self,
         typename: str,
         data: Dict[str, Any],
