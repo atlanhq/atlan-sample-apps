@@ -64,4 +64,4 @@ async function handleSubmit(event) {
       // resultDiv.classList.remove("show"); // Removed this line
     }, 5000); // Keep modal visible for 5 seconds
   }
-} 
+}

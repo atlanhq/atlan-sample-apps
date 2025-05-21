@@ -1,13 +1,12 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
+from activities import AIGiphyActivities
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
 from application_sdk.inputs.statestore import StateStoreInput
+from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
-
-from activities import AIGiphyActivities
 
 workflow.logger = get_logger(__name__)
 
@@ -36,15 +35,21 @@ class AIGiphyWorkflow(WorkflowInterface):
         activities_instance = AIGiphyActivities()
 
         # Get the input string from workflow_args. Provide a default if not found.
-        ai_input_string: str = workflow_args.get("ai_input_string", "Fetch a cat gif and send it to test@example.com")
+        ai_input_string: str = workflow_args.get(
+            "ai_input_string", "Fetch a cat gif and send it to test@example.com"
+        )
 
-        workflow.logger.info(f"Starting AI Giphy workflow with input: {ai_input_string}")
+        workflow.logger.info(
+            f"Starting AI Giphy workflow with input: {ai_input_string}"
+        )
 
         # Execute the AI agent activity
         agent_output = await workflow.execute_activity(
             activities_instance.run_ai_agent,
             ai_input_string,
-            start_to_close_timeout=timedelta(seconds=60),  # Increased timeout for potentially longer AI tasks
+            start_to_close_timeout=timedelta(
+                seconds=60
+            ),  # Increased timeout for potentially longer AI tasks
         )
 
         workflow.logger.info(f"AI Agent activity completed. Output: {agent_output}")

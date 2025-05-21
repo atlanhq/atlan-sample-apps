@@ -2,15 +2,21 @@ import asyncio
 from datetime import timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Sequence
 
+from activities import HelloWorldActivities
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
+from application_sdk.common.error_codes import (
+    ClientError,
+    IOError,
+    TemporalWorkflowError,
+)
 from application_sdk.inputs.statestore import StateStoreInput
+from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
-from activities import HelloWorldActivities
-
 workflow.logger = get_logger(__name__)
+workflow.traces = get_traces()
 
 
 @workflow.defn
@@ -26,26 +32,78 @@ class HelloWorldWorkflow(WorkflowInterface):
         Returns:
             None
         """
-        workflow_id = workflow_config["workflow_id"]
-        workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
-            workflow_id
-        )
-        activities_instance = HelloWorldActivities()
+        try:
+            if not workflow_config or "workflow_id" not in workflow_config:
+                workflow.logger.error(
+                    "Invalid workflow configuration",
+                    extra={"error_code": ClientError.REQUEST_VALIDATION_ERROR.code},
+                )
+                raise ClientError.REQUEST_VALIDATION_ERROR
 
-        name: str = workflow_args.get("name", "John Doe")
-        workflow.logger.info("Starting hello world workflow")
+            workflow_id = workflow_config["workflow_id"]
+            try:
+                workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
+                    workflow_id
+                )
+            except Exception as e:
+                workflow.logger.error(
+                    "Failed to extract workflow configuration",
+                    extra={
+                        "error_code": IOError.STATE_STORE_EXTRACT_ERROR.code,
+                        "error": str(e),
+                    },
+                )
+                raise IOError.STATE_STORE_EXTRACT_ERROR
 
-        activities: List[Coroutine[Any, Any, Any]] = [
-            workflow.execute_activity(  # pyright: ignore[reportUnknownMemberType]
-                activities_instance.say_hello,
-                name,
-                start_to_close_timeout=timedelta(seconds=1000),
+            activities_instance = HelloWorldActivities()
+
+            name: str = workflow_args.get("name", "John Doe")
+            workflow.logger.info("Starting hello world workflow")
+
+            # Add trace for workflow execution
+            with workflow.traces.record_trace(
+                name="hello_world_workflow",
+                trace_id=workflow_id,
+                span_id=f"{workflow_id}_main",
+                kind="INTERNAL",
+                status_code="OK",
+                attributes={
+                    "workflow_id": workflow_id,
+                    "name": name,
+                    "workflow_type": "HelloWorldWorkflow",
+                },
+            ):
+                try:
+                    activities: List[Coroutine[Any, Any, Any]] = [
+                        workflow.execute_activity(  # pyright: ignore[reportUnknownMemberType]
+                            activities_instance.say_hello,
+                            name,
+                            start_to_close_timeout=timedelta(seconds=1000),
+                        )
+                    ]
+
+                    # Wait for all activities to complete
+                    await asyncio.gather(*activities)
+                    workflow.logger.info("Hello world workflow completed")
+                except Exception as e:
+                    workflow.logger.error(
+                        "Failed to execute workflow activities",
+                        extra={
+                            "error_code": TemporalWorkflowError.WORKFLOW_EXECUTION_ERROR.code,
+                            "error": str(e),
+                        },
+                    )
+                    raise TemporalWorkflowError.WORKFLOW_EXECUTION_ERROR
+
+        except Exception as e:
+            workflow.logger.error(
+                "Workflow execution failed",
+                extra={
+                    "error_code": TemporalWorkflowError.WORKFLOW_EXECUTION_ERROR.code,
+                    "error": str(e),
+                },
             )
-        ]
-
-        # Wait for all activities to complete
-        await asyncio.gather(*activities)
-        workflow.logger.info("Hello world workflow completed")
+            raise TemporalWorkflowError.WORKFLOW_EXECUTION_ERROR
 
     @staticmethod
     def get_activities(activities: ActivitiesInterface) -> Sequence[Callable[..., Any]]:

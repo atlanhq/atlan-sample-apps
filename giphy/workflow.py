@@ -1,15 +1,13 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
-from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
-from application_sdk.inputs.statestore import StateStoreInput
-from application_sdk.workflows import WorkflowInterface
-from temporalio import workflow
-
 # Import GiphyActivities outside of the workflow code
 from activities import GiphyActivities
-
+from application_sdk.activities import ActivitiesInterface
+from application_sdk.inputs.statestore import StateStoreInput
+from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.workflows import WorkflowInterface
+from temporalio import workflow
 
 workflow.logger = get_logger(__name__)
 
