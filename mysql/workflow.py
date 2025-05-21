@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List
 from activities import SQLMetadataExtractionActivities
 from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.workflows.metadata_extraction.sql import (
     BaseSQLMetadataExtractionWorkflow,
@@ -47,7 +47,7 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
         workflow.metrics.record_metric(
             name="sql_metadata_extraction_workflow_start",
             value=1.0,
-            metric_type="counter",
+            metric_type=MetricType.COUNTER,
             labels={
                 "workflow_id": workflow_id,
                 "workflow_run_id": workflow_run_id,
@@ -116,7 +116,7 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
             workflow.metrics.record_metric(
                 name="sql_metadata_extraction_workflow_complete",
                 value=1.0,
-                metric_type="counter",
+                metric_type=MetricType.COUNTER,
                 labels={
                     "workflow_id": workflow_id,
                     "workflow_run_id": workflow_run_id,

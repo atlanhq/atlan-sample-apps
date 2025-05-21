@@ -21,7 +21,7 @@ from application_sdk.common.error_codes import (
 )
 from application_sdk.common.utils import prepare_query
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
 from temporalio import activity
 
@@ -62,7 +62,7 @@ class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
             activity.metrics.record_metric(
                 name="sql_metadata_fetch_columns_start",
                 value=1.0,
-                metric_type="counter",
+                metric_type=MetricType.COUNTER,
                 labels={
                     "workflow_id": activity.info().workflow_id,
                     "activity_id": activity.info().activity_id,
@@ -120,7 +120,7 @@ class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
                     activity.metrics.record_metric(
                         name="sql_metadata_fetch_columns_complete",
                         value=1.0,
-                        metric_type="counter",
+                        metric_type=MetricType.COUNTER,
                         labels={
                             "workflow_id": activity.info().workflow_id,
                             "activity_id": activity.info().activity_id,

@@ -3,7 +3,7 @@ import asyncio
 from activities import HelloWorldActivities
 from application_sdk.application import BaseApplication
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
 from workflow import HelloWorldWorkflow
 
 logger = get_logger(__name__)
@@ -19,7 +19,7 @@ async def main():
     metrics.record_metric(
         name="hello_world_application_startup",
         value=1.0,
-        metric_type="counter",
+        metric_type=MetricType.COUNTER,
         labels={"application_name": APPLICATION_NAME, "status": "started"},
         description="Application startup counter",
         unit="count",
@@ -44,7 +44,7 @@ async def main():
     metrics.record_metric(
         name="hello_world_server_setup",
         value=1.0,
-        metric_type="counter",
+        metric_type=MetricType.COUNTER,
         labels={"application_name": APPLICATION_NAME, "status": "ready"},
         description="Server setup counter",
         unit="count",

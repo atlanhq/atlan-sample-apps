@@ -1,7 +1,7 @@
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.common.error_codes import ActivityError, ClientError, TemporalError
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
 from temporalio import activity
 
@@ -28,7 +28,7 @@ class HelloWorldActivities(ActivitiesInterface):
             activity.metrics.record_metric(
                 name="hello_world_activity_execution",
                 value=1.0,
-                metric_type="counter",
+                metric_type=MetricType.COUNTER,
                 labels={"activity_type": "say_hello", "name": name},
                 description="Number of times say_hello activity is executed",
                 unit="count",
