@@ -1,5 +1,9 @@
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.error_codes import ActivityError, ClientError, TemporalError
+from application_sdk.common.error_codes import (
+    ActivityError,
+    ClientError,
+    OrchestratorError,
+)
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
@@ -34,8 +38,8 @@ class HelloWorldActivities(ActivitiesInterface):
                 unit="count",
             )
 
-            # Add trace for activity execution
-            with activity.traces.record_trace(
+            # Record trace for activity execution
+            activity.traces.record_trace(
                 name="say_hello_activity",
                 trace_id=activity.info().workflow_id,
                 span_id=activity.info().activity_id,
@@ -46,26 +50,29 @@ class HelloWorldActivities(ActivitiesInterface):
                     "activity_id": activity.info().activity_id,
                     "name": name,
                     "activity_type": "say_hello",
+                    "service.name": "hello-world",
+                    "service.version": "1.0.0",
                 },
-            ):
-                try:
-                    return f"Hello, {name}!"
-                except Exception as e:
-                    logger.error(
-                        "Failed to generate greeting",
-                        extra={
-                            "error_code": ActivityError.ACTIVITY_END_ERROR.code,
-                            "error": str(e),
-                        },
-                    )
-                    raise ActivityError.ACTIVITY_END_ERROR
+            )
+
+            try:
+                return f"Hello, {name}!"
+            except Exception as e:
+                logger.error(
+                    "Failed to generate greeting",
+                    extra={
+                        "error_code": ActivityError.ACTIVITY_END_ERROR.code,
+                        "error": str(e),
+                    },
+                )
+                raise ActivityError.ACTIVITY_END_ERROR
 
         except Exception as e:
             logger.error(
                 "Activity execution failed",
                 extra={
-                    "error_code": TemporalError.TEMPORAL_CLIENT_ACTIVITY_ERROR.code,
+                    "error_code": OrchestratorError.TEMPORAL_CLIENT_ACTIVITY_ERROR.code,
                     "error": str(e),
                 },
             )
-            raise TemporalError.TEMPORAL_CLIENT_ACTIVITY_ERROR
+            raise OrchestratorError.TEMPORAL_CLIENT_ACTIVITY_ERROR

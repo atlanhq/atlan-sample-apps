@@ -9,6 +9,7 @@ import asyncio
 from typing import Any, Callable, Dict, List
 
 from activities import SQLMetadataExtractionActivities
+from application_sdk.common.error_codes import ClientError, IOError, WorkflowError
 from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
@@ -33,53 +34,74 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
 
         :param workflow_args: The workflow arguments.
         """
-        workflow_id = workflow_config["workflow_id"]
-        workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
-            workflow_id
-        )
+        try:
+            if not workflow_config or "workflow_id" not in workflow_config:
+                workflow.logger.error(
+                    "Invalid workflow configuration",
+                    extra={"error_code": ClientError.REQUEST_VALIDATION_ERROR.code},
+                )
+                raise ClientError.REQUEST_VALIDATION_ERROR
 
-        workflow_run_id = workflow.info().run_id
-        workflow_args["workflow_run_id"] = workflow_run_id
+            workflow_id = workflow_config["workflow_id"]
+            try:
+                workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
+                    workflow_id
+                )
+            except Exception as e:
+                workflow.logger.error(
+                    "Failed to extract workflow configuration",
+                    extra={
+                        "error_code": IOError.STATE_STORE_EXTRACT_ERROR.code,
+                        "error": str(e),
+                    },
+                )
+                raise IOError.STATE_STORE_EXTRACT_ERROR
 
-        workflow.logger.info(f"Starting extraction workflow for {workflow_id}")
+            workflow_run_id = workflow.info().run_id
+            workflow_args["workflow_run_id"] = workflow_run_id
 
-        # Record workflow start metric
-        workflow.metrics.record_metric(
-            name="sql_metadata_extraction_workflow_start",
-            value=1.0,
-            metric_type=MetricType.COUNTER,
-            labels={
-                "workflow_id": workflow_id,
-                "workflow_run_id": workflow_run_id,
-                "status": "started",
-            },
-            description="SQL metadata extraction workflow start counter",
-            unit="count",
-        )
+            workflow.logger.info(f"Starting extraction workflow for {workflow_id}")
 
-        retry_policy = RetryPolicy(
-            maximum_attempts=6,
-            backoff_coefficient=2,
-        )
+            # Record workflow start metric
+            workflow.metrics.record_metric(
+                name="sql_metadata_extraction_workflow_start",
+                value=1.0,
+                metric_type=MetricType.COUNTER,
+                labels={
+                    "workflow_id": workflow_id,
+                    "workflow_run_id": workflow_run_id,
+                    "status": "started",
+                },
+                description="SQL metadata extraction workflow start counter",
+                unit="count",
+            )
 
-        output_prefix = workflow_args["output_prefix"]
-        output_path = f"{output_prefix}/{workflow_id}/{workflow_run_id}"
-        workflow_args["output_path"] = output_path
+            retry_policy = RetryPolicy(
+                maximum_attempts=6,
+                backoff_coefficient=2,
+            )
 
-        # Add trace for workflow execution
-        with workflow.traces.record_trace(
-            name="sql_metadata_extraction_workflow",
-            trace_id=workflow_id,
-            span_id=f"{workflow_id}_main",
-            kind="INTERNAL",
-            status_code="OK",
-            attributes={
-                "workflow_id": workflow_id,
-                "workflow_run_id": workflow_run_id,
-                "output_path": output_path,
-                "workflow_type": "SQLMetadataExtractionWorkflow",
-            },
-        ):
+            output_prefix = workflow_args["output_prefix"]
+            output_path = f"{output_prefix}/{workflow_id}/{workflow_run_id}"
+            workflow_args["output_path"] = output_path
+
+            # Record trace for workflow execution
+            workflow.traces.record_trace(
+                name="sql_metadata_extraction_workflow",
+                trace_id=workflow_id,
+                span_id=f"{workflow_id}_main",
+                kind="INTERNAL",
+                status_code="OK",
+                attributes={
+                    "workflow_id": workflow_id,
+                    "workflow_run_id": workflow_run_id,
+                    "output_path": output_path,
+                    "workflow_type": "SQLMetadataExtractionWorkflow",
+                    "service.name": "sql-metadata-extraction",
+                    "service.version": "1.0.0",
+                },
+            )
+
             await workflow.execute_activity_method(
                 self.activities_cls.preflight_check,
                 workflow_args,
@@ -125,6 +147,16 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
                 description="SQL metadata extraction workflow completion counter",
                 unit="count",
             )
+
+        except Exception as e:
+            workflow.logger.error(
+                "Workflow execution failed",
+                extra={
+                    "error_code": WorkflowError.WORKFLOW_EXECUTION_ERROR.code,
+                    "error": str(e),
+                },
+            )
+            raise WorkflowError.WORKFLOW_EXECUTION_ERROR
 
     @staticmethod
     def get_activities(

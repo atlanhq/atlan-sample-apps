@@ -17,7 +17,7 @@ from application_sdk.common.error_codes import (
     ActivityError,
     ClientError,
     IOError,
-    TemporalError,
+    OrchestratorError,
 )
 from application_sdk.common.utils import prepare_query
 from application_sdk.observability.logger_adaptor import get_logger
@@ -83,8 +83,8 @@ class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
                 )
                 raise IOError.SQL_QUERY_ERROR
 
-            # Add trace for activity execution
-            with activity.traces.record_trace(
+            # Record trace for activity execution
+            activity.traces.record_trace(
                 name="fetch_columns_activity",
                 trace_id=activity.info().workflow_id,
                 span_id=activity.info().activity_id,
@@ -95,51 +95,54 @@ class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
                     "activity_id": activity.info().activity_id,
                     "activity_type": "fetch_columns",
                     "query": prepared_query,
+                    "service.name": "sql-metadata-extraction",
+                    "service.version": "1.0.0",
                 },
-            ):
-                try:
-                    statistics = await self.query_executor(
-                        sql_engine=state.sql_client.engine,
-                        sql_query=prepared_query,
-                        workflow_args=workflow_args,
-                        output_suffix="raw/column",
-                        typename="column",
-                    )
-                except Exception as e:
-                    logger.error(
-                        "Failed to execute SQL query",
-                        extra={
-                            "error_code": ActivityError.QUERY_EXTRACTION_SQL_ERROR.code,
-                            "error": str(e),
-                        },
-                    )
-                    raise ActivityError.QUERY_EXTRACTION_SQL_ERROR
+            )
 
-                # Record activity completion metric with statistics
-                if statistics:
-                    activity.metrics.record_metric(
-                        name="sql_metadata_fetch_columns_complete",
-                        value=1.0,
-                        metric_type=MetricType.COUNTER,
-                        labels={
-                            "workflow_id": activity.info().workflow_id,
-                            "activity_id": activity.info().activity_id,
-                            "status": "completed",
-                            "rows_processed": str(statistics.rows_processed),
-                            "rows_written": str(statistics.rows_written),
-                        },
-                        description="SQL metadata fetch columns activity completion counter",
-                        unit="count",
-                    )
+            try:
+                statistics = await self.query_executor(
+                    sql_engine=state.sql_client.engine,
+                    sql_query=prepared_query,
+                    workflow_args=workflow_args,
+                    output_suffix="raw/column",
+                    typename="column",
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to execute SQL query",
+                    extra={
+                        "error_code": ActivityError.QUERY_EXTRACTION_SQL_ERROR.code,
+                        "error": str(e),
+                    },
+                )
+                raise ActivityError.QUERY_EXTRACTION_SQL_ERROR
 
-                return statistics
+            # Record activity completion metric with statistics
+            if statistics:
+                activity.metrics.record_metric(
+                    name="sql_metadata_fetch_columns_complete",
+                    value=1.0,
+                    metric_type=MetricType.COUNTER,
+                    labels={
+                        "workflow_id": activity.info().workflow_id,
+                        "activity_id": activity.info().activity_id,
+                        "status": "completed",
+                        "rows_processed": str(statistics.rows_processed),
+                        "rows_written": str(statistics.rows_written),
+                    },
+                    description="SQL metadata fetch columns activity completion counter",
+                    unit="count",
+                )
+
+            return statistics
 
         except Exception as e:
             logger.error(
                 "Activity execution failed",
                 extra={
-                    "error_code": TemporalError.TEMPORAL_CLIENT_ACTIVITY_ERROR.code,
+                    "error_code": OrchestratorError.TEMPORAL_CLIENT_ACTIVITY_ERROR.code,
                     "error": str(e),
                 },
             )
-            raise TemporalError.TEMPORAL_CLIENT_ACTIVITY_ERROR
+            raise OrchestratorError.TEMPORAL_CLIENT_ACTIVITY_ERROR
