@@ -7,7 +7,7 @@ Read More: ./models/README.md
 
 from typing import Any, Dict, Optional, Type
 
-from application_sdk.common.logger_adaptors import get_logger
+from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.transformers.atlas import AtlasTransformer
 from application_sdk.transformers.common.utils import build_atlas_qualified_name
 
