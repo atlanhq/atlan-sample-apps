@@ -7,12 +7,14 @@ from application_sdk.activities import ActivitiesInterface
 from application_sdk.common.error_codes import ClientError, IOError, WorkflowError
 from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
 workflow.logger = get_logger(__name__)
 workflow.traces = get_traces()
+workflow.metrics = get_metrics()
 
 
 @workflow.defn
@@ -56,6 +58,20 @@ class HelloWorldWorkflow(WorkflowInterface):
             name: str = workflow_args.get("name", "John Doe")
             workflow.logger.info("Starting hello world workflow")
 
+            # Record metric for workflow start
+            workflow.metrics.record_metric(
+                name="hello_world_workflow_start",
+                value=1.0,
+                metric_type=MetricType.COUNTER,
+                labels={
+                    "workflow_id": workflow_id,
+                    "name": name,
+                    "workflow_type": "HelloWorldWorkflow",
+                },
+                description="Number of times hello world workflow is started",
+                unit="count",
+            )
+
             # Record trace for workflow execution
             workflow.traces.record_trace(
                 name="hello_world_workflow",
@@ -84,6 +100,22 @@ class HelloWorldWorkflow(WorkflowInterface):
                 # Wait for all activities to complete
                 await asyncio.gather(*activities)
                 workflow.logger.info("Hello world workflow completed")
+
+                # Record metric for workflow completion
+                workflow.metrics.record_metric(
+                    name="hello_world_workflow_complete",
+                    value=1.0,
+                    metric_type=MetricType.COUNTER,
+                    labels={
+                        "workflow_id": workflow_id,
+                        "name": name,
+                        "workflow_type": "HelloWorldWorkflow",
+                        "status": "success",
+                    },
+                    description="Number of times hello world workflow completes successfully",
+                    unit="count",
+                )
+
             except Exception as e:
                 workflow.logger.error(
                     "Failed to execute workflow activities",
@@ -91,6 +123,20 @@ class HelloWorldWorkflow(WorkflowInterface):
                         "error_code": WorkflowError.WORKFLOW_EXECUTION_ERROR.code,
                         "error": str(e),
                     },
+                )
+                # Record metric for workflow failure
+                workflow.metrics.record_metric(
+                    name="hello_world_workflow_complete",
+                    value=1.0,
+                    metric_type=MetricType.COUNTER,
+                    labels={
+                        "workflow_id": workflow_id,
+                        "name": name,
+                        "workflow_type": "HelloWorldWorkflow",
+                        "status": "failure",
+                    },
+                    description="Number of times hello world workflow fails",
+                    unit="count",
                 )
                 raise WorkflowError.WORKFLOW_EXECUTION_ERROR
 
