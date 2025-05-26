@@ -2,13 +2,12 @@ import asyncio
 from datetime import timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Sequence
 
+from activities import HelloWorldActivities
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.common.logger_adaptors import get_logger
 from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
-
-from activities import HelloWorldActivities
 
 workflow.logger = get_logger(__name__)
 

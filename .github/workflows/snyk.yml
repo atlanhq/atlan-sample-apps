@@ -1,0 +1,23 @@
+name: Test dependencies for security issues with Snyk
+
+on: 
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dependencies-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Test dependencies with Snyk
+      run: snyk test
+      env:
+        SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
+    
+    - name: Monitor dependencies for security issues with Snyk
+      run: snyk monitor
+      env:
+        SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}

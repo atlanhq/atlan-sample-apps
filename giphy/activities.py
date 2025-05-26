@@ -6,7 +6,6 @@ from typing import Any, Dict
 import requests
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.common.logger_adaptors import get_logger
-from application_sdk.inputs.statestore import StateStoreInput
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -116,4 +115,3 @@ class GiphyActivities(ActivitiesInterface):
             activity.logger.error(
                 f"Email failed to send to {', '.join(recipients)}: {e}"
             )
-

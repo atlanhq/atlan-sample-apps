@@ -1,10 +1,9 @@
 import asyncio
 from typing import Any, Dict
 
+from activities import AIGiphyActivities
 from application_sdk.application import BaseApplication
 from application_sdk.common.logger_adaptors import get_logger
-
-from activities import AIGiphyActivities
 from workflow import AIGiphyWorkflow
 
 APPLICATION_NAME = "ai_giphy"
@@ -23,9 +22,17 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
         workflow_classes=[AIGiphyWorkflow],
         activities_class=AIGiphyActivities,
         passthrough_modules=[
-            "requests", "urllib3", "httpx", "urllib.request", 
-            "langchain_openai", "langchain_core", "langchain", "langchainhub", 
-            "warnings", "os", "grpc"
+            "requests",
+            "urllib3",
+            "httpx",
+            "urllib.request",
+            "langchain_openai",
+            "langchain_core",
+            "langchain",
+            "langchainhub",
+            "warnings",
+            "os",
+            "grpc",
         ],
     )
 
