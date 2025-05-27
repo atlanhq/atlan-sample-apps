@@ -1,83 +1,101 @@
 import asyncio
+import time
+import uuid
 
 from activities import HelloWorldActivities
 from application_sdk.application import BaseApplication
 from application_sdk.common.error_codes import ApiError
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
-from application_sdk.observability.traces_adaptor import get_traces
+from application_sdk.observability.traces_adaptor import TracingContext, get_traces
 from workflow import HelloWorldWorkflow
-
-logger = get_logger(__name__)
-metrics = get_metrics()
-traces = get_traces()
 
 APPLICATION_NAME = "hello-world"
 
 
 async def main():
+    # Initialize observability components
+    logger = get_logger(__name__)
+    metrics = get_metrics()
+    traces = get_traces()
+
+    # Create tracing context
+    trace_id = str(uuid.uuid4())
+    root_span_id = str(uuid.uuid4())
+    start_time = time.time()
+
+    tracing = TracingContext(logger, metrics, traces, trace_id, root_span_id)
+
     try:
         logger.info("Starting hello world application")
-
-        # Record application startup metric
-        metrics.record_metric(
-            name="hello_world_application_startup",
-            value=1.0,
-            metric_type=MetricType.COUNTER,
-            labels={"application_name": APPLICATION_NAME, "status": "started"},
-            description="Application startup counter",
-            unit="count",
-        )
-
-        # Record trace for application startup
-        traces.record_trace(
-            name="hello_world_application_startup",
-            trace_id="app_startup",
-            span_id="main",
-            kind="INTERNAL",
-            status_code="OK",
-            attributes={
-                "application_name": APPLICATION_NAME,
-                "service.name": APPLICATION_NAME,
-                "service.version": "1.0.0",
-            },
-        )
 
         # initialize application
         app = BaseApplication(name=APPLICATION_NAME)
 
-        # setup workflow
-        await app.setup_workflow(
-            workflow_classes=[HelloWorldWorkflow],
-            activities_class=HelloWorldActivities,
+        # Execute startup operations with tracing
+        async with tracing.trace_operation("workflow_setup", "Setting up workflow"):
+            await app.setup_workflow(
+                workflow_classes=[HelloWorldWorkflow],
+                activities_class=HelloWorldActivities,
+            )
+
+        async with tracing.trace_operation("worker_start", "Starting worker"):
+            await app.start_worker()
+
+        async with tracing.trace_operation(
+            "server_setup", "Setting up application server"
+        ):
+            await app.setup_server(workflow_class=HelloWorldWorkflow)
+
+        async with tracing.trace_operation(
+            "server_start", "Starting application server"
+        ):
+            await app.start_server()
+
+        # Record overall startup metrics
+        total_duration = (time.time() - start_time) * 1000
+
+        metrics.record_metric(
+            name="application_startup_duration",
+            value=total_duration,
+            metric_type=MetricType.HISTOGRAM,
+            labels={"application": APPLICATION_NAME},
+            description="Application startup duration",
+            unit="milliseconds",
         )
 
-        # start worker
-        await app.start_worker()
+        # Record application startup trace
+        async with tracing.trace_operation(
+            operation_name="application_startup",
+            description="Application startup process",
+        ):
+            pass
 
-        # Setup the application server
-        await app.setup_server(workflow_class=HelloWorldWorkflow)
+        logger.info(f"Application started successfully in {total_duration:.2f}ms")
 
-        # Record server setup metric
+    except Exception as e:
+        total_duration = (time.time() - start_time) * 1000
+
+        # Record startup failure metrics and traces
         metrics.record_metric(
-            name="hello_world_server_setup",
-            value=1.0,
+            name="application_startup_failure",
+            value=1,
             metric_type=MetricType.COUNTER,
-            labels={"application_name": APPLICATION_NAME, "status": "ready"},
-            description="Server setup counter",
+            labels={"application": APPLICATION_NAME, "error": str(e)},
+            description="Application startup failures",
             unit="count",
         )
 
-        # start server
-        await app.start_server()
+        # Use trace_operation for error case
+        async with tracing.trace_operation(
+            operation_name="application_startup",
+            description="Application startup process",
+        ):
+            raise  # Re-raise the exception to trigger error handling in trace_operation
 
-    except Exception as e:
         logger.error(
-            "Application startup failed",
-            extra={
-                "error_code": ApiError.SERVER_START_ERROR.code,
-                "error": str(e),
-            },
+            f"Failed to start application: {str(e)}",
+            extra={"error_code": ApiError.SERVER_START_ERROR.code},
         )
         raise ApiError.SERVER_START_ERROR
 

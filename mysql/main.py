@@ -6,6 +6,8 @@ setting up the workflow, worker, and server components.
 """
 
 import asyncio
+import time
+import uuid
 
 from activities import SQLMetadataExtractionActivities
 from application_sdk.application.metadata_extraction.sql import (
@@ -15,7 +17,7 @@ from application_sdk.common.error_codes import ApiError
 from application_sdk.constants import APPLICATION_NAME
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
-from application_sdk.observability.traces_adaptor import get_traces
+from application_sdk.observability.traces_adaptor import TracingContext, get_traces
 from client import SQLClient
 from transformer import SQLAtlasTransformer
 from workflow import SQLMetadataExtractionWorkflow
@@ -26,32 +28,15 @@ traces = get_traces()
 
 
 async def main():
+    # Create tracing context
+    trace_id = str(uuid.uuid4())
+    root_span_id = str(uuid.uuid4())
+    start_time = time.time()
+
+    tracing = TracingContext(logger, metrics, traces, trace_id, root_span_id)
+
     try:
         logger.info("Starting SQL metadata extraction application")
-
-        # Record application startup metric
-        metrics.record_metric(
-            name="sql_metadata_extraction_application_startup",
-            value=1.0,
-            metric_type=MetricType.COUNTER,
-            labels={"application_name": APPLICATION_NAME, "status": "started"},
-            description="SQL metadata extraction application startup counter",
-            unit="count",
-        )
-
-        # Record trace for application startup
-        traces.record_trace(
-            name="sql_metadata_extraction_application_startup",
-            trace_id="app_startup",
-            span_id="main",
-            kind="INTERNAL",
-            status_code="OK",
-            attributes={
-                "application_name": APPLICATION_NAME,
-                "service.name": "sql-metadata-extraction",
-                "service.version": "1.0.0",
-            },
-        )
 
         # Initialize the application
         application = BaseSQLMetadataExtractionApplication(
@@ -60,40 +45,67 @@ async def main():
             transformer_class=SQLAtlasTransformer,
         )
 
-        # Setup the workflow
-        await application.setup_workflow(
-            workflow_classes=[SQLMetadataExtractionWorkflow],
-            activities_class=SQLMetadataExtractionActivities,
-        )
+        # Execute startup operations with tracing
+        async with tracing.trace_operation("workflow_setup", "Setting up workflow"):
+            await application.setup_workflow(
+                workflow_classes=[SQLMetadataExtractionWorkflow],
+                activities_class=SQLMetadataExtractionActivities,
+            )
 
-        # Start the worker
-        await application.start_worker()
+        async with tracing.trace_operation("worker_start", "Starting worker"):
+            await application.start_worker()
 
-        # Setup the application server
-        await application.setup_server(
-            workflow_class=SQLMetadataExtractionWorkflow,
-        )
+        async with tracing.trace_operation(
+            "server_setup", "Setting up application server"
+        ):
+            await application.setup_server(
+                workflow_class=SQLMetadataExtractionWorkflow,
+            )
 
-        # Record server setup metric
+        async with tracing.trace_operation(
+            "server_start", "Starting application server"
+        ):
+            await application.start_server()
+
+        # Record overall startup metrics
+        total_duration = (time.time() - start_time) * 1000
         metrics.record_metric(
-            name="sql_metadata_extraction_server_setup",
-            value=1.0,
+            name="application_startup_duration",
+            value=total_duration,
+            metric_type=MetricType.HISTOGRAM,
+            labels={"application": APPLICATION_NAME},
+            description="Application startup duration",
+            unit="milliseconds",
+        )
+
+        logger.info(f"Application started successfully in {total_duration:.2f}ms")
+
+    except Exception as e:
+        total_duration = (time.time() - start_time) * 1000
+
+        # Record startup failure metrics
+        metrics.record_metric(
+            name="application_startup_failure",
+            value=1,
             metric_type=MetricType.COUNTER,
-            labels={"application_name": APPLICATION_NAME, "status": "ready"},
-            description="SQL metadata extraction server setup counter",
+            labels={"application": APPLICATION_NAME, "error": str(e)},
+            description="Application startup failures",
             unit="count",
         )
 
-        # Start the application server
-        await application.start_server()
+        # Record failure duration
+        metrics.record_metric(
+            name="application_startup_duration",
+            value=total_duration,
+            metric_type=MetricType.HISTOGRAM,
+            labels={"application": APPLICATION_NAME, "status": "failure"},
+            description="Application startup duration",
+            unit="milliseconds",
+        )
 
-    except Exception as e:
         logger.error(
-            "Application startup failed",
-            extra={
-                "error_code": ApiError.SERVER_START_ERROR.code,
-                "error": str(e),
-            },
+            f"Failed to start application: {str(e)}",
+            extra={"error_code": ApiError.SERVER_START_ERROR.code},
         )
         raise ApiError.SERVER_START_ERROR
 

@@ -5,8 +5,8 @@ from application_sdk.common.error_codes import (
     OrchestratorError,
 )
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
-from application_sdk.observability.traces_adaptor import get_traces
+from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.traces_adaptor import TracingContext, get_traces
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -18,6 +18,15 @@ activity.metrics = get_metrics()
 class HelloWorldActivities(ActivitiesInterface):
     @activity.defn
     async def say_hello(self, name: str) -> str:
+        # Create tracing context for this activity
+        tracing = TracingContext(
+            logger=activity.logger,
+            metrics=activity.metrics,
+            traces=activity.traces,
+            trace_id=activity.info().workflow_id,
+            parent_span_id=activity.info().activity_id,
+        )
+
         try:
             if not name or not isinstance(name, str):
                 logger.error(
@@ -28,44 +37,22 @@ class HelloWorldActivities(ActivitiesInterface):
 
             activity.logger.info(f"Saying hello to {name}")
 
-            # Record metric for activity execution
-            activity.metrics.record_metric(
-                name="hello_world_activity_execution",
-                value=1.0,
-                metric_type=MetricType.COUNTER,
-                labels={"activity_type": "say_hello", "name": name},
-                description="Number of times say_hello activity is executed",
-                unit="count",
-            )
-
-            # Record trace for activity execution
-            activity.traces.record_trace(
-                name="say_hello_activity",
-                trace_id=activity.info().workflow_id,
-                span_id=activity.info().activity_id,
-                kind="INTERNAL",
-                status_code="OK",
-                attributes={
-                    "workflow_id": activity.info().workflow_id,
-                    "activity_id": activity.info().activity_id,
-                    "name": name,
-                    "activity_type": "say_hello",
-                    "service.name": "hello-world",
-                    "service.version": "1.0.0",
-                },
-            )
-
-            try:
-                return f"Hello, {name}!"
-            except Exception as e:
-                logger.error(
-                    "Failed to generate greeting",
-                    extra={
-                        "error_code": ActivityError.ACTIVITY_END_ERROR.code,
-                        "error": str(e),
-                    },
-                )
-                raise ActivityError.ACTIVITY_END_ERROR
+            # Use tracing context for the activity execution
+            async with tracing.trace_operation(
+                operation_name="say_hello_activity",
+                description=f"Executing say_hello activity for {name}",
+            ):
+                try:
+                    return f"Hello, {name}!"
+                except Exception as e:
+                    logger.error(
+                        "Failed to generate greeting",
+                        extra={
+                            "error_code": ActivityError.ACTIVITY_END_ERROR.code,
+                            "error": str(e),
+                        },
+                    )
+                    raise ActivityError.ACTIVITY_END_ERROR
 
         except Exception as e:
             logger.error(

@@ -6,6 +6,7 @@ Note:
 """
 
 import asyncio
+import time
 from typing import Any, Callable, Dict, List
 
 from activities import SQLMetadataExtractionActivities
@@ -13,7 +14,7 @@ from application_sdk.common.error_codes import ClientError, IOError, WorkflowErr
 from application_sdk.inputs.statestore import StateStoreInput
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import MetricType, get_metrics
-from application_sdk.observability.traces_adaptor import get_traces
+from application_sdk.observability.traces_adaptor import TracingContext, get_traces
 from application_sdk.workflows.metadata_extraction.sql import (
     BaseSQLMetadataExtractionWorkflow,
 )
@@ -34,6 +35,9 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
 
         :param workflow_args: The workflow arguments.
         """
+        start_time = time.time()
+        workflow_id = None
+
         try:
             if not workflow_config or "workflow_id" not in workflow_config:
                 workflow.logger.error(
@@ -43,10 +47,23 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
                 raise ClientError.REQUEST_VALIDATION_ERROR
 
             workflow_id = workflow_config["workflow_id"]
+
+            # Create tracing context
+            tracing = TracingContext(
+                workflow.logger,
+                workflow.metrics,
+                workflow.traces,
+                trace_id=workflow_id,
+                root_span_id=f"{workflow_id}_main",
+            )
+
             try:
-                workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
-                    workflow_id
-                )
+                async with tracing.trace_operation(
+                    "extract_config", "Extracting workflow configuration"
+                ):
+                    workflow_args: Dict[str, Any] = (
+                        StateStoreInput.extract_configuration(workflow_id)
+                    )
             except Exception as e:
                 workflow.logger.error(
                     "Failed to extract workflow configuration",
@@ -85,54 +102,43 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
             output_path = f"{output_prefix}/{workflow_id}/{workflow_run_id}"
             workflow_args["output_path"] = output_path
 
-            # Record trace for workflow execution
-            workflow.traces.record_trace(
-                name="sql_metadata_extraction_workflow",
-                trace_id=workflow_id,
-                span_id=f"{workflow_id}_main",
-                kind="INTERNAL",
-                status_code="OK",
-                attributes={
-                    "workflow_id": workflow_id,
-                    "workflow_run_id": workflow_run_id,
-                    "output_path": output_path,
-                    "workflow_type": "SQLMetadataExtractionWorkflow",
-                    "service.name": "sql-metadata-extraction",
-                    "service.version": "1.0.0",
-                },
-            )
+            async with tracing.trace_operation(
+                "preflight_check", "Running preflight check"
+            ):
+                await workflow.execute_activity_method(
+                    self.activities_cls.preflight_check,
+                    workflow_args,
+                    retry_policy=retry_policy,
+                    start_to_close_timeout=self.default_start_to_close_timeout,
+                    heartbeat_timeout=self.default_heartbeat_timeout,
+                )
 
-            await workflow.execute_activity_method(
-                self.activities_cls.preflight_check,
-                workflow_args,
-                retry_policy=retry_policy,
-                start_to_close_timeout=self.default_start_to_close_timeout,
-                heartbeat_timeout=self.default_heartbeat_timeout,
-            )
-
-            fetch_and_transforms = [
-                self.fetch_and_transform(
-                    self.activities_cls.fetch_databases,
-                    workflow_args,
-                    retry_policy,
-                ),
-                self.fetch_and_transform(
-                    self.activities_cls.fetch_schemas,
-                    workflow_args,
-                    retry_policy,
-                ),
-                self.fetch_and_transform(
-                    self.activities_cls.fetch_tables,
-                    workflow_args,
-                    retry_policy,
-                ),
-                self.fetch_and_transform(
-                    self.activities_cls.fetch_columns,
-                    workflow_args,
-                    retry_policy,
-                ),
-            ]
-            await asyncio.gather(*fetch_and_transforms)
+            async with tracing.trace_operation(
+                "fetch_and_transform", "Fetching and transforming data"
+            ):
+                fetch_and_transforms = [
+                    self.fetch_and_transform(
+                        self.activities_cls.fetch_databases,
+                        workflow_args,
+                        retry_policy,
+                    ),
+                    self.fetch_and_transform(
+                        self.activities_cls.fetch_schemas,
+                        workflow_args,
+                        retry_policy,
+                    ),
+                    self.fetch_and_transform(
+                        self.activities_cls.fetch_tables,
+                        workflow_args,
+                        retry_policy,
+                    ),
+                    self.fetch_and_transform(
+                        self.activities_cls.fetch_columns,
+                        workflow_args,
+                        retry_policy,
+                    ),
+                ]
+                await asyncio.gather(*fetch_and_transforms)
 
             # Record workflow completion metric
             workflow.metrics.record_metric(
@@ -148,7 +154,39 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
                 unit="count",
             )
 
+            # Record workflow duration
+            total_duration = (time.time() - start_time) * 1000
+            workflow.metrics.record_metric(
+                name="sql_metadata_extraction_workflow_duration",
+                value=total_duration,
+                metric_type=MetricType.HISTOGRAM,
+                labels={
+                    "workflow_id": workflow_id,
+                    "workflow_run_id": workflow_run_id,
+                    "status": "success",
+                },
+                description="Workflow execution duration",
+                unit="milliseconds",
+            )
+
         except Exception as e:
+            if workflow_id:
+                total_duration = (time.time() - start_time) * 1000
+                workflow.metrics.record_metric(
+                    name="sql_metadata_extraction_workflow_duration",
+                    value=total_duration,
+                    metric_type=MetricType.HISTOGRAM,
+                    labels={
+                        "workflow_id": workflow_id,
+                        "workflow_run_id": workflow.info().run_id
+                        if workflow.info()
+                        else "unknown",
+                        "status": "failure",
+                    },
+                    description="Workflow execution duration",
+                    unit="milliseconds",
+                )
+
             workflow.logger.error(
                 "Workflow execution failed",
                 extra={
