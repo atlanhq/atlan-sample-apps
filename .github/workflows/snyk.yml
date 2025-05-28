@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: snyk/actions/setup@master
     - name: Test dependencies with Snyk
-      run: snyk test --all-projects
+      run: snyk test
       env:
         SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
 
