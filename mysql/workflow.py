@@ -6,11 +6,11 @@ Note:
 """
 
 import asyncio
+from datetime import timedelta
 from typing import Any, Callable, Dict, List
 
 from activities import SQLMetadataExtractionActivities
-from application_sdk.common.logger_adaptors import get_logger
-from application_sdk.inputs.statestore import StateStoreInput
+from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows.metadata_extraction.sql import (
     BaseSQLMetadataExtractionWorkflow,
 )
@@ -30,8 +30,10 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
         :param workflow_args: The workflow arguments.
         """
         workflow_id = workflow_config["workflow_id"]
-        workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
-            workflow_id
+        workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
+            self.activities_cls.get_workflow_args,
+            workflow_config,
+            start_to_close_timeout=timedelta(seconds=10),
         )
 
         workflow_run_id = workflow.info().run_id
@@ -92,6 +94,7 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
             List[Callable[..., Any]]: A list of activity methods that can be executed by the workflow.
         """
         return [
+            activities.get_workflow_args,
             activities.preflight_check,
             activities.fetch_databases,
             activities.fetch_schemas,

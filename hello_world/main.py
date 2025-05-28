@@ -1,9 +1,8 @@
 import asyncio
 
-from application_sdk.application import BaseApplication
-from application_sdk.common.logger_adaptors import get_logger
-
 from activities import HelloWorldActivities
+from application_sdk.application import BaseApplication
+from application_sdk.observability.logger_adaptor import get_logger
 from workflow import HelloWorldWorkflow
 
 logger = get_logger(__name__)

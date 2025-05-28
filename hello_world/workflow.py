@@ -2,13 +2,11 @@ import asyncio
 from datetime import timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Sequence
 
+from activities import HelloWorldActivities
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
-from application_sdk.inputs.statestore import StateStoreInput
+from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
-
-from activities import HelloWorldActivities
 
 workflow.logger = get_logger(__name__)
 
@@ -26,11 +24,14 @@ class HelloWorldWorkflow(WorkflowInterface):
         Returns:
             None
         """
-        workflow_id = workflow_config["workflow_id"]
-        workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
-            workflow_id
-        )
         activities_instance = HelloWorldActivities()
+
+        # Get the workflow configuration from the state store
+        workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
+            activities_instance.get_workflow_args,
+            workflow_config,
+            start_to_close_timeout=timedelta(seconds=10),
+        )
 
         name: str = workflow_args.get("name", "John Doe")
         workflow.logger.info("Starting hello world workflow")
@@ -64,4 +65,5 @@ class HelloWorldWorkflow(WorkflowInterface):
 
         return [
             activities.say_hello,
+            activities.get_workflow_args,
         ]

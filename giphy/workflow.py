@@ -1,15 +1,12 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
-from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
-from application_sdk.inputs.statestore import StateStoreInput
-from application_sdk.workflows import WorkflowInterface
-from temporalio import workflow
-
 # Import GiphyActivities outside of the workflow code
 from activities import GiphyActivities
-
+from application_sdk.activities import ActivitiesInterface
+from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.workflows import WorkflowInterface
+from temporalio import workflow
 
 workflow.logger = get_logger(__name__)
 
@@ -27,12 +24,13 @@ class GiphyWorkflow(WorkflowInterface):
         Returns:
             None
         """
-        workflow_id = workflow_config["workflow_id"]
-        workflow_args: Dict[str, Any] = StateStoreInput.extract_configuration(
-            workflow_id
-        )
-
         activities_instance = GiphyActivities()
+
+        workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
+            activities_instance.get_workflow_args,
+            workflow_config,
+            start_to_close_timeout=timedelta(seconds=10),
+        )
 
         search_term: str = workflow_args.get("search_term", "funny cat")
         recipients: str = workflow_args.get("recipients")  # pyright: ignore[reportAssignmentType]
@@ -72,4 +70,5 @@ class GiphyWorkflow(WorkflowInterface):
         return [
             activities.fetch_gif,
             activities.send_email,
+            activities.get_workflow_args,
         ]

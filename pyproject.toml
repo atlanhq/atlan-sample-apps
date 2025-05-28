@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc5",
+    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc7",
     "poethepoet"
 ]
 
@@ -55,3 +55,8 @@ packages = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+
+[tool.uv.sources]
+# atlan-application-sdk = { path = "../application-sdk", editable = true }
+# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "28b009f18069b1e7a78459fc7b5439854c1d3bba" }
