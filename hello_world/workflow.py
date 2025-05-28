@@ -40,12 +40,19 @@ class HelloWorldWorkflow(WorkflowInterface):
             workflow.execute_activity(  # pyright: ignore[reportUnknownMemberType]
                 activities_instance.say_hello,
                 name,
-                start_to_close_timeout=timedelta(seconds=1000),
+                start_to_close_timeout=timedelta(seconds=5),
             )
         ]
 
         # Wait for all activities to complete
         await asyncio.gather(*activities)
+
+        await workflow.execute_activity(
+            activities_instance.say_hello_sync,
+            name,
+            start_to_close_timeout=timedelta(seconds=5),
+        )
+
         workflow.logger.info("Hello world workflow completed")
 
     @staticmethod
@@ -65,5 +72,6 @@ class HelloWorldWorkflow(WorkflowInterface):
 
         return [
             activities.say_hello,
+            activities.say_hello_sync,
             activities.get_workflow_args,
         ]

@@ -8,6 +8,7 @@ A simple starter application demonstrating how to build apps with Application SD
 - Simple web interface to input your name
 - Real-time workflow status tracking
 - Integration with Temporal for workflow management
+- Demonstrates the use of both async and sync activities in a workflow
 - Example of basic workflow implementation
 
 ## Usage

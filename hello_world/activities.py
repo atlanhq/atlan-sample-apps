@@ -9,5 +9,10 @@ activity.logger = logger
 class HelloWorldActivities(ActivitiesInterface):
     @activity.defn
     async def say_hello(self, name: str) -> str:
-        activity.logger.info(f"Saying hello to {name}")
+        logger.info(f"Saying hello to {name}")
+        return f"Hello, {name}!"
+
+    @activity.defn
+    def say_hello_sync(self, name: str) -> str:
+        logger.info(f"Saying hello to {name}")
         return f"Hello, {name}!"
