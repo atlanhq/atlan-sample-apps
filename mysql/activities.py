@@ -13,8 +13,8 @@ from application_sdk.activities.metadata_extraction.sql import (
     BaseSQLMetadataExtractionActivities,
     BaseSQLMetadataExtractionActivitiesState,
 )
-from application_sdk.common.logger_adaptors import get_logger
 from application_sdk.common.utils import prepare_query
+from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
 logger = get_logger(__name__)

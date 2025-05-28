@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 import requests
-from application_sdk.common.logger_adaptors import get_logger
+from application_sdk.observability.logger_adaptor import get_logger
 from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_tool_calling_agent

@@ -1,5 +1,5 @@
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
+from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
 logger = get_logger(__name__)

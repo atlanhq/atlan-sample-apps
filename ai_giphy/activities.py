@@ -3,7 +3,7 @@ from typing import Any, Dict
 # Assuming ai_agent.py is in the same directory
 from ai_agent import get_chain
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.common.logger_adaptors import get_logger
+from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
 logger = get_logger(__name__)
