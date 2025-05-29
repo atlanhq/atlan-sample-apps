@@ -13,6 +13,9 @@ jobs:
   dependencies-check:
     runs-on: ubuntu-latest
     steps:
+    - name: Install uv
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
     - name: create requirements.txt
       run: uv pip compile --output-file requirements.txt
 
