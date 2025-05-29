@@ -18,11 +18,11 @@ jobs:
     - name: Install uv
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-    - name: Install dependencies
-      run: uv sync --all-extras
-
     - name: create requirements.txt
       run: uv pip compile pyproject.toml -o requirements.txt
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
 
     - uses: snyk/actions/setup@master
     - name: Test dependencies with Snyk
