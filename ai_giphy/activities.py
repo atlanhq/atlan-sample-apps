@@ -23,11 +23,11 @@ class AIGiphyActivities(ActivitiesInterface):
             Dict[str, Any]: The output from the AI agent.
         """
         try:
-            activity.logger.info(f"Received input for AI agent: {input_string}")
+            logger.info(f"Received input for AI agent: {input_string}")
             chain = get_chain()
             result = chain.invoke({"input": input_string})
-            activity.logger.info(f"AI agent execution successful. Output: {result}")
+            logger.info(f"AI agent execution successful. Output: {result}")
             return result
         except Exception as e:
-            activity.logger.error(f"Error running AI agent: {e}")
+            logger.error(f"Error running AI agent: {e}")
             raise e

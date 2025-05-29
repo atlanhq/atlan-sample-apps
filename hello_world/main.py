@@ -2,14 +2,22 @@ import asyncio
 
 from activities import HelloWorldActivities
 from application_sdk.application import BaseApplication
+from application_sdk.observability.decorators.observability_decorator import (
+    observability,
+)
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.traces_adaptor import get_traces
 from workflow import HelloWorldWorkflow
 
 logger = get_logger(__name__)
+metrics = get_metrics()
+traces = get_traces()
 
 APPLICATION_NAME = "hello-world"
 
 
+@observability(logger=logger, metrics=metrics, traces=traces)
 async def main():
     logger.info("Starting hello world application")
     # initialize application

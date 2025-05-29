@@ -8,7 +8,8 @@ from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
-workflow.logger = get_logger(__name__)
+logger = get_logger(__name__)
+workflow.logger = logger
 
 
 @workflow.defn
@@ -41,7 +42,7 @@ class GiphyWorkflow(WorkflowInterface):
             search_term,
             start_to_close_timeout=timedelta(seconds=10),
         )
-        workflow.logger.info(f"Fetched GIF: {gif_url}")
+        logger.info(f"Fetched GIF: {gif_url}")
 
         # Step 2: Send the email with the GIF
         await workflow.execute_activity(
@@ -50,7 +51,7 @@ class GiphyWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
-        workflow.logger.info("Giphy workflow completed")
+        logger.info("Giphy workflow completed")
 
     @staticmethod
     def get_activities(activities: ActivitiesInterface) -> Sequence[Callable[..., Any]]:

@@ -10,7 +10,12 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, List
 
 from activities import SQLMetadataExtractionActivities
+from application_sdk.observability.decorators.observability_decorator import (
+    observability,
+)
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.workflows.metadata_extraction.sql import (
     BaseSQLMetadataExtractionWorkflow,
 )
@@ -18,10 +23,14 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 logger = get_logger(__name__)
+workflow.logger = logger
+metrics = get_metrics()
+traces = get_traces()
 
 
 @workflow.defn
 class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
+    @observability(logger=logger, metrics=metrics, traces=traces)
     @workflow.run
     async def run(self, workflow_config: Dict[str, Any]):
         """
@@ -39,7 +48,7 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
         workflow_run_id = workflow.info().run_id
         workflow_args["workflow_run_id"] = workflow_run_id
 
-        workflow.logger.info(f"Starting extraction workflow for {workflow_id}")
+        logger.info(f"Starting extraction workflow for {workflow_id}")
         retry_policy = RetryPolicy(
             maximum_attempts=6,
             backoff_coefficient=2,
