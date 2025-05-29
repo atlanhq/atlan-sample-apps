@@ -13,10 +13,13 @@ jobs:
   dependencies-check:
     runs-on: ubuntu-latest
     steps:
+    - name: create requirements.txt
+      run: uv pip compile --output-file requirements.txt
+
     - uses: actions/checkout@v2
     - uses: snyk/actions/setup@master
     - name: Test dependencies with Snyk
-      run: snyk test
+      run: snyk test --file=requirements.txt
       env:
         SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
 
