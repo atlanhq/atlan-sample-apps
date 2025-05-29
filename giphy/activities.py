@@ -41,10 +41,10 @@ class GiphyActivities(ActivitiesInterface):
             response.raise_for_status()
             data = response.json()
             gif_url = data["data"]["images"]["original"]["url"]
-            activity.logger.info(f"Fetched GIF: {gif_url}")
+            logger.info(f"Fetched GIF: {gif_url}")
             return gif_url
         except Exception as e:
-            activity.logger.error(f"Failed to fetch GIF: {e}")
+            logger.error(f"Failed to fetch GIF: {e}")
             return "https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"  # Fallback GIF
 
     @activity.defn
@@ -75,7 +75,7 @@ class GiphyActivities(ActivitiesInterface):
         ]
 
         if not recipients:
-            activity.logger.error("No valid recipients provided")
+            logger.error("No valid recipients provided")
             raise ValueError("No valid recipients provided")
 
         sender = "support@atlan.app"
@@ -96,9 +96,7 @@ class GiphyActivities(ActivitiesInterface):
         msg["To"] = ", ".join(recipients)
 
         try:
-            activity.logger.info(
-                f"Sending email to {', '.join(recipients)} with GIF: {gif_url}"
-            )
+            logger.info(f"Sending email to {', '.join(recipients)} with GIF: {gif_url}")
 
             host = SMTP_HOST
             port = SMTP_PORT
@@ -110,8 +108,6 @@ class GiphyActivities(ActivitiesInterface):
                 server.login(username, password)  # pyright: ignore[reportArgumentType]
                 server.send_message(msg)
 
-            activity.logger.info(f"Email successfully sent to {', '.join(recipients)}")
+            logger.info(f"Email successfully sent to {', '.join(recipients)}")
         except Exception as e:
-            activity.logger.error(
-                f"Email failed to send to {', '.join(recipients)}: {e}"
-            )
+            logger.error(f"Email failed to send to {', '.join(recipients)}: {e}")

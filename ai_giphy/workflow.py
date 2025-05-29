@@ -7,7 +7,8 @@ from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
-workflow.logger = get_logger(__name__)
+logger = get_logger(__name__)
+workflow.logger = logger
 
 
 @workflow.defn
@@ -37,9 +38,7 @@ class AIGiphyWorkflow(WorkflowInterface):
             "ai_input_string", "Fetch a cat gif and send it to test@example.com"
         )
 
-        workflow.logger.info(
-            f"Starting AI Giphy workflow with input: {ai_input_string}"
-        )
+        logger.info(f"Starting AI Giphy workflow with input: {ai_input_string}")
 
         # Execute the AI agent activity
         agent_output = await workflow.execute_activity(
@@ -50,8 +49,7 @@ class AIGiphyWorkflow(WorkflowInterface):
             ),  # Increased timeout for potentially longer AI tasks
         )
 
-        workflow.logger.info(f"AI Agent activity completed. Output: {agent_output}")
-        workflow.logger.info("AI Giphy workflow completed successfully")
+        logger.info(f"AI Agent activity completed. Output: {agent_output}")
 
     @staticmethod
     def get_activities(activities: ActivitiesInterface) -> Sequence[Callable[..., Any]]:

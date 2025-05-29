@@ -22,14 +22,15 @@ from application_sdk.workflows.metadata_extraction.sql import (
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
-workflow.logger = get_logger(__name__)
+logger = get_logger(__name__)
+workflow.logger = logger
 metrics = get_metrics()
 traces = get_traces()
 
 
 @workflow.defn
 class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
-    @observability(logger=workflow.logger, metrics=metrics, traces=traces)
+    @observability(logger=logger, metrics=metrics, traces=traces)
     @workflow.run
     async def run(self, workflow_config: Dict[str, Any]):
         """
@@ -47,7 +48,7 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
         workflow_run_id = workflow.info().run_id
         workflow_args["workflow_run_id"] = workflow_run_id
 
-        workflow.logger.info(f"Starting extraction workflow for {workflow_id}")
+        logger.info(f"Starting extraction workflow for {workflow_id}")
         retry_policy = RetryPolicy(
             maximum_attempts=6,
             backoff_coefficient=2,
