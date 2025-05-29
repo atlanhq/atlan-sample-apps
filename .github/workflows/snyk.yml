@@ -17,7 +17,7 @@ jobs:
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
     - name: create requirements.txt
-      run: uv pip compile --output-file requirements.txt
+      run: uv pip compile pyproject.toml -o requirements.txt
 
     - uses: actions/checkout@v2
     - uses: snyk/actions/setup@master
