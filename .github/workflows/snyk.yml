@@ -13,13 +13,14 @@ jobs:
   dependencies-check:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
+
     - name: Install uv
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
     - name: create requirements.txt
       run: uv pip compile pyproject.toml -o requirements.txt
 
-    - uses: actions/checkout@v2
     - uses: snyk/actions/setup@master
     - name: Test dependencies with Snyk
       run: snyk test --file=requirements.txt
