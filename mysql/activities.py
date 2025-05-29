@@ -14,13 +14,22 @@ from application_sdk.activities.metadata_extraction.sql import (
     BaseSQLMetadataExtractionActivitiesState,
 )
 from application_sdk.common.utils import prepare_query
+from application_sdk.observability.decorators.observability_decorator import (
+    observability,
+)
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.traces_adaptor import get_traces
 from temporalio import activity
 
 logger = get_logger(__name__)
+activity.logger = logger
+metrics = get_metrics()
+traces = get_traces()
 
 
 class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
+    @observability(logger=logger, metrics=metrics, traces=traces)
     @activity.defn
     @auto_heartbeater
     async def fetch_columns(
