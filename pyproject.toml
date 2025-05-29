@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc9",
+    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc10",
     "poethepoet"
 ]
 
@@ -32,10 +32,10 @@ test = [
 ]
 
 [tool.poe.tasks]
-download-components = "python scripts/download_components.py --ref v0.1.1rc5"
+download-components = "python scripts/download_components.py --ref v0.1.1rc10"
 
 # Dapr and Temporal service tasks
-start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components"
+start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --resources-path components"
 start-temporal = "temporal server start-dev --db-filename /tmp/temporal.db"
 start-deps.shell = "poe start-dapr & poe start-temporal &"
 stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || true"
@@ -59,4 +59,4 @@ build-backend = "hatchling.build"
 
 [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
-# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "28b009f18069b1e7a78459fc7b5439854c1d3bba" }
+# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "28e44136a73e923423fb19a7f3d2a802b75e19c6" }

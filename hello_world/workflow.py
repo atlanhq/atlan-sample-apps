@@ -4,15 +4,21 @@ from typing import Any, Callable, Coroutine, Dict, List, Sequence
 
 from activities import HelloWorldActivities
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.observability.decorators.observability_decorator import observability
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
 workflow.logger = get_logger(__name__)
+metrics = get_metrics()
+traces = get_traces()
 
 
 @workflow.defn
 class HelloWorldWorkflow(WorkflowInterface):
+    @observability(logger=workflow.logger, metrics=metrics, traces=traces)
     @workflow.run
     async def run(self, workflow_config: Dict[str, Any]) -> None:
         """
