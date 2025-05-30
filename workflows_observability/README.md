@@ -37,8 +37,9 @@ export ATLAN_API_KEY="..."
 ```mermaid
 graph TD
     A[main.py] --> B[workflow.py]
-    A --> C[activities.py]
+    B --> C[activities.py]
     C --> D[atlan_helpers.py]
+    A --> C
 ```
 
 ```
