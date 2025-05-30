@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflows Observability</title>
+
+    <!-- Fonts & Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h2>Workflows Observability</h2>
+        <form id="nameForm">
+          <label for="workflow_date">Extract workflows from:</label>
+          <input
+            type="text"
+            id="workflow_date"
+            name="workflow_date"
+            placeholder="Select a date"
+            required
+          />
+
+          <label for="output_option">Output Option</label>
+          <div id="output_option" style="text-align: left;">
+            <label>
+              <input type="radio" name="outputOption" value="Local" checked /> Local
+            </label>
+          </div>
+
+          <button id="runWorkflowButton" type="submit">Run Workflow</button>
+        </form>
+
+        <a
+          id="temporal-link"
+          href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows"
+          target="_blank"
+        >Open Temporal UI →</a>
+      </div>
+
+      <div id="successModal" class="modal">
+        <div class="modal-content">
+          <div class="success-icon">✓</div>
+          <h3>Workflow Started</h3>
+          <p>The workflow has been successfully triggered.</p>
+          <a
+            id="dashboard-link"
+            class="btn-primary"
+            target="_blank"
+            href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows"
+          >Go to Temporal UI</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize calendar
+        flatpickr("#workflow_date", {
+          dateFormat: "Y-m-d"
+        });
+
+        // Bind form submission
+        const form = document.getElementById("nameForm");
+        if (form) {
+          form.addEventListener("submit", async function handleSubmit(event) {
+            event.preventDefault();
+            console.log("Form submitted!");
+
+            const dateInput = document.getElementById("workflow_date").value;
+            const outputType = document.querySelector('input[name="outputOption"]:checked')?.value;
+            const runButton = document.getElementById("runWorkflowButton");
+            const resultDiv = document.getElementById("successModal");
+
+            if (!dateInput) {
+              alert("Please select a valid date.");
+              return;
+            }
+
+            runButton.textContent = "Submitting... 🚀";
+            runButton.disabled = true;
+
+            try {
+              const response = await fetch("/workflows/v1/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  selectedDate: dateInput,
+                  outputType
+                }),
+              });
+
+              if (response.ok) {
+                runButton.textContent = "Submitted! 🎉";
+                resultDiv.classList.add("show");
+              } else {
+                throw new Error("Submission failed");
+              }
+            } catch (error) {
+              console.error(error);
+              runButton.textContent = "Try Again 🔄";
+              runButton.classList.add("error");
+            } finally {
+              setTimeout(() => {
+                runButton.disabled = false;
+                runButton.textContent = "Submit";
+                runButton.classList.remove("error");
+                resultDiv.classList.remove("show");
+              }, 5000);
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
