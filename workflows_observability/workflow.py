@@ -57,7 +57,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
 
         Args:
             activities (ActivitiesInterface): The activities instance
-                containing the hello world operations.
+                containing the workflow observability operations.
 
         Returns:
             Sequence[Callable[..., Any]]: A sequence of activity methods to be executed
