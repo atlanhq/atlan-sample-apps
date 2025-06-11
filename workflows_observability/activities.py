@@ -1,4 +1,4 @@
-from helpers import get_atlan_client, save_result_locally
+from helpers import get_atlan_client, save_result_locally, save_result_object_storage
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
@@ -11,7 +11,7 @@ activity.logger = logger
 
 class WorkflowsObservabilityActivities(ActivitiesInterface):
     @activity.defn
-    async def fetch_workflows_run(self, args: tuple[str, str]) -> dict:
+    async def fetch_workflows_run(self, args: tuple[str, str, str]) -> dict:
         """
         Fetch workflow runs from Atlan within a time range, based on a selected date and output type.
         If output_type is 'Local', the workflow run results are stored as JSON files under /tmp/workflows.
@@ -20,6 +20,7 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             args (tuple[str, str]): A tuple containing:
                 - selected_date (str): A date string in 'YYYY-MM-DD' format to calculate the time range.
                 - output_type (str): Type of output, e.g. 'Local'.
+                - output_prefix (str): The directory path or prefix under which extracted data will be stored in the object storage.
 
         Returns:
             dict: Not used, but required by Temporal activities API.
@@ -28,11 +29,13 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             Exception: If fetching or processing workflows fails.
         """
         try:
-            selected_date, output_type = args
+            selected_date, output_type, output_prefix = args
 
             if output_type == "Local":
                 local_directory = "/tmp/workflows"
-                os.makedirs(local_directory, exist_ok=True)
+            elif output_type == "Object Storage":
+                local_directory = output_prefix
+            os.makedirs(local_directory, exist_ok=True)
 
             logger.info(f"Fetching Atlan workflows since: {selected_date}")
 
@@ -50,8 +53,10 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             )
 
             for result in results:
-                if output_type == "Local":
-                    save_result_locally(result, local_directory)
+                save_result_locally(result, local_directory)
+            
+            if output_type == "Object Storage":
+                await save_result_object_storage("", local_directory)
 
         except Exception as e:
             logger.error(f"Failed to process workflows: {str(e)}", exc_info=e)
