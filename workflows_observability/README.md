@@ -28,6 +28,28 @@ export ATLAN_BASE_URL=https://tenant.atlan.com
 export ATLAN_API_KEY="..."
 ```
 
+If you plan to export to an object storage service, make sure to update the Dapr `components/objectstore.yaml` file accordingly. For example, if you're using Amazon S3, use the following configuration:"
+```yaml
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: objectstore
+spec:
+  type: bindings.aws.s3
+  version: v1
+  metadata:
+    - name: bucket
+      value: "<BUCKET NAME>"
+    - name: region
+      value: "<BUCKET REGION>"
+    - name: accessKey
+      value: "<AWS ACCESS KEY>"
+    - name: secretKey
+      value: "<AWS SECRET KEY>"
+    - name: decodeBase64
+      value: "false"
+```
+
 ### Access the Application
 -   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
 -   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.

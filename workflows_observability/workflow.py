@@ -26,6 +26,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
                 used to initialize the workflow. Expected keys include:
                 - "selectedDate" (str): The reference date (in 'YYYY-MM-DD') for retrieving workflow runs.
                 - "outputType" (str): The target destination for output data (e.g., "Local").
+                - "outputPrefix" (str): The directory path or prefix under which extracted data will be stored in the object storage.
 
         Returns:
             None
@@ -40,15 +41,16 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
 
         selected_date: str = workflow_args.get("selectedDate", "atlan-snowflake-miner-1743729606")
         output_type: str = workflow_args.get("outputType", "Local")
+        output_prefix: str = workflow_args.get("outputPrefix", "")
         workflow.logger.info("Starting workflows observability workflow")
 
         # Process workflow runs    
         await workflow.execute_activity(
             "fetch_workflows_run",
-            (selected_date, output_type),
+            (selected_date, output_type, output_prefix),
             start_to_close_timeout=timedelta(seconds=3600),
         )
-
+            
         workflow.logger.info("Workflows observability workflow completed")
 
     @staticmethod
