@@ -19,7 +19,7 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 
 3. Install dependencies:
    ```bash
-   uv sync --all-groups --all-extras
+   uv sync --all-groups
    ```
 
 3. Download required components:
