@@ -1,22 +1,18 @@
 import asyncio
 import json
 import os
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Type, cast
+from datetime import datetime
 
 from dapr import clients
-from temporalio import activity, workflow
 
-from application_sdk.activities import ActivitiesInterface
 from application_sdk.application import BaseApplication
 from application_sdk.clients.utils import get_workflow_client
-from application_sdk.constants import APPLICATION_NAME
+from application_sdk.constants import APPLICATION_NAME, PUBSUB_NAME
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.outputs.eventstore import (
     ApplicationEventNames,
     Event,
     EventMetadata,
-    EventStore,
     EventTypes,
     WorkflowStates,
 )
@@ -100,7 +96,7 @@ async def simulate_worklflow_end_event():
     )
     with clients.DaprClient() as client:
         client.publish_event(
-            pubsub_name=EventStore.EVENT_STORE_NAME,
+            pubsub_name=PUBSUB_NAME,
             topic_name=event.get_topic_name(),
             data=json.dumps(event.model_dump(mode="json")),
             data_content_type="application/json",
