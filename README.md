@@ -7,32 +7,27 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 ### Setting up your environment
 
 1. Clone the repository:
-
    ```bash
    git clone https://github.com/atlanhq/atlan-sample-apps.git
    cd atlan-sample-apps
    ```
 
 2. Follow the setup instructions for your platform:
-
    - [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
    - [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
    - [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
 
 3. Install dependencies:
-
    ```bash
    uv sync --all-groups
    ```
 
 4. Download required components:
-
    ```bash
    uv run poe download-components
    ```
 
 5. Start the dependencies (in a separate terminal):
-
    ```bash
    uv run poe start-deps
    ```
@@ -47,28 +42,23 @@ Some examples require extra dependencies. See each sample's directory for specif
 
 > [!IMPORTANT]  
 > **Environment Setup & Dependencies**
->
 > - Each sample app may require its own specific environment variables and additional dependencies
 > - **Always check the README.md file in each sample app directory** before running
-> - Some apps need database connections, API keys, or specific environment configurations
-> - For example:
->   - AI Giphy requires OpenAI API keys and email configurations
->   - Giphy needs API tokens and email settings
->
-> Make sure to properly configure these before running the samples!
 
 > [!NOTE]
 > If you are switching between examples, please clear your browser's cache and hard refresh to avoid any issues with the cached static files.
 
+
 ### Sample Apps
 
-| Sample App                 | Description                                                                                                                                             | Directory                                            |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| 🤖 AI Giphy                | An AI-powered application that allows sending GIFs via email using natural language                                                                     | [ai_giphy](./ai_giphy)                               |
-| 👋 Hello World             | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [hello_world](./hello_world)                         |
-| 🤡 Giphy                   | An application that allows sending GIFs via email using Python and Temporal workflows                                                                   | [giphy](./giphy)                                     |
-| 🗃️ MySQL                   | An application that extracts metadata from a MySQL database and transforms it into a standardized format                                                | [mysql](./mysql)                                     |
-| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan                                                                                 | [workflows_observability](./workflows_observability) |
+| Sample App | Description | Directory |
+|------------|-------------|-----------|
+| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [ai_giphy](./ai_giphy) |
+| 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [hello_world](./hello_world) |
+| 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [giphy](./giphy) |
+| 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [mysql](./mysql) |
+| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [workflows_observability](./workflows_observability) |
+
 
 ## Contributing
 
