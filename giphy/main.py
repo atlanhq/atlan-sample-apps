@@ -3,14 +3,22 @@ from typing import Any, Dict
 
 from activities import GiphyActivities
 from application_sdk.application import BaseApplication
+from application_sdk.observability.decorators.observability_decorator import (
+    observability,
+)
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.observability.metrics_adaptor import get_metrics
+from application_sdk.observability.traces_adaptor import get_traces
 from workflow import GiphyWorkflow
 
 APPLICATION_NAME = "giphy"
 
 logger = get_logger(__name__)
+metrics = get_metrics()
+traces = get_traces()
 
 
+@observability(logger=logger, metrics=metrics, traces=traces)
 async def main(daemon: bool = True) -> Dict[str, Any]:
     logger.info("Starting giphy application")
 
