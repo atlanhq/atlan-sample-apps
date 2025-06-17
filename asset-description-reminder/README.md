@@ -156,4 +156,4 @@ The application logs detailed information about each step of the workflow, inclu
 
 ## License
 
-This project is licensed under the Apache License 2.0. 
+This project is licensed under the Apache License 2.0.

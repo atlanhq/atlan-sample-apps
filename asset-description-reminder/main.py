@@ -1,36 +1,35 @@
 import asyncio
-from app.application import AssetDescriptionReminderApplication
-from app.workflows import AssetDescriptionReminderWorkflow
-from app.activities import AssetDescriptionReminderActivities
-from app.handlers import AssetDescriptionHandler
 import os
+
+from app.activities import AssetDescriptionReminderActivities
+from app.application import AssetDescriptionReminderApplication
 from app.clients import AssetDescriptionClient
+from app.handlers import AssetDescriptionHandler
+from app.workflows import AssetDescriptionReminderWorkflow
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
 APPLICATION_NAME = "asset-description-reminder"
 
+
 async def main():
     # Initialize application
     client = AssetDescriptionClient()
     await client.load()
-    
+
     # Initialize application with loaded client
-    app = AssetDescriptionReminderApplication(
-        name=APPLICATION_NAME,
-        client=client
-    )
-    
+    app = AssetDescriptionReminderApplication(name=APPLICATION_NAME, client=client)
+
     # Setup workflow with activities factory that uses same client
     await app.setup_workflow(
         workflow_classes=[AssetDescriptionReminderWorkflow],
-        activities_class=lambda: AssetDescriptionReminderActivities(client=client)
+        activities_class=lambda: AssetDescriptionReminderActivities(client=client),
     )
-    
+
     # Start worker
     await app.start_worker()
-    
+
     logger.info("Setting up server...")
     await app.setup_server(workflow_class=AssetDescriptionReminderWorkflow)
     logger.info("Server setup complete")
@@ -42,6 +41,7 @@ async def main():
     # Start server
     logger.info("Starting server...")
     await app.start_server()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
