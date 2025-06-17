@@ -38,15 +38,10 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
    uv run main.py
    ```
 
-Some examples require extra dependencies. See each sample's directory for specific instructions.
-
-> [!IMPORTANT]  
-> **Environment Setup & Dependencies**
-> - Each sample app may require its own specific environment variables and additional dependencies
-> - **Always check the README.md file in each sample app directory** before running
-
 > [!NOTE]
-> If you are switching between examples, please clear your browser's cache and hard refresh to avoid any issues with the cached static files.
+> - Each sample app may require its own specific environment variables and additional dependencies
+> - Always check the README.md file in each sample app directory before running
+> - Switching between examples? please clear your browser's cache to avoid issues with the cached static files. (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
 
 
 ### Sample Apps
