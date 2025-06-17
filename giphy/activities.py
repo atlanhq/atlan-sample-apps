@@ -35,6 +35,11 @@ class GiphyActivities(ActivitiesInterface):
             - INFO: When a GIF is successfully fetched
             - ERROR: When GIF fetch fails
         """
+        if not GIPHY_API_KEY:
+            raise ValueError(
+                "GIPHY_API_KEY is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
+            )
+
         url = f"https://api.giphy.com/v1/gifs/random?api_key={GIPHY_API_KEY}&tag={search_term}&rating=pg"
         try:
             response = requests.get(url, timeout=5)
@@ -67,6 +72,12 @@ class GiphyActivities(ActivitiesInterface):
             - INFO: When email is sent successfully
             - ERROR: When email sending fails or no valid recipients
         """
+        if not SMTP_PASSWORD:
+            # fail the activity if the SMTP_PASSWORD is not set
+            raise ValueError(
+                "SMTP_PASSWORD is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
+            )
+
         gif_url = config.get("gif_url")
         recipients = [
             email.strip()
