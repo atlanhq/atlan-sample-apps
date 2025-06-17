@@ -159,79 +159,56 @@
         color: #dc2626;
       }
 
-      .result.info {
-        background-color: #eff6ff;
-        border: 1px solid #3b82f6;
-        color: #1d4ed8;
-      }
-
       .result.show {
         display: block;
       }
 
-      .workflow-details {
-        background-color: #f8fafc;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1rem;
+      .step {
+        display: none;
       }
 
-      .workflow-details h3 {
-        margin-bottom: 0.5rem;
+      .step.active {
+        display: block;
+      }
+
+      .step-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .step-number {
+        background-color: #3b82f6;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 0.875rem;
+      }
+
+      .step-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: #1e293b;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .btn-secondary {
+        background-color: #e5e7eb;
         color: #374151;
       }
 
-      .workflow-step {
-        padding: 0.5rem 0;
-        border-left: 3px solid #e5e7eb;
-        padding-left: 1rem;
-        margin: 0.5rem 0;
-      }
-
-      .workflow-step.completed {
-        border-left-color: #10b981;
-        color: #047857;
-      }
-
-      .advanced-options {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-      }
-
-      .advanced-options-toggle {
-        background: none;
-        border: none;
-        color: #3b82f6;
-        font-size: 0.875rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        padding: 0;
-      }
-
-      .advanced-options-toggle:hover {
-        color: #2563eb;
-      }
-
-      .advanced-options-toggle svg {
-        width: 16px;
-        height: 16px;
-        margin-left: 0.5rem;
-        transition: transform 0.2s ease;
-      }
-
-      .advanced-options-toggle.expanded svg {
-        transform: rotate(180deg);
-      }
-
-      .advanced-options-content {
-        display: none;
-        margin-top: 1rem;
-      }
-
-      .advanced-options-content.show {
-        display: block;
+      .btn-secondary:hover:not(:disabled) {
+        background-color: #d1d5db;
       }
     </style>
   </head>
@@ -246,138 +223,115 @@
 
       <div class="card">
         <form id="reminderForm">
-          <div class="form-group">
-            <label class="form-label" for="userSelect">Select User</label>
-            <select
-              id="userSelect"
-              name="user_username"
-              class="form-input"
-              required
-            >
-              <option value="">Loading users...</option>
-            </select>
+          <!-- Step 1: Credentials -->
+          <div id="credentialsStep" class="step active">
+            <div class="step-header">
+              <div class="step-number">1</div>
+              <div class="step-title">Enter Credentials</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="baseUrl">Base URL</label>
+              <input
+                type="url"
+                id="baseUrl"
+                name="base_url"
+                class="form-input"
+                required
+                placeholder="https://app.atlan.com"
+              />
+              <div class="form-help">Your Atlan instance URL</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="atlanToken">Atlan Token</label>
+              <input
+                type="password"
+                id="atlanToken"
+                name="atlan_token"
+                class="form-input"
+                required
+              />
+              <div class="form-help">Your Atlan API token</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="slackToken">Slack Bot Token</label>
+              <input
+                type="password"
+                id="slackToken"
+                name="slack_bot_token"
+                class="form-input"
+                required
+              />
+              <div class="form-help">Your Slack Bot User OAuth Token</div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-primary" id="nextStepBtn">
+                Next
+                <div class="loading" id="credentialsLoading">
+                  <div class="spinner"></div>
+                </div>
+              </button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="baseUrl">Base URL</label>
-            <input
-              type="url"
-              id="baseUrl"
-              name="base_url"
-              class="form-input"
-              required
-              placeholder="https://app.atlan.com"
-            />
-            <div class="form-help">Your Atlan instance URL</div>
-          </div>
+          <!-- Step 2: User Selection and Options -->
+          <div id="userStep" class="step">
+            <div class="step-header">
+              <div class="step-number">2</div>
+              <div class="step-title">Select User & Options</div>
+            </div>
 
-          <div class="form-group">
-            <label class="form-label" for="atlanToken">Atlan Token</label>
-            <input
-              type="password"
-              id="atlanToken"
-              name="atlan_token"
-              class="form-input"
-              required
-            />
-            <div class="form-help">Your Atlan API token</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="slackToken">Slack Bot Token</label>
-            <input
-              type="password"
-              id="slackToken"
-              name="slack_bot_token"
-              class="form-input"
-              required
-            />
-            <div class="form-help">Your Slack Bot User OAuth Token</div>
-          </div>
-
-          <div class="advanced-options">
-            <button
-              type="button"
-              class="advanced-options-toggle"
-              id="advancedOptionsToggle"
-            >
-              Advanced Options
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+            <div class="form-group">
+              <label class="form-label" for="userSelect">Select User</label>
+              <select
+                id="userSelect"
+                name="user_username"
+                class="form-input"
+                required
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </button>
-            <div class="advanced-options-content" id="advancedOptionsContent">
-              <div class="form-group">
-                <label class="form-label" for="assetLimit">Asset Limit</label>
-                <input
-                  type="number"
-                  id="assetLimit"
-                  name="asset_limit"
-                  class="form-input"
-                  value="50"
-                  min="1"
-                  max="100"
-                />
-                <div class="form-help">
-                  Maximum number of assets to check (1-100)
-                </div>
+                <option value="">Loading users...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="assetLimit">Asset Limit</label>
+              <input
+                type="number"
+                id="assetLimit"
+                name="asset_limit"
+                class="form-input"
+                value="50"
+                min="1"
+                max="100"
+              />
+              <div class="form-help">
+                Maximum number of assets to check (1-100)
               </div>
-              <div class="form-group">
-                <label class="form-label" for="messageTemplate"
-                  >Custom Message Template</label
-                >
-                <textarea
-                  id="messageTemplate"
-                  name="message_template"
-                  class="form-input"
-                  rows="3"
-                  placeholder="Hi {user}, the asset {asset_name} is missing a description. Please add one to improve data quality."
-                ></textarea>
-                <div class="form-help">
-                  Available variables: {user}, {asset_name}, {asset_type},
-                  {asset_url}
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-secondary" id="prevStepBtn">
+                Back
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="sendReminderBtn"
+              >
+                Send Reminder
+                <div class="loading" id="loading">
+                  <div class="spinner"></div>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
-
-          <button type="submit" class="btn btn-primary" id="sendReminderBtn">
-            Send Reminder
-            <div class="loading" id="loading">
-              <div class="spinner"></div>
-            </div>
-          </button>
         </form>
 
         <div id="result" class="result">
           <div id="resultContent"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>How it works:</h3>
-        <div class="workflow-details">
-          <div class="workflow-step">
-            <strong>Step 1:</strong> Fetch assets owned by the selected user (up
-            to specified limit)
-          </div>
-          <div class="workflow-step">
-            <strong>Step 2:</strong> Check for assets without descriptions
-          </div>
-          <div class="workflow-step">
-            <strong>Step 3:</strong> Find the user in Slack
-          </div>
-          <div class="workflow-step">
-            <strong>Step 4:</strong> Send a customized reminder message
-          </div>
         </div>
       </div>
     </div>
@@ -385,17 +339,17 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const form = document.getElementById("reminderForm");
+        const credentialsStep = document.getElementById("credentialsStep");
+        const userStep = document.getElementById("userStep");
+        const nextStepBtn = document.getElementById("nextStepBtn");
+        const prevStepBtn = document.getElementById("prevStepBtn");
         const userSelect = document.getElementById("userSelect");
         const sendReminderBtn = document.getElementById("sendReminderBtn");
         const loading = document.getElementById("loading");
+        const credentialsLoading =
+          document.getElementById("credentialsLoading");
         const result = document.getElementById("result");
         const resultContent = document.getElementById("resultContent");
-        const advancedOptionsToggle = document.getElementById(
-          "advancedOptionsToggle"
-        );
-        const advancedOptionsContent = document.getElementById(
-          "advancedOptionsContent"
-        );
         const baseUrlInput = document.getElementById("baseUrl");
         const atlanTokenInput = document.getElementById("atlanToken");
         const slackTokenInput = document.getElementById("slackToken");
@@ -406,56 +360,103 @@
           if (savedConfig) {
             const config = JSON.parse(savedConfig);
             baseUrlInput.value = config.base_url || "";
-            // Don't load tokens from localStorage for security
           }
         };
 
         // Save configuration to localStorage
         const saveConfig = (config) => {
-          localStorage.setItem("assetDescriptionConfig", JSON.stringify({
-            base_url: config.base_url
-            // Don't save tokens to localStorage for security
-          }));
+          localStorage.setItem(
+            "assetDescriptionConfig",
+            JSON.stringify({
+              base_url: config.base_url,
+            })
+          );
         };
 
-        // Toggle advanced options
-        advancedOptionsToggle.addEventListener("click", function () {
-          advancedOptionsContent.classList.toggle("show");
-          this.classList.toggle("expanded");
+        // Validate credentials and move to next step
+        nextStepBtn.addEventListener("click", async function () {
+          const config = {
+            base_url: baseUrlInput.value,
+            atlan_token: atlanTokenInput.value,
+            slack_bot_token: slackTokenInput.value,
+          };
+
+          if (
+            !config.base_url ||
+            !config.atlan_token ||
+            !config.slack_bot_token
+          ) {
+            showResult("Please provide all required credentials", "error");
+            return;
+          }
+
+          nextStepBtn.disabled = true;
+          credentialsLoading.classList.add("show");
+          result.classList.remove("show");
+
+          try {
+            await fetchUsers();
+            credentialsStep.classList.remove("active");
+            userStep.classList.add("active");
+            saveConfig({
+              base_url: config.base_url,
+            });
+          } catch (error) {
+            showResult(
+              "Failed to validate credentials: " + error.message,
+              "error"
+            );
+          } finally {
+            nextStepBtn.disabled = false;
+            credentialsLoading.classList.remove("show");
+          }
+        });
+
+        // Go back to credentials step
+        prevStepBtn.addEventListener("click", function () {
+          userStep.classList.remove("active");
+          credentialsStep.classList.add("active");
+          result.classList.remove("show");
         });
 
         // Fetch users for the dropdown
         async function fetchUsers() {
           try {
-            // Get current configuration
             const config = {
               base_url: baseUrlInput.value,
               atlan_token: atlanTokenInput.value,
-              slack_bot_token: slackTokenInput.value
+              slack_bot_token: slackTokenInput.value,
             };
 
-            const response = await fetch("/api/v1/users", {
+            const response = await fetch("/workflows/v1/users", {
               method: "POST",
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
               },
-              body: JSON.stringify(config)
+              body: JSON.stringify(config),
             });
 
             const data = await response.json();
 
-            if (data.users && Array.isArray(data.users)) {
-              userSelect.innerHTML = "<option value="">Select a user...</option>" +
-                data.users.map(user =>
-                  `<option value="${user.username}">${user.displayName} (${user.username})</option>`
-                ).join('');
+            if (data.success && data.users) {
+              userSelect.innerHTML =
+                "<option value=''>Select a user...</option>" +
+                data.users
+                  .map(
+                    (user) =>
+                      `<option value="${user.username}">${
+                        user.displayName || user.username
+                      }</option>`
+                  )
+                  .join("");
             } else {
-              throw new Error("Invalid user data received");
+              throw new Error(data.error || "Failed to fetch users");
             }
           } catch (error) {
             console.error("Error fetching users:", error);
-            userSelect.innerHTML = "<option value="">Error loading users</option>";
-            showResult("Failed to load users. Please check your configuration.", "error");
+            userSelect.innerHTML =
+              "<option value=''>Error loading users</option>";
+            throw error;
           }
         }
 
@@ -463,61 +464,53 @@
         form.addEventListener("submit", async function (e) {
           e.preventDefault();
 
-          // Get form values
           const formData = new FormData(form);
-          const workflowArgs = {
-            user_username: formData.get("user_username"),
+          const config = {
             base_url: formData.get("base_url"),
             atlan_token: formData.get("atlan_token"),
             slack_bot_token: formData.get("slack_bot_token"),
-            asset_limit: parseInt(formData.get("asset_limit"), 10),
-            message_template: formData.get("message_template").trim()
           };
 
-          // Validate inputs
-          if (!workflowArgs.user_username) {
+          const request = {
+            body: {
+              config: config,
+              user_username: formData.get("user_username"),
+              asset_limit: parseInt(formData.get("asset_limit"), 10),
+            },
+          };
+
+          if (!request.body.user_username) {
             showResult("Please select a user", "error");
             return;
           }
 
-          if (!workflowArgs.base_url || !workflowArgs.atlan_token || !workflowArgs.slack_bot_token) {
-            showResult("Please provide all required configuration (Base URL, Atlan Token, and Slack Bot Token)", "error");
-            return;
-          }
-
-          // Save configuration
-          saveConfig({
-            base_url: workflowArgs.base_url
-          });
-
-          // Show loading state
           sendReminderBtn.disabled = true;
           loading.classList.add("show");
-          result.classList.remove("show", "success", "error", "info");
+          result.classList.remove("show", "success", "error");
 
           try {
-            const response = await fetch("/start", {
+            const response = await fetch("/workflows/v1/start", {
               method: "POST",
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
               },
-              body: JSON.stringify(workflowArgs)
+              body: JSON.stringify(request),
             });
 
             const data = await response.json();
 
-            if (response.ok) {
+            if (data.success) {
+              const result = data.workflow_result;
               showResult(
-                `Success! Checked ${data.assets_checked} assets. ` +
-                (data.slack_message_sent ? "Reminder sent via Slack." : data.message),
+                `Success! Checked ${result.assets_checked} assets and sent ${result.reminders_sent} reminders.`,
                 "success"
               );
             } else {
-              showResult(data.message || "Failed to send reminder", "error");
+              showResult(data.error || "Failed to send reminder", "error");
             }
           } catch (error) {
             console.error("Error:", error);
-            showResult("Failed to send reminder. Please try again.", "error");
+            showResult("Failed to send reminder: " + error.message, "error");
           } finally {
             sendReminderBtn.disabled = false;
             loading.classList.remove("show");
@@ -531,10 +524,6 @@
 
         // Initialize
         loadSavedConfig();
-        // Only fetch users when configuration is provided
-        baseUrlInput.addEventListener("change", fetchUsers);
-        atlanTokenInput.addEventListener("change", fetchUsers);
-        slackTokenInput.addEventListener("change", fetchUsers);
       });
     </script>
   </body>

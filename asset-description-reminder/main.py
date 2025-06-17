@@ -14,17 +14,13 @@ APPLICATION_NAME = "asset-description-reminder"
 
 
 async def main():
-    # Initialize application
-    client = AssetDescriptionClient()
-    await client.load()
-
     # Initialize application with loaded client
-    app = AssetDescriptionReminderApplication(name=APPLICATION_NAME, client=client)
+    app = AssetDescriptionReminderApplication(name=APPLICATION_NAME)
 
     # Setup workflow with activities factory that uses same client
     await app.setup_workflow(
         workflow_classes=[AssetDescriptionReminderWorkflow],
-        activities_class=lambda: AssetDescriptionReminderActivities(client=client),
+        activities_class=AssetDescriptionReminderActivities,
     )
 
     # Start worker

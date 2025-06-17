@@ -15,24 +15,26 @@ metrics = get_metrics()
 traces = get_traces()
 
 
+class UserCredentials(BaseModel):
+    base_url: str
+    atlan_token: str
+    slack_bot_token: str
+
+
 class AssetDescriptionReminderApplication(BaseApplication):
     def __init__(
         self,
         name: str = "asset-description-reminder",
-        client: Optional[AssetDescriptionClient] = None,
     ):
-        self.client = client
-        if not self.client:
-            raise ValueError("Client is required")
-
-        handler = AssetDescriptionHandler(client=self.client)
+        handler = AssetDescriptionHandler()
 
         # Create routes before super().__init__
         self.handler_routes = [
             HandlerRoute(
                 path="/users",
                 handler_method=handler.get_users,
-                methods=["GET"],
+                methods=["POST"],
+                request_model=UserCredentials,
             )
         ]
 
