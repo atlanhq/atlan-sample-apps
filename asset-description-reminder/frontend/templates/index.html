@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Description Reminder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #64748b;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .user-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #ffffff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .user-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            text-decoration: none;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            margin-left: 0.5rem;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background-color: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #047857;
+        }
+
+        .result.error {
+            background-color: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+        }
+
+        .result.info {
+            background-color: #eff6ff;
+            border: 1px solid #3b82f6;
+            color: #1d4ed8;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .user-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .user-email {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .loading-users {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+
+        .workflow-details {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .workflow-details h3 {
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .workflow-step {
+            padding: 0.5rem 0;
+            border-left: 3px solid #e5e7eb;
+            padding-left: 1rem;
+            margin: 0.5rem 0;
+        }
+
+        .workflow-step.completed {
+            border-left-color: #10b981;
+            color: #047857;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Asset Description Reminder</h1>
+            <p>Send Slack reminders to users who have assets without descriptions</p>
+        </div>
+
+        <div class="card">
+            <form id="reminderForm">
+                <div class="form-group">
+                    <label class="form-label" for="userSelect">Select User</label>
+                    <select id="userSelect" class="user-select" required>
+                        <option value="">Loading users...</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="sendReminderBtn">
+                    Send Reminder
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </form>
+
+            <div id="result" class="result">
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>How it works:</h3>
+            <div class="workflow-details">
+                <div class="workflow-step">
+                    <strong>Step 1:</strong> Fetch up to 50 assets owned by the selected user
+                </div>
+                <div class="workflow-step">
+                    <strong>Step 2:</strong> Find the first asset with missing description
+                </div>
+                <div class="workflow-step">
+                    <strong>Step 3:</strong> Look up the user in your Slack workspace
+                </div>
+                <div class="workflow-step">
+                    <strong>Step 4:</strong> Send a friendly reminder message via Slack DM
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let users = [];
+
+        // Load users when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUsers();
+            setupForm();
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/workflows/v1/users');
+                const data = await response.json();
+                
+                const userSelect = document.getElementById('userSelect');
+                userSelect.innerHTML = '<option value="">Select a user...</option>';
+                
+                if (data.users && data.users.length > 0) {
+                    users = data.users;
+                    data.users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.username;
+                        option.textContent = `${user.displayName} (${user.username})`;
+                        userSelect.appendChild(option);
+                    });
+                } else {
+                    userSelect.innerHTML = '<option value="">No users found</option>';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                const userSelect = document.getElementById('userSelect');
+                userSelect.innerHTML = '<option value="">Error loading users</option>';
+            }
+        }
+
+        function setupForm() {
+            const form = document.getElementById('reminderForm');
+            const submitBtn = document.getElementById('sendReminderBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const selectedUsername = document.getElementById('userSelect').value;
+                if (!selectedUsername) {
+                    showResult('Please select a user', 'error');
+                    return;
+                }
+
+                // Show loading state
+                submitBtn.disabled = true;
+                loading.classList.add('show');
+                result.classList.remove('show');
+
+                try {
+                    const response = await fetch('/workflows/v1/start', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_username: selectedUsername
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        if (data.slack_message_sent) {
+                            showResult(`✅ Reminder sent successfully to ${selectedUsername}!<br>
+                                       📊 Checked ${data.assets_checked} assets<br>
+                                       📝 Found asset "${data.asset_without_description?.name}" missing description<br>
+                                       💬 Slack message sent`, 'success');
+                        } else {
+                            showResult(`ℹ️ ${data.message}<br>
+                                       📊 Checked ${data.assets_checked} assets`, 'info');
+                        }
+                    } else {
+                        showResult(`❌ Error: ${data.error || 'Failed to start workflow'}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showResult(`❌ Error: ${error.message}`, 'error');
+                } finally {
+                    // Hide loading state
+                    submitBtn.disabled = false;
+                    loading.classList.remove('show');
+                }
+            });
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            result.className = `result ${type} show`;
+            resultContent.innerHTML = message;
+            
+            // Auto hide after 10 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    result.classList.remove('show');
+                }, 10000);
+            }
+        }
+    </script>
+</body>
+</html> 
