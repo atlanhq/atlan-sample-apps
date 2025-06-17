@@ -13,8 +13,14 @@
     <script>
         // You can use this to set the environment variables for the frontend
         window.env = {
-            APP_DASHBOARD_HOST: "{{ app_dashboard_host }}",
-            APP_DASHBOARD_PORT: "{{ app_dashboard_port }}"
+          APP_HTTP_HOST: "{{ app_http_host }}",
+          APP_HTTP_PORT: "{{ app_http_port }}",
+          APP_DASHBOARD_HTTP_HOST: "{{ app_dashboard_http_host }}",
+          APP_DASHBOARD_HTTP_PORT: "{{ app_dashboard_http_port }}",
+          TENANT_ID: "{{ tenant_id }}",
+          APP_NAME: "{{ app_name }}",
+          TEMPORAL_UI_HOST: "{{ workflow_ui_host }}",
+          TEMPORAL_UI_PORT: "{{ workflow_ui_port }}",
         }
     </script>
     <div class="container">
@@ -188,7 +194,7 @@
             <h2>Workflow Started Successfully!</h2>
             <p>Your workflow has been initiated and is now running.</p>
             <div class="modal-actions">
-                <a href="http://{{ app_dashboard_host }}:{{ app_dashboard_port }}/workflows" class="btn btn-primary" target="_blank">Go to Dashboard</a>
+                <a href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows" class="btn btn-primary" target="_blank">Go to Dashboard</a>
             </div>
         </div>
     </div>

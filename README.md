@@ -22,26 +22,26 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
    uv sync --all-groups
    ```
 
-3. Download required components:
+4. Download required components:
    ```bash
    uv run poe download-components
    ```
 
-4. Start the dependencies (in a separate terminal):
+5. Start the dependencies (in a separate terminal):
    ```bash
    uv run poe start-deps
    ```
 
-5. That loads all required dependencies. To run a sample, you just run the command in the main terminal. For example:
+6. That loads all required dependencies. To run a sample, you just run the command in the main terminal. For example:
    ```bash
    cd hello_world
    uv run main.py
    ```
 
-Some examples require extra dependencies. See each sample's directory for specific instructions.
-
 > [!NOTE]
-> If you are switching between examples, please clear your browser's cache and hard refresh to avoid any issues with the cached static files.
+> - Each sample app may require its own specific environment variables and additional dependencies
+> - Always check the README.md file in each sample app directory before running
+> - Switching between examples? please clear your browser's cache to avoid issues with the cached static files. (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
 
 
 ### Sample Apps
