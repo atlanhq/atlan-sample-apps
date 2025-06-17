@@ -18,27 +18,50 @@ class AssetDescriptionReminderWorkflow:
             maximum_attempts=3  
         )
 
-        # Get the full workflow arguments from the state store
+        # Extract configuration from initial args
+        base_url = initial_args.get("base_url")
+        atlan_token = initial_args.get("atlan_token")
+        slack_bot_token = initial_args.get("slack_bot_token")
+
+        # Validate required configuration
+        if not all([base_url, atlan_token, slack_bot_token]):
+            return {
+                "error": "Missing required configuration. Please provide base_url, atlan_token, and slack_bot_token."
+            }
+
+        # Get the full workflow arguments from the state store with configuration
         workflow_args: Dict[str, Any] = await workflow.execute_activity(
             "get_workflow_args",
-            initial_args,
+            {
+                **initial_args,
+                "config": {
+                    "base_url": base_url,
+                    "atlan_token": atlan_token,
+                    "slack_bot_token": slack_bot_token
+                }
+            },
             start_to_close_timeout=timedelta(minutes=1),
             retry_policy=retry_policy,
         )
 
         workflow.logger.info(f"Retrieved full workflow args: {workflow_args}")
           
-        # Extract user information from workflow args  
+        # Extract arguments from workflow args  
         user_username = workflow_args.get("user_username")
-        user_id = workflow_args.get("user_id")
+        asset_limit = workflow_args.get("asset_limit", 50)  # Default to 50 if not specified
+        message_template = workflow_args.get("message_template")
         
         if not user_username:
             return {"error": "user_username is required"}
           
-        # Step 1: Fetch 50 most assets owned by the selected user
+        # Step 1: Fetch assets owned by the selected user (up to the specified limit)
         assets_data = await workflow.execute_activity(  
             "fetch_user_assets",  
-            {"user_username": user_username, "limit": 50},
+            {
+                "user_username": user_username,
+                "limit": asset_limit,
+                "config": workflow_args["config"]
+            },
             start_to_close_timeout=timedelta(minutes=5),  
             retry_policy=retry_policy  
         )  
@@ -72,7 +95,10 @@ class AssetDescriptionReminderWorkflow:
         # Step 3: Find the person by name in Slack
         slack_user = await workflow.execute_activity(  
             "find_slack_user",  
-            {"username": user_username},
+            {
+                "username": user_username,
+                "config": workflow_args["config"]
+            },
             start_to_close_timeout=timedelta(minutes=2),  
             retry_policy=retry_policy  
         )  
@@ -92,7 +118,9 @@ class AssetDescriptionReminderWorkflow:
             {
                 "slack_user": slack_user,
                 "asset": asset_without_description,
-                "user_username": user_username
+                "user_username": user_username,
+                "message_template": message_template,
+                "config": workflow_args["config"]
             },
             start_to_close_timeout=timedelta(minutes=2),  
             retry_policy=retry_policy  

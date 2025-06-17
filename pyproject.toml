@@ -63,4 +63,4 @@ build-backend = "hatchling.build"
 
 [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
-atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "24dc03ac5db6574fbeb77a5f5ce2b61cf20ddee9" }
+atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0" }

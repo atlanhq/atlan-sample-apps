@@ -123,7 +123,7 @@ wheels = [
 [[package]]
 name = "atlan-application-sdk"
 version = "0.1.1rc16"
-source = { git = "https://github.com/atlanhq/application-sdk?rev=24dc03ac5db6574fbeb77a5f5ce2b61cf20ddee9#24dc03ac5db6574fbeb77a5f5ce2b61cf20ddee9" }
+source = { git = "https://github.com/atlanhq/application-sdk?rev=cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0#cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0" }
 dependencies = [
     { name = "duckdb" },
     { name = "duckdb-engine" },
@@ -189,7 +189,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["workflows", "sqlalchemy", "tests", "daft"], git = "https://github.com/atlanhq/application-sdk?rev=24dc03ac5db6574fbeb77a5f5ce2b61cf20ddee9" },
+    { name = "atlan-application-sdk", extras = ["workflows", "sqlalchemy", "tests", "daft"], git = "https://github.com/atlanhq/application-sdk?rev=cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0" },
     { name = "poethepoet" },
 ]
 

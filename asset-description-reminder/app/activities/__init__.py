@@ -5,34 +5,48 @@ from pyatlan.model.search import IndexSearchRequest
 from slack_sdk.errors import SlackApiError
 from application_sdk.activities import ActivitiesInterface
 from app.clients import AssetDescriptionClient
+from application_sdk.observability.logger_adaptor import get_logger
+
+logger = get_logger(__name__)
+
+
 
 class AssetDescriptionReminderActivities(ActivitiesInterface):  
-    def __init__(self, client: Optional[AssetDescriptionClient] = None):  
-        # Require loaded client
-        if not client:
-            raise ValueError("Client is required")
-        self.client = client
-          
+    def __init__(self):
+        self.client = None
+
+    async def _get_client(self, config: Dict[str, str]) -> AssetDescriptionClient:
+        """Get or create client with config."""
+        if not self.client:
+            self.client = AssetDescriptionClient(credentials=config)
+        return self.client
+
+    @activity.defn  
+    async def get_workflow_args(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Activity 0: Get workflow arguments"""
+        return args
+
     @activity.defn  
     async def fetch_user_assets(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:  
-        """Activity 1: Fetch 50 most assets owned by the selected user"""
-        atlan_client = self.client.get_atlan_client()
+        """Activity 1: Fetch assets owned by the selected user"""
+        client = await self._get_client(args["config"])
+        atlan_client = await client.get_atlan_client()
         user_username = args["user_username"]
         limit = args.get("limit", 50)
           
-        print(f"Fetching assets owned by user: {user_username}")
+        logger.info(f"Fetching assets owned by user: {user_username}")
         
         try:
             search_request = IndexSearchRequest(  
                 dsl={  
                     "query": {  
-                        "bool": {  
-                            "must": [  
-                                {"term": {"__state": "ACTIVE"}},
-                                {"terms": {"__typeName.keyword": ["Table", "View", "Database"]}},
-                                {"term": {"ownerUsers": user_username}}
-                            ]  
-                        }  
+                "bool": {
+                    "must": [
+                        {"term": {"__state": "ACTIVE"}},
+                        {"terms": {"__typeName.keyword": ["Table", "View", "Database"]}},
+                        {"term": {"ownerUsers": user_username}}
+                    ]
+                }
                     },  
                     "from": 0,
                     "size": limit,
@@ -58,22 +72,15 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
                     "type_name": asset.type_name
                 }  
                 assets_data.append(asset_info)
-                print(f"Found asset: {asset_info['name']} - Description: {bool(asset_info['description'] or asset_info['user_description'])}")
+                logger.info(f"Found asset: {asset_info['name']} - Description: {bool(asset_info['description'] or asset_info['user_description'])}")
             return assets_data
 
         except Exception as e:
-            print(f"Error searching for user assets: {str(e)}")
+            logger.error(f"Error searching for user assets: {str(e)}")
             return [
                 {
-                    "qualified_name": f"default/database/table_{i}",
-                    "name": f"user_table_{i}",
-                    "description": "" if i % 3 == 0 else f"Description for table {i}",
-                    "user_description": "",
-                    "owner_users": [user_username],
-                    "guid": f"guid_{i}",
-                    "type_name": "Table"
+                    "error": str(e)
                 }
-                for i in range(10)
             ]
                   
     @activity.defn  
@@ -86,114 +93,103 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
             user_description = (asset.get("user_description") or "").strip()
             
             if not description and not user_description:
-                print(f"Found asset without description: {asset['name']}")
+                logger.info(f"Found asset without description: {asset['name']}")
                 return asset
                       
-        print("All assets have descriptions")
+        logger.info("All assets have descriptions")
         return None
       
     @activity.defn  
     async def find_slack_user(self, args: Dict[str, Any]) -> Optional[Dict[str, Any]]:  
         """Activity 3: Find the person by email in Slack"""
-        await self.client.load()
-        slack_client = self.client.get_slack_client()
-        email_to_find = "adityaework@gmail.com"  # Hardcoded as requested
+        client = await self._get_client(args["config"])
+        slack_client = await client.get_slack_client()
+        email_to_find = "mustafa.trunkwala@atlan.com"  # Hardcoded as requested
         username = args["username"]
 
         if not slack_client:
-            print("Slack client not available")
+            logger.error("Slack client not available")
             return {
                 "id": "U1234567890",
                 "name": username,
-                "real_name": username.replace(".", " ").title(),
-                "email": email_to_find,
-                "display_name": username.replace(".", " ").title()
+                "real_name": username
             }
 
         try:
-            print(f"🔍 Looking for Slack user with email: {email_to_find}")
+            logger.info(f"🔍 Looking for Slack user with email: {email_to_find}")
             response = slack_client.users_lookupByEmail(email=email_to_find)
             user = response.get('user')
 
             if user:
-                print(f"✅ Found Slack user: {user.get('name')} for email: {email_to_find}")
                 return {
-                    "id": user['id'],
-                    "name": user.get('name', ''),
-                    "real_name": user.get('real_name', ''),
-                    "email": user.get('profile', {}).get('email', ''),
-                    "display_name": user.get('profile', {}).get('display_name', '')
+                    "id": user["id"],
+                    "name": user["name"],
+                    "real_name": user["real_name"]
                 }
 
-            print(f"❌ No matching Slack user found for email: {email_to_find}")
+            logger.error(f"❌ No matching Slack user found for email: {email_to_find}")
             return None
 
         except SlackApiError as e:
-            print(f"❌ Error searching Slack users by email: {e}")
+            logger.error(f"❌ Error searching Slack users by email: {e}")
             if e.response["error"] == "users_not_found":
-                print(f"      No user with the email '{email_to_find}' was found in the workspace.")
+                logger.error(f"      No user with the email '{email_to_find}' was found in the workspace.")
             elif "not_authed" in str(e):
-                print("      The Slack token is invalid or has been revoked.")
+                logger.error("      The Slack token is invalid or has been revoked.")
             elif "invalid_auth" in str(e):
-                print("      Invalid Slack authentication. Check your SLACK_BOT_TOKEN.")
-            elif "token_expired" in str(e):
-                print("      The Slack token has expired. Please refresh it.")
+                logger.error("      Invalid Slack authentication. Check your SLACK_BOT_TOKEN.")
             return None
       
     @activity.defn  
     async def send_slack_reminder(self, args: Dict[str, Any]) -> Dict[str, Any]:  
         """Activity 4: Send Slack message to the person about missing description"""  
-        await self.client.load()
-        slack_client = self.client.get_slack_client()
+        client = await self._get_client(args["config"])
+        slack_client = await client.get_slack_client()
         slack_user = args["slack_user"]
         asset = args["asset"]
-        user_username = args["user_username"]
-        
+
+        message = (
+            f"Hi {slack_user['real_name']}! 👋\n\n"
+            f"I noticed that your asset *{asset['name']}* is missing a description. "
+            "Adding a description helps others understand the purpose and contents of this asset.\n\n"
+            "Could you please add a description when you have a moment? 🙏"
+        )
+
         if not slack_client:
-            print("Slack client not available - would send message")
+            logger.error("Slack client not available - would send message")
             return {
                 "success": True,
-                "message_id": "mock_message_id",
-                "message": "Mock message sent (Slack not configured)"
+                "message": "Would send message (Slack client not available)",
+                "debug": {
+                    "user": slack_user,
+                    "message": message
+                }
             }
         
         try:
-            message = f"""
-Hi {slack_user.get('real_name', slack_user['name'])}! 👋
-
-I noticed that your asset **{asset['name']}** is missing a description. 
-
-Asset Details:
-• Name: {asset['name']}
-• Type: {asset.get('type_name', 'Asset')}
-• Qualified Name: {asset['qualified_name']}
-
-Adding a description helps other team members understand what this asset is used for and makes it easier to discover and use.
-
-Could you please add a description when you get a chance? Thanks! 🙏
-
-_This is an automated reminder from the Asset Description Monitor._
-            """
-            
             response = slack_client.chat_postMessage(
-                channel=slack_user['id'],
-                text=message.strip(),
-                username="Asset Description Monitor",
-                icon_emoji=":memo:"
+                channel=slack_user["id"],
+                text=message,
+                unfurl_links=False,
+                unfurl_media=False
             )
             
-            print(f"Slack message sent successfully to {slack_user['name']}")
-            return {
-                "success": True,
-                "message_id": response['ts'],
-                "channel": response['channel'],
-                "message": "Reminder sent successfully"
-            }
-            
+            if response["ok"]:
+                logger.info(f"✅ Slack message sent to {slack_user['name']}")
+                return {
+                    "success": True,
+                    "message": f"Sent reminder to {slack_user['name']}"
+                }
+            else:
+                logger.error(f"❌ Failed to send Slack message: {response.get('error', 'Unknown error')}")
+                return {
+                    "success": False,
+                    "error": response.get("error", "Unknown error")
+                }
+
         except SlackApiError as e:
-            print(f"Error sending Slack message: {e}")
+            logger.error(f"❌ Error sending Slack message: {e}")
             return {
                 "success": False,
-                "error": str(e),
-                "message": "Failed to send reminder"
+                "error": str(e)
             }

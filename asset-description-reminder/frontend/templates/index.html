@@ -1,372 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Asset Description Reminder</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+        background-color: #f8fafc;
+        color: #1e293b;
+        line-height: 1.6;
+      }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
 
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
 
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
-        }
+      .header h1 {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+      }
 
-        .header p {
-            font-size: 1.125rem;
-            color: #64748b;
-        }
+      .header p {
+        font-size: 1.125rem;
+        color: #64748b;
+      }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
 
-        .form-label {
-            display: block;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+      .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
 
-        .user-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: #ffffff;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
+      .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: #ffffff;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
 
-        .user-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
+      .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s ease-in-out;
-            text-decoration: none;
-            min-width: 150px;
-        }
+      .form-help {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+      }
 
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-        }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+        text-decoration: none;
+        min-width: 150px;
+      }
 
-        .btn-primary:hover:not(:disabled) {
-            background-color: #2563eb;
-        }
+      .btn-primary {
+        background-color: #3b82f6;
+        color: white;
+      }
 
-        .btn-primary:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
+      .btn-primary:hover:not(:disabled) {
+        background-color: #2563eb;
+      }
 
-        .loading {
-            display: none;
-            margin-left: 0.5rem;
-        }
+      .btn-primary:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+      }
 
-        .loading.show {
-            display: inline-block;
-        }
+      .loading {
+        display: none;
+        margin-left: 0.5rem;
+      }
 
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top: 2px solid currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+      .loading.show {
+        display: inline-block;
+      }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
 
-        .result {
-            margin-top: 2rem;
-            padding: 1rem;
-            border-radius: 8px;
-            display: none;
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
+      }
 
-        .result.success {
-            background-color: #ecfdf5;
-            border: 1px solid #10b981;
-            color: #047857;
-        }
+      .result {
+        margin-top: 2rem;
+        padding: 1rem;
+        border-radius: 8px;
+        display: none;
+      }
 
-        .result.error {
-            background-color: #fef2f2;
-            border: 1px solid #ef4444;
-            color: #dc2626;
-        }
+      .result.success {
+        background-color: #ecfdf5;
+        border: 1px solid #10b981;
+        color: #047857;
+      }
 
-        .result.info {
-            background-color: #eff6ff;
-            border: 1px solid #3b82f6;
-            color: #1d4ed8;
-        }
+      .result.error {
+        background-color: #fef2f2;
+        border: 1px solid #ef4444;
+        color: #dc2626;
+      }
 
-        .result.show {
-            display: block;
-        }
+      .result.info {
+        background-color: #eff6ff;
+        border: 1px solid #3b82f6;
+        color: #1d4ed8;
+      }
 
-        .user-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid #f1f5f9;
-        }
+      .result.show {
+        display: block;
+      }
 
-        .user-item:last-child {
-            border-bottom: none;
-        }
+      .workflow-details {
+        background-color: #f8fafc;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
 
-        .user-name {
-            font-weight: 500;
-            color: #1e293b;
-        }
+      .workflow-details h3 {
+        margin-bottom: 0.5rem;
+        color: #374151;
+      }
 
-        .user-email {
-            font-size: 0.875rem;
-            color: #64748b;
-        }
+      .workflow-step {
+        padding: 0.5rem 0;
+        border-left: 3px solid #e5e7eb;
+        padding-left: 1rem;
+        margin: 0.5rem 0;
+      }
 
-        .loading-users {
-            text-align: center;
-            padding: 2rem;
-            color: #64748b;
-        }
+      .workflow-step.completed {
+        border-left-color: #10b981;
+        color: #047857;
+      }
 
-        .workflow-details {
-            background-color: #f8fafc;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
+      .advanced-options {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+      }
 
-        .workflow-details h3 {
-            margin-bottom: 0.5rem;
-            color: #374151;
-        }
+      .advanced-options-toggle {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        padding: 0;
+      }
 
-        .workflow-step {
-            padding: 0.5rem 0;
-            border-left: 3px solid #e5e7eb;
-            padding-left: 1rem;
-            margin: 0.5rem 0;
-        }
+      .advanced-options-toggle:hover {
+        color: #2563eb;
+      }
 
-        .workflow-step.completed {
-            border-left-color: #10b981;
-            color: #047857;
-        }
+      .advanced-options-toggle svg {
+        width: 16px;
+        height: 16px;
+        margin-left: 0.5rem;
+        transition: transform 0.2s ease;
+      }
+
+      .advanced-options-toggle.expanded svg {
+        transform: rotate(180deg);
+      }
+
+      .advanced-options-content {
+        display: none;
+        margin-top: 1rem;
+      }
+
+      .advanced-options-content.show {
+        display: block;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>Asset Description Reminder</h1>
-            <p>Send Slack reminders to users who have assets without descriptions</p>
-        </div>
+      <div class="header">
+        <h1>Asset Description Reminder</h1>
+        <p>
+          Send Slack reminders to users who have assets without descriptions
+        </p>
+      </div>
 
-        <div class="card">
-            <form id="reminderForm">
-                <div class="form-group">
-                    <label class="form-label" for="userSelect">Select User</label>
-                    <select id="userSelect" class="user-select" required>
-                        <option value="">Loading users...</option>
-                    </select>
+      <div class="card">
+        <form id="reminderForm">
+          <div class="form-group">
+            <label class="form-label" for="userSelect">Select User</label>
+            <select
+              id="userSelect"
+              name="user_username"
+              class="form-input"
+              required
+            >
+              <option value="">Loading users...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="baseUrl">Base URL</label>
+            <input
+              type="url"
+              id="baseUrl"
+              name="base_url"
+              class="form-input"
+              required
+              placeholder="https://app.atlan.com"
+            />
+            <div class="form-help">Your Atlan instance URL</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="atlanToken">Atlan Token</label>
+            <input
+              type="password"
+              id="atlanToken"
+              name="atlan_token"
+              class="form-input"
+              required
+            />
+            <div class="form-help">Your Atlan API token</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="slackToken">Slack Bot Token</label>
+            <input
+              type="password"
+              id="slackToken"
+              name="slack_bot_token"
+              class="form-input"
+              required
+            />
+            <div class="form-help">Your Slack Bot User OAuth Token</div>
+          </div>
+
+          <div class="advanced-options">
+            <button
+              type="button"
+              class="advanced-options-toggle"
+              id="advancedOptionsToggle"
+            >
+              Advanced Options
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+            <div class="advanced-options-content" id="advancedOptionsContent">
+              <div class="form-group">
+                <label class="form-label" for="assetLimit">Asset Limit</label>
+                <input
+                  type="number"
+                  id="assetLimit"
+                  name="asset_limit"
+                  class="form-input"
+                  value="50"
+                  min="1"
+                  max="100"
+                />
+                <div class="form-help">
+                  Maximum number of assets to check (1-100)
                 </div>
-
-                <button type="submit" class="btn btn-primary" id="sendReminderBtn">
-                    Send Reminder
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                    </div>
-                </button>
-            </form>
-
-            <div id="result" class="result">
-                <div id="resultContent"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="messageTemplate"
+                  >Custom Message Template</label
+                >
+                <textarea
+                  id="messageTemplate"
+                  name="message_template"
+                  class="form-input"
+                  rows="3"
+                  placeholder="Hi {user}, the asset {asset_name} is missing a description. Please add one to improve data quality."
+                ></textarea>
+                <div class="form-help">
+                  Available variables: {user}, {asset_name}, {asset_type},
+                  {asset_url}
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <div class="card">
-            <h3>How it works:</h3>
-            <div class="workflow-details">
-                <div class="workflow-step">
-                    <strong>Step 1:</strong> Fetch up to 50 assets owned by the selected user
-                </div>
-                <div class="workflow-step">
-                    <strong>Step 2:</strong> Find the first asset with missing description
-                </div>
-                <div class="workflow-step">
-                    <strong>Step 3:</strong> Look up the user in your Slack workspace
-                </div>
-                <div class="workflow-step">
-                    <strong>Step 4:</strong> Send a friendly reminder message via Slack DM
-                </div>
+          <button type="submit" class="btn btn-primary" id="sendReminderBtn">
+            Send Reminder
+            <div class="loading" id="loading">
+              <div class="spinner"></div>
             </div>
+          </button>
+        </form>
+
+        <div id="result" class="result">
+          <div id="resultContent"></div>
         </div>
+      </div>
+
+      <div class="card">
+        <h3>How it works:</h3>
+        <div class="workflow-details">
+          <div class="workflow-step">
+            <strong>Step 1:</strong> Fetch assets owned by the selected user (up
+            to specified limit)
+          </div>
+          <div class="workflow-step">
+            <strong>Step 2:</strong> Check for assets without descriptions
+          </div>
+          <div class="workflow-step">
+            <strong>Step 3:</strong> Find the user in Slack
+          </div>
+          <div class="workflow-step">
+            <strong>Step 4:</strong> Send a customized reminder message
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        let users = [];
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("reminderForm");
+        const userSelect = document.getElementById("userSelect");
+        const sendReminderBtn = document.getElementById("sendReminderBtn");
+        const loading = document.getElementById("loading");
+        const result = document.getElementById("result");
+        const resultContent = document.getElementById("resultContent");
+        const advancedOptionsToggle = document.getElementById(
+          "advancedOptionsToggle"
+        );
+        const advancedOptionsContent = document.getElementById(
+          "advancedOptionsContent"
+        );
+        const baseUrlInput = document.getElementById("baseUrl");
+        const atlanTokenInput = document.getElementById("atlanToken");
+        const slackTokenInput = document.getElementById("slackToken");
 
-        // Load users when page loads
-        document.addEventListener('DOMContentLoaded', async function() {
-            await loadUsers();
-            setupForm();
+        // Load saved configuration from localStorage
+        const loadSavedConfig = () => {
+          const savedConfig = localStorage.getItem("assetDescriptionConfig");
+          if (savedConfig) {
+            const config = JSON.parse(savedConfig);
+            baseUrlInput.value = config.base_url || "";
+            // Don't load tokens from localStorage for security
+          }
+        };
+
+        // Save configuration to localStorage
+        const saveConfig = (config) => {
+          localStorage.setItem("assetDescriptionConfig", JSON.stringify({
+            base_url: config.base_url
+            // Don't save tokens to localStorage for security
+          }));
+        };
+
+        // Toggle advanced options
+        advancedOptionsToggle.addEventListener("click", function () {
+          advancedOptionsContent.classList.toggle("show");
+          this.classList.toggle("expanded");
         });
 
-        async function loadUsers() {
-            try {
-                const response = await fetch('/workflows/v1/users');
-                const data = await response.json();
-                
-                const userSelect = document.getElementById('userSelect');
-                userSelect.innerHTML = '<option value="">Select a user...</option>';
-                
-                if (data.users && data.users.length > 0) {
-                    users = data.users;
-                    data.users.forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user.username;
-                        option.textContent = `${user.displayName} (${user.username})`;
-                        userSelect.appendChild(option);
-                    });
-                } else {
-                    userSelect.innerHTML = '<option value="">No users found</option>';
-                }
-            } catch (error) {
-                console.error('Error loading users:', error);
-                const userSelect = document.getElementById('userSelect');
-                userSelect.innerHTML = '<option value="">Error loading users</option>';
-            }
-        }
+        // Fetch users for the dropdown
+        async function fetchUsers() {
+          try {
+            // Get current configuration
+            const config = {
+              base_url: baseUrlInput.value,
+              atlan_token: atlanTokenInput.value,
+              slack_bot_token: slackTokenInput.value
+            };
 
-        function setupForm() {
-            const form = document.getElementById('reminderForm');
-            const submitBtn = document.getElementById('sendReminderBtn');
-            const loading = document.getElementById('loading');
-            const result = document.getElementById('result');
-            const resultContent = document.getElementById('resultContent');
-
-            form.addEventListener('submit', async function(event) {
-                event.preventDefault();
-                
-                const selectedUsername = document.getElementById('userSelect').value;
-                if (!selectedUsername) {
-                    showResult('Please select a user', 'error');
-                    return;
-                }
-
-                // Show loading state
-                submitBtn.disabled = true;
-                loading.classList.add('show');
-                result.classList.remove('show');
-
-                try {
-                    const response = await fetch('/workflows/v1/start', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            user_username: selectedUsername
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        if (data.slack_message_sent) {
-                            showResult(`✅ Reminder sent successfully to ${selectedUsername}!<br>
-                                       📊 Checked ${data.assets_checked} assets<br>
-                                       📝 Found asset "${data.asset_without_description?.name}" missing description<br>
-                                       💬 Slack message sent`, 'success');
-                        } else {
-                            showResult(`ℹ️ ${data.message}<br>
-                                       📊 Checked ${data.assets_checked} assets`, 'info');
-                        }
-                    } else {
-                        showResult(`❌ Error: ${data.error || 'Failed to start workflow'}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showResult(`❌ Error: ${error.message}`, 'error');
-                } finally {
-                    // Hide loading state
-                    submitBtn.disabled = false;
-                    loading.classList.remove('show');
-                }
+            const response = await fetch("/api/v1/users", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(config)
             });
+
+            const data = await response.json();
+
+            if (data.users && Array.isArray(data.users)) {
+              userSelect.innerHTML = "<option value="">Select a user...</option>" +
+                data.users.map(user =>
+                  `<option value="${user.username}">${user.displayName} (${user.username})</option>`
+                ).join('');
+            } else {
+              throw new Error("Invalid user data received");
+            }
+          } catch (error) {
+            console.error("Error fetching users:", error);
+            userSelect.innerHTML = "<option value="">Error loading users</option>";
+            showResult("Failed to load users. Please check your configuration.", "error");
+          }
         }
+
+        // Handle form submission
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Get form values
+          const formData = new FormData(form);
+          const workflowArgs = {
+            user_username: formData.get("user_username"),
+            base_url: formData.get("base_url"),
+            atlan_token: formData.get("atlan_token"),
+            slack_bot_token: formData.get("slack_bot_token"),
+            asset_limit: parseInt(formData.get("asset_limit"), 10),
+            message_template: formData.get("message_template").trim()
+          };
+
+          // Validate inputs
+          if (!workflowArgs.user_username) {
+            showResult("Please select a user", "error");
+            return;
+          }
+
+          if (!workflowArgs.base_url || !workflowArgs.atlan_token || !workflowArgs.slack_bot_token) {
+            showResult("Please provide all required configuration (Base URL, Atlan Token, and Slack Bot Token)", "error");
+            return;
+          }
+
+          // Save configuration
+          saveConfig({
+            base_url: workflowArgs.base_url
+          });
+
+          // Show loading state
+          sendReminderBtn.disabled = true;
+          loading.classList.add("show");
+          result.classList.remove("show", "success", "error", "info");
+
+          try {
+            const response = await fetch("/start", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(workflowArgs)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              showResult(
+                `Success! Checked ${data.assets_checked} assets. ` +
+                (data.slack_message_sent ? "Reminder sent via Slack." : data.message),
+                "success"
+              );
+            } else {
+              showResult(data.message || "Failed to send reminder", "error");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showResult("Failed to send reminder. Please try again.", "error");
+          } finally {
+            sendReminderBtn.disabled = false;
+            loading.classList.remove("show");
+          }
+        });
 
         function showResult(message, type) {
-            const result = document.getElementById('result');
-            const resultContent = document.getElementById('resultContent');
-            
-            result.className = `result ${type} show`;
-            resultContent.innerHTML = message;
-            
-            // Auto hide after 10 seconds for success messages
-            if (type === 'success') {
-                setTimeout(() => {
-                    result.classList.remove('show');
-                }, 10000);
-            }
+          resultContent.textContent = message;
+          result.className = `result ${type} show`;
         }
+
+        // Initialize
+        loadSavedConfig();
+        // Only fetch users when configuration is provided
+        baseUrlInput.addEventListener("change", fetchUsers);
+        atlanTokenInput.addEventListener("change", fetchUsers);
+        slackTokenInput.addEventListener("change", fetchUsers);
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>
