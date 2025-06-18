@@ -15,12 +15,6 @@ metrics = get_metrics()
 traces = get_traces()
 
 
-class UserCredentials(BaseModel):
-    base_url: str
-    atlan_token: str
-    slack_bot_token: str
-
-
 class AssetDescriptionReminderApplication(BaseApplication):
     def __init__(
         self,
@@ -34,8 +28,7 @@ class AssetDescriptionReminderApplication(BaseApplication):
                 path="/users",
                 handler_method=handler.get_users,
                 methods=["POST"],
-                request_model=UserCredentials,
-            )
+            ),
         ]
 
         # Initialize base with handler

@@ -14,7 +14,6 @@ from application_sdk.observability.logger_adaptor import get_logger
 logger = get_logger(__name__)
 
 
-
 class AssetDescriptionHandler(HandlerInterface):
     """Handler for asset description reminder operations.
 
@@ -26,7 +25,7 @@ class AssetDescriptionHandler(HandlerInterface):
         self.client = AssetDescriptionClient()
 
     async def load(self, credentials: Dict[str, Any]) -> None:
-        """Load and initialize the client with credentials.
+        """Mock loading credentials.
 
         Args:
             credentials (Dict[str, Any]): Credentials for API access.
@@ -34,22 +33,24 @@ class AssetDescriptionHandler(HandlerInterface):
         await self.client.load(credentials)
 
     async def test_auth(self) -> bool:
-        """Test if client is authenticated"""
-        pass
+        """Mock authentication test"""
+        logger.info("Mock: Testing authentication")
+        return True
 
     async def preflight_check(self) -> bool:
-        """Run preflight checks"""
-        pass
+        """Mock preflight checks"""
+        logger.info("Mock: Running preflight checks")
+        return True
 
     async def fetch_metadata(self) -> None:
         """Not used in this handler"""
         pass
 
-    async def get_users(self, body: Dict[str, Any]) -> Dict[str, Any]:
+    async def get_users(self, credentials: Dict[str, Any]) -> Dict[str, Any]:
         """Get list of users in the tenant by calling the admin API directly.
 
         Args:
-            body: The request body containing credentials
+            credentials: The request body containing API credentials
 
         Returns:
             Dict[str, Any]: Dictionary containing list of users
@@ -58,7 +59,6 @@ class AssetDescriptionHandler(HandlerInterface):
             ValueError: If required environment variables are not set.
         """
         logger.info("get_users handler method called")
-        credentials = body.get("body", {})
         await self.load(credentials)
 
         response = await self.client.get(
@@ -85,5 +85,6 @@ class AssetDescriptionHandler(HandlerInterface):
         ]
 
         return {
+            "success": True,
             "users": users
         }

@@ -22,11 +22,6 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         return self.client
 
     @activity.defn
-    async def get_workflow_args(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """Activity 0: Get workflow arguments"""
-        return args
-
-    @activity.defn
     async def fetch_user_assets(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Activity 1: Fetch assets owned by the selected user"""
         client = await self._get_client(args["config"])
@@ -97,15 +92,12 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
     ) -> Optional[Dict[str, Any]]:
         """Activity 2: Check if description of any asset is empty, get the first one"""
         assets_data = args["assets_data"]
-
         for asset in assets_data:
             description = (asset.get("description") or "").strip()
             user_description = (asset.get("user_description") or "").strip()
-
             if not description and not user_description:
                 logger.info(f"Found asset without description: {asset['name']}")
                 return asset
-
         logger.info("All assets have descriptions")
         return None
 
