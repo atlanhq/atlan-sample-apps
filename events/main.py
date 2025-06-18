@@ -1,26 +1,17 @@
 import asyncio
 import json
 import os
-from datetime import datetime
-
-from dapr import clients
 
 from application_sdk.application import BaseApplication
 from application_sdk.clients.utils import get_workflow_client
-from application_sdk.constants import APPLICATION_NAME, PUBSUB_NAME
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.eventstore import (
-    ApplicationEventNames,
-    Event,
-    EventMetadata,
-    EventTypes,
-    WorkflowStates,
-)
 from application_sdk.worker import Worker
-from events.workflows import SampleWorkflow
+from events.workflows import SampleWorkflow, WorkflowTriggeredByUI
 from events.activities import SampleActivities
 
 logger = get_logger(__name__)
+
+APPLICATION_NAME = "events-app"
 
 async def start_worker():
     workflow_client = get_workflow_client(
@@ -58,50 +49,22 @@ async def application_subscriber():
     )
 
     # Register the event subscription to a workflow
-    application.register_event_subscription("AssetExtractionCompleted", SampleWorkflow)
+    application.register_event_subscription("WorkflowTriggeredByUICompleted", SampleWorkflow)
 
     # Can also register the events to multiple workflows
     # application.register_event_subscription("ErrorEvent", SampleWorkflow)
 
     # Setup the workflow is needed to start the worker
     await application.setup_workflow(
-        workflow_classes=[SampleWorkflow], activities_class=SampleActivities
+        workflow_classes=[SampleWorkflow, WorkflowTriggeredByUI], activities_class=SampleActivities
     )
     await application.start_worker()
 
     await application.setup_server(
-        workflow_class=SampleWorkflow,
-        ui_enabled=False,
+        workflow_class=WorkflowTriggeredByUI,
     )
 
-    await asyncio.gather(application.start_server(), simulate_worklflow_end_event())
-
-
-async def simulate_worklflow_end_event():
-    await asyncio.sleep(15)
-
-    # Simulates that a dependent workflow has ended
-    event = Event(
-        metadata=EventMetadata(
-            workflow_type="AssetExtractionWorkflow",
-            workflow_state=WorkflowStates.COMPLETED.value,
-            workflow_id="123",
-            workflow_run_id="456",
-            application_name="AssetExtractionApplication",
-            event_published_client_timestamp=int(datetime.now().timestamp()),
-        ),
-        event_type=EventTypes.APPLICATION_EVENT.value,
-        event_name=ApplicationEventNames.WORKFLOW_END.value,
-        data={},
-    )
-    with clients.DaprClient() as client:
-        client.publish_event(
-            pubsub_name=PUBSUB_NAME,
-            topic_name=event.get_topic_name(),
-            data=json.dumps(event.model_dump(mode="json")),
-            data_content_type="application/json",
-        )
-
+    await application.start_server()
 
 if __name__ == "__main__":
     asyncio.run(application_subscriber())

@@ -1,9 +1,9 @@
 {
-    "applicationId": "publish-app",
+    "applicationId": "events-app",
     "eventRegistration": {
       "consumes": [
         {
-          "eventId": "AssetExtractionCompleted",
+          "eventId": "WorkflowTriggeredByUICompleted",
           "eventType": "application_event",
           "eventName": "workflow_end",
           "version": "v1",
@@ -11,7 +11,7 @@
             {
               "path": "event.data.metadata.workflow_type",
               "operator": "==",
-              "value": "AssetExtractionWorkflow"
+              "value": "WorkflowTriggeredByUI"
             },
             {
               "path": "event.data.metadata.workflow_state",
@@ -24,7 +24,7 @@
 
       "produces": [
         {
-          "eventId": "PublishAssetCompleted",
+          "eventId": "SampleWorkflowCompleted",
           "eventType": "application_event",
           "eventName": "workflow_end"
         }
