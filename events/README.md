@@ -2,7 +2,7 @@
 
 A simple application demonstrating how to build apps with the Atlan Application SDK using events.
 
-![Screenshot](https://github.com/user-attachments/assets/416be4d4-e137-42c4-9537-869df2c8f87e)
+<img width="1505" alt="Screenshot 2025-06-18 at 1 42 09 PM" src="https://github.com/user-attachments/assets/e6bffb58-b305-4212-963c-d29d495c795b" />
 
 ## Features
 - Simulates event-driven workflows
@@ -27,6 +27,14 @@ uv run main.py
 Once the application is running:
 
 - **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
+- **Frontend**: Access the Frontend UI at `http://localhost:8000`
+
+To see the events flow - 
+1. Click "Start Workflow" on the frontend UI at `http://localhost:8000`
+2. Go to the temporal dashboard to see that a new workflow of the type `WorkflowTriggeredByUI` has started
+3. Wait for this workflow to finish, once finished, a new workflow will be triggered by the `workflow_end` event of this workflow of type `WorkflowTriggeredByEvent`
+
+![swimlanes-028e52a813253d7f59311fe0fb8b4af1](https://github.com/user-attachments/assets/3eb43edb-0b5a-4f0a-99e9-baab9ef111e1)
 
 ## Development
 
