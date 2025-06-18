@@ -18,7 +18,8 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
     async def _get_client(self, config: Dict[str, str]) -> AssetDescriptionClient:
         """Get or create client with config."""
         if not self.client:
-            self.client = AssetDescriptionClient(credentials=config)
+            self.client = AssetDescriptionClient()
+            await self.client.load(config)
         return self.client
 
     @activity.defn
@@ -92,21 +93,22 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
     ) -> Optional[Dict[str, Any]]:
         """Activity 2: Check if description of any asset is empty, get the first one"""
         assets_data = args["assets_data"]
+        without_description_assets = []
         for asset in assets_data:
             description = (asset.get("description") or "").strip()
             user_description = (asset.get("user_description") or "").strip()
             if not description and not user_description:
                 logger.info(f"Found asset without description: {asset['name']}")
-                return asset
-        logger.info("All assets have descriptions")
-        return None
+                without_description_assets.append(asset)
+        
+        return without_description_assets
 
     @activity.defn
     async def find_slack_user(self, args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Activity 3: Find the person by email in Slack"""
         client = await self._get_client(args["config"])
         slack_client = await client.get_slack_client()
-        email_to_find = "mustafa.trunkwala@atlan.com"  # Hardcoded as requested
+        email_to_find = os.getenv("SLACK_USER_EMAIL")
         username = args["username"]
 
         if not slack_client:
@@ -121,8 +123,10 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
             if user:
                 return {
                     "id": user["id"],
-                    "name": user["name"],
-                    "real_name": user["real_name"],
+                    "name": user.get("name"),
+                    "real_name": user.get("real_name"),
+                    "email": user.get("profile", {}).get("email"),
+                    "display_name": user.get("profile", {}).get("display_name"),
                 }
 
             logger.error(f"❌ No matching Slack user found for email: {email_to_find}")
@@ -148,17 +152,22 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         client = await self._get_client(args["config"])
         slack_client = await client.get_slack_client()
         slack_user = args["slack_user"]
-        asset = args["asset"]
+        assets = args["assets"]
 
         message = f"""
         Hi {slack_user.get('real_name', slack_user['name'])}! 👋
 
-        I noticed that your asset **{asset['name']}** is missing a description. 
+        I noticed that your {len(assets)} assets are missing a description. 
 
         Asset Details:
-        • Name: {asset['name']}
-        • Type: {asset.get('type_name', 'Asset')}
-        • Qualified Name: {asset['qualified_name']}
+        {
+            "\n".join([
+                f"• Name: {asset['name']}\n"
+                f"• Type: {asset.get('type_name', 'Asset')}\n"
+                f"• Qualified Name: {asset['qualified_name']}"
+                for asset in assets
+            ])
+        }
 
         Adding a description helps other team members understand what this asset is used for and makes it easier to discover and use.
 
@@ -178,9 +187,9 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         try:
             response = slack_client.chat_postMessage(
                 channel=slack_user["id"],
-                text=message,
-                unfurl_links=False,
-                unfurl_media=False,
+                text=message.strip(),
+                username="Asset Description Monitor",
+                icon_emoji=":memo:",
             )
 
             if response["ok"]:
