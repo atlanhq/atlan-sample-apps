@@ -150,12 +150,22 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         slack_user = args["slack_user"]
         asset = args["asset"]
 
-        message = (
-            f"Hi {slack_user['real_name']}! 👋\n\n"
-            f"I noticed that your asset *{asset['name']}* is missing a description. "
-            "Adding a description helps others understand the purpose and contents of this asset.\n\n"
-            "Could you please add a description when you have a moment? 🙏"
-        )
+        message = f"""
+        Hi {slack_user.get('real_name', slack_user['name'])}! 👋
+
+        I noticed that your asset **{asset['name']}** is missing a description. 
+
+        Asset Details:
+        • Name: {asset['name']}
+        • Type: {asset.get('type_name', 'Asset')}
+        • Qualified Name: {asset['qualified_name']}
+
+        Adding a description helps other team members understand what this asset is used for and makes it easier to discover and use.
+
+        Could you please add a description when you get a chance? Thanks! 🙏
+
+        _This is an automated reminder from the Asset Description Monitor._
+                    """
 
         if not slack_client:
             logger.error("Slack client not available - would send message")

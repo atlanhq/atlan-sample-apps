@@ -8,7 +8,6 @@ logger = get_logger(__name__)
 
 APPLICATION_NAME = "asset-description-reminder"
 
-
 async def main():
     # Initialize application with loaded client
     app = AssetDescriptionReminderApplication(name=APPLICATION_NAME)
@@ -27,7 +26,6 @@ async def main():
     await app.setup_api_server()
 
     await app.start_server()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

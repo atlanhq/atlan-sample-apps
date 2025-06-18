@@ -4,7 +4,6 @@ Handler for Asset Description Reminder operations.
 This module provides the handler for interacting with Atlan and Slack APIs.
 """
 
-import os
 from typing import Any, Dict
 
 from app.clients import AssetDescriptionClient
@@ -35,12 +34,12 @@ class AssetDescriptionHandler(HandlerInterface):
     async def test_auth(self) -> bool:
         """Mock authentication test"""
         logger.info("Mock: Testing authentication")
-        return True
+        pass
 
     async def preflight_check(self) -> bool:
         """Mock preflight checks"""
         logger.info("Mock: Running preflight checks")
-        return True
+        pass
 
     async def fetch_metadata(self) -> None:
         """Not used in this handler"""
