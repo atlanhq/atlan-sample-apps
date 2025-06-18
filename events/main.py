@@ -6,7 +6,7 @@ from application_sdk.application import BaseApplication
 from application_sdk.clients.utils import get_workflow_client
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.worker import Worker
-from events.workflows import SampleWorkflow, WorkflowTriggeredByUI
+from events.workflows import WorkflowTriggeredByEvent, WorkflowTriggeredByUI
 from events.activities import SampleActivities
 
 logger = get_logger(__name__)
@@ -23,8 +23,8 @@ async def start_worker():
 
     worker = Worker(
         workflow_client=workflow_client,
-        workflow_activities=SampleWorkflow.get_activities(activities),
-        workflow_classes=[SampleWorkflow],
+        workflow_activities=WorkflowTriggeredByEvent.get_activities(activities),
+        workflow_classes=[WorkflowTriggeredByEvent],
         passthrough_modules=["application_sdk", "os", "pandas"],
     )
 
@@ -49,14 +49,14 @@ async def application_subscriber():
     )
 
     # Register the event subscription to a workflow
-    application.register_event_subscription("WorkflowTriggeredByUICompleted", SampleWorkflow)
+    application.register_event_subscription("WorkflowTriggeredByUICompleted", WorkflowTriggeredByEvent)
 
     # Can also register the events to multiple workflows
-    # application.register_event_subscription("ErrorEvent", SampleWorkflow)
+    # application.register_event_subscription("ErrorEvent", WorkflowTriggeredByEvent)
 
     # Setup the workflow is needed to start the worker
     await application.setup_workflow(
-        workflow_classes=[SampleWorkflow, WorkflowTriggeredByUI], activities_class=SampleActivities
+        workflow_classes=[WorkflowTriggeredByEvent, WorkflowTriggeredByUI], activities_class=SampleActivities
     )
     await application.start_worker()
 

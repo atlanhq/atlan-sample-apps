@@ -24,7 +24,7 @@
 
       "produces": [
         {
-          "eventId": "SampleWorkflowCompleted",
+          "eventId": "WorkflowTriggeredByEventCompleted",
           "eventType": "application_event",
           "eventName": "workflow_end"
         }

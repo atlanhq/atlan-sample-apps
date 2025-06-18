@@ -51,7 +51,7 @@ class WorkflowTriggeredByUI(WorkflowInterface):
 
 # Workflow that will be triggered by an event
 @workflow.defn
-class SampleWorkflow(WorkflowInterface):
+class WorkflowTriggeredByEvent(WorkflowInterface):
     activities_cls: Type[ActivitiesInterface] = SampleActivities
 
     @workflow.run
