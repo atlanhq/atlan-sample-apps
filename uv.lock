@@ -178,6 +178,9 @@ dev = [
     { name = "pre-commit" },
     { name = "requests" },
 ]
+freshness-monitor = [
+    { name = "pyatlan" },
+]
 mysql = [
     { name = "pymysql" },
 ]
@@ -203,6 +206,7 @@ dev = [
     { name = "pre-commit", specifier = ">=4.2.0,<5.0.0" },
     { name = "requests" },
 ]
+freshness-monitor = [{ name = "pyatlan" }]
 mysql = [{ name = "pymysql", specifier = ">=1.1.1" }]
 test = [
     { name = "coverage" },
