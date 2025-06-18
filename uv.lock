@@ -122,8 +122,8 @@ wheels = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc16"
-source = { git = "https://github.com/atlanhq/application-sdk?rev=cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0#cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0" }
+version = "0.1.1rc15"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "duckdb" },
     { name = "duckdb-engine" },
@@ -135,6 +135,10 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "uvloop" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/16/a1/0dc331a85e5dbe69c8ce748ac1703715aa1f825a370f163861efae9dbb43/atlan_application_sdk-0.1.1rc15.tar.gz", hash = "sha256:fe3eb1cd01baba40d6d5347f5143eb6d690d50de18e19a31e84cb8497deabd55", size = 860017, upload-time = "2025-06-16T20:03:23.591Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e6/f8/6fddc4edaf3aa20259ada27721f2b6f5ba4a77f55f4329d7dd5152b05e00/atlan_application_sdk-0.1.1rc15-py3-none-any.whl", hash = "sha256:1704a9725056c735c43636fcb1a281a45262d1023f9cf9a450e480c558302568", size = 186054, upload-time = "2025-06-16T20:03:22.409Z" },
 ]
 
 [package.optional-dependencies]
@@ -189,7 +193,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["workflows", "sqlalchemy", "tests", "daft"], git = "https://github.com/atlanhq/application-sdk?rev=cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0" },
+    { name = "atlan-application-sdk", extras = ["workflows", "sqlalchemy", "tests", "daft"], specifier = "==0.1.1rc15" },
     { name = "poethepoet" },
 ]
 

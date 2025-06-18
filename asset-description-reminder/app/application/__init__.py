@@ -1,4 +1,3 @@
-from app.handlers import AssetDescriptionHandler
 from application_sdk.application import BaseApplication
 from typing import Any, Dict
 from application_sdk.observability.logger_adaptor import get_logger
@@ -13,6 +12,7 @@ logger = get_logger(__name__)
 class GetUsersRequest(BaseModel):
     base_url: str
     atlan_token: str
+    slack_bot_token: str
 
 class AssetDescriptionServer(APIServer):
     async def get_users(self, body: GetUsersRequest = Body(...)) -> Dict[str, Any]:
@@ -73,8 +73,8 @@ class AssetDescriptionServer(APIServer):
         super().register_routes()
 
 class AssetDescriptionApplication(BaseApplication):
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
+    def __init__(self, name: str):
+        super().__init__(name)
 
     async def setup_server(self, workflow_class):
         """

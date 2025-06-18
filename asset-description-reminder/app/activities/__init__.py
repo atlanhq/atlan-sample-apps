@@ -154,27 +154,29 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         slack_user = args["slack_user"]
         assets = args["assets"]
 
-        message = f"""
-        Hi {slack_user.get('real_name', slack_user['name'])}! 👋
+        # Format the header
+        header = f"Hi {slack_user.get('real_name', slack_user['name'])}! 👋\n\n"
+        header += f"I noticed that your {len(assets)} assets are missing a description.\n\n"
+        header += "Asset Details:\n"
 
-        I noticed that your {len(assets)} assets are missing a description. 
-
-        Asset Details:
-        {
-            "\n".join([
-                f"• Name: {asset['name']}\n"
-                f"• Type: {asset.get('type_name', 'Asset')}\n"
+        # Format each asset's details
+        asset_details = []
+        for asset in assets:
+            asset_text = [
+                f"• Name: {asset['name']}",
+                f"• Type: {asset.get('type_name', 'Asset')}",
                 f"• Qualified Name: {asset['qualified_name']}"
-                for asset in assets
-            ])
-        }
+            ]
+            asset_details.append("\n".join(asset_text))
 
-        Adding a description helps other team members understand what this asset is used for and makes it easier to discover and use.
+        # Format the footer
+        footer = "\nAdding a description helps other team members understand what this asset is used for "
+        footer += "and makes it easier to discover and use.\n\n"
+        footer += "Could you please add a description when you get a chance? Thanks! 🙏\n\n"
+        footer += "_This is an automated reminder from the Asset Description Monitor._"
 
-        Could you please add a description when you get a chance? Thanks! 🙏
-
-        _This is an automated reminder from the Asset Description Monitor._
-                    """
+        # Combine all parts
+        message = header + "\n\n".join(asset_details) + footer
 
         if not slack_client:
             logger.error("Slack client not available - would send message")

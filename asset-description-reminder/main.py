@@ -1,6 +1,6 @@
 import asyncio
 from app.activities import AssetDescriptionReminderActivities
-from app.application import AssetDescriptionReminderApplication
+from app.application import AssetDescriptionApplication
 from app.workflows import AssetDescriptionReminderWorkflow
 from application_sdk.observability.logger_adaptor import get_logger
 
@@ -10,7 +10,7 @@ APPLICATION_NAME = "asset-description-reminder"
 
 async def main():
     # Initialize application with loaded client
-    app = AssetDescriptionReminderApplication(name=APPLICATION_NAME)
+    app = AssetDescriptionApplication(name=APPLICATION_NAME)
 
     # Setup workflow with activities factory that uses same client
     await app.setup_workflow(
@@ -22,8 +22,6 @@ async def main():
     await app.start_worker()
 
     await app.setup_server(workflow_class=AssetDescriptionReminderWorkflow)
-
-    await app.setup_api_server()
 
     await app.start_server()
 
