@@ -26,9 +26,15 @@ Create a `.env` file in the `freshness_monitor` root directory with:
 THRESHOLD_DAYS=30  # Number of days to consider data as stale
 
 # Atlan Configuration
-ATLAN_API_KEY=your_atlan_api_key
+ATLAN_API_KEY=your_atlan_api_key  # Get your API key from Atlan (see below)
 ATLAN_BASE_URL=https://your-tenant.atlan.com
 ```
+
+To obtain your Atlan API key:
+
+1. Log in to your Atlan instance
+2. Follow the instructions in the [API Authentication Guide](https://ask.atlan.com/hc/en-us/articles/8312649180049-API-authentication)
+3. Copy the generated API key and use it in your `.env` file
 
 ### Run the Freshness Monitor
 
