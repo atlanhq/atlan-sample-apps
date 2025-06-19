@@ -4,13 +4,13 @@ A powerful application that monitors data freshness across your data assets and 
 
 ## Features
 
-- **Automated Monitoring**: Continuous monitoring of data freshness across all tables
-- **Smart Detection**: Configurable threshold for staleness detection
-- **Automated Announcements**: Automatically adds "Stale Data Detected" warnings to outdated tables
-- **Real-time Updates**: Immediate flagging when data becomes stale
-- **Workflow Management**: Leverages Application SDK for robust workflow orchestration
-- **API Integration**: HTTP endpoints for triggering checks and integration
-- **Scalable Processing**: Asynchronous worker for handling large datasets
+- Automated Monitoring: Continuous monitoring of data freshness across all tables
+- Smart Detection: Configurable threshold for staleness detection
+- Automated Announcements: Automatically adds "Stale Data Detected" warnings to outdated tables
+- Real-time Updates: Immediate flagging when data becomes stale
+- Workflow Management: Leverages Application SDK for robust workflow orchestration
+- API Integration: HTTP endpoints for triggering checks and integration
+- Scalable Processing: Asynchronous worker for handling large datasets
 
 ## Usage
 
@@ -48,8 +48,8 @@ This will start the workflow worker and the FastAPI web server.
 
 Once the application is running:
 
-- **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
-- **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
+- Web Interface: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
+- Temporal UI: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
 
 ## Project Structure
 
@@ -75,17 +75,17 @@ freshness_monitor/
 
 ## Workflow Process
 
-1. **Initialization**: Application sets up workflow components and API server
-2. **Data Discovery**: Fetches metadata for tables in Atlan environment
-3. **Freshness Analysis**:
+1. Initialization: Application sets up workflow components and API server
+2. Data Discovery: Fetches metadata for tables in Atlan environment
+3. Freshness Analysis:
    - Checks last update time for each table
    - Compares against threshold (THRESHOLD_DAYS)
    - Identifies stale tables
-4. **Announcement Creation**:
+4. Announcement Creation:
    - Generates WARNING announcements for stale tables
    - Includes last update time and check date
    - Attaches to affected tables
-5. **Monitoring**: Continuous monitoring and updates
+5. Monitoring: Continuous monitoring and updates
 
 ### Announcement Example
 
