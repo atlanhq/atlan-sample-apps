@@ -25,6 +25,9 @@ dev = [
 mysql = [
     "pymysql>=1.1.1",
 ]
+freshness-monitor = [
+    "pyatlan",
+]
 test = [
     "pytest",
     "pytest-asyncio",
