@@ -2,9 +2,7 @@
 
 A powerful application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages. Built with Application SDK for automated monitoring and notifications.
 
-
 https://github.com/user-attachments/assets/61cd20b0-a734-4815-910f-8565c9daa727
-
 
 ## Features
 
@@ -28,6 +26,18 @@ The application is configured through the web interface where you need to provid
 - Atlan Base URL: Your Atlan instance URL (e.g., https://your-tenant.atlan.com)
 - Atlan API Key: Your API key for authentication
 - Slack Bot Token: Your Slack bot's OAuth token
+
+Additionally, set this environment variable to specify who receives the Slack reminders:
+
+```env
+SLACK_USER_EMAIL=manager@company.com  # Email of the Slack user who will receive reminders
+```
+
+This allows you to:
+
+- Send reminders to team leads/managers instead of asset owners
+- Centralize notifications to a specific user
+- Route reminders through a designated point of contact
 
 To obtain your Atlan API key:
 
@@ -58,7 +68,7 @@ This will start the workflow worker and the FastAPI web server.
 
 Once the application is running:
 
-- Web Interface: Open your browser and go to `http://localhost:8001`
+- Web Interface: Open your browser and go to `http://localhost:8000`
 - Temporal UI: Access the Temporal Web UI at `http://localhost:8233` to monitor workflow executions
 
 ## Project Structure
@@ -94,7 +104,7 @@ asset-description-reminder/
    - Fetches up to 50 assets owned by selected user
    - Identifies assets missing descriptions
 4. Slack Integration:
-   - Looks up user in Slack workspace
+   - Looks up designated Slack user (from SLACK_USER_EMAIL)
    - Sends personalized reminder message
 5. Monitoring: Tracks message delivery and user responses
 
