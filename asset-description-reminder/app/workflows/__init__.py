@@ -38,6 +38,13 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             {"assets_data": assets_data},
             start_to_close_timeout=timedelta(minutes=1),
         )
+        
+        if not asset_without_description or not asset_without_description.get("assets"):
+            workflow.logger.info("No assets without description found")
+            return {
+                "success": True,
+                "message": "No assets without description found"
+            }
 
         # Step 3: Find the person by name in Slack
         slack_user = await workflow.execute_activity_method(
@@ -52,12 +59,18 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             activities_instance.send_slack_reminder,
             {
                 "slack_user": slack_user,
-                "asset": asset_without_description,
+                "assets": asset_without_description["assets"],
                 "user_username": workflow_args["user_username"],
                 "config": workflow_args["config"],
             },
             start_to_close_timeout=timedelta(minutes=1),
         )
+
+        return {
+            "success": True,
+            "message": f"Found {asset_without_description['count']} assets without description and sent reminder",
+            "assets_count": asset_without_description['count']
+        }
 
 
     @staticmethod

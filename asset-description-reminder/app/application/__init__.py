@@ -31,7 +31,7 @@ class AssetDescriptionServer(APIServer):
         credentials = body.model_dump()
         client = AssetDescriptionClient()
         await client.load(credentials)
-
+        
         response = await client.get(
             url=f"{credentials['base_url']}/api/service/users",
             params={

@@ -101,7 +101,11 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
                 logger.info(f"Found asset without description: {asset['name']}")
                 without_description_assets.append(asset)
         
-        return without_description_assets
+        return {
+            "success": True,
+            "assets": without_description_assets,
+            "count": len(without_description_assets)
+        }
 
     @activity.defn
     async def find_slack_user(self, args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -109,7 +113,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         client = await self._get_client(args["config"])
         slack_client = await client.get_slack_client()
         email_to_find = os.getenv("SLACK_USER_EMAIL")
-        username = args["username"]
+        username = args["user_username"]
 
         if not slack_client:
             logger.error("Slack client not available")
@@ -193,22 +197,13 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
                 username="Asset Description Monitor",
                 icon_emoji=":memo:",
             )
+            
+            return {
+                "success": True,
+                "message": "Slack message sent",
+                "debug": {"user": slack_user},
+            }
 
-            if response["ok"]:
-                logger.info(f"✅ Slack message sent to {slack_user['name']}")
-                return {
-                    "success": True,
-                    "message": f"Sent reminder to {slack_user['name']}",
-                }
-            else:
-                logger.error(
-                    f"❌ Failed to send Slack message: {response.get('error', 'Unknown error')}"
-                )
-                return {
-                    "success": False,
-                    "error": response.get("error", "Unknown error"),
-                }
-
-        except SlackApiError as e:
+        except Exception as e:
             logger.error(f"❌ Error sending Slack message: {e}")
             return {"success": False, "error": str(e)}

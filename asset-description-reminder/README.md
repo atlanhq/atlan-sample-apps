@@ -2,6 +2,10 @@
 
 A powerful application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages. Built with Application SDK for automated monitoring and notifications.
 
+
+https://github.com/user-attachments/assets/61cd20b0-a734-4815-910f-8565c9daa727
+
+
 ## Features
 
 - Tenant User Management: Fetch and display list of users in your Atlan tenant
