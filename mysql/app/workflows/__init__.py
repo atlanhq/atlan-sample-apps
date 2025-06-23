@@ -9,7 +9,7 @@ import asyncio
 from datetime import timedelta
 from typing import Any, Callable, Dict, List
 
-from activities import SQLMetadataExtractionActivities
+from app.activities import SQLMetadataExtractionActivities
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
 )
