@@ -1,9 +1,10 @@
-from helpers import get_atlan_client, save_result_locally, save_result_object_storage
-from application_sdk.activities import ActivitiesInterface
-from application_sdk.observability.logger_adaptor import get_logger
-from temporalio import activity
 import os
 from datetime import datetime
+
+from application_sdk.activities import ActivitiesInterface
+from application_sdk.observability.logger_adaptor import get_logger
+from helpers import get_atlan_client, save_result_locally, save_result_object_storage
+from temporalio import activity
 
 logger = get_logger(__name__)
 activity.logger = logger
@@ -54,7 +55,7 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
 
             for result in results:
                 save_result_locally(result, local_directory)
-            
+
             if output_type == "Object Storage":
                 await save_result_object_storage("", local_directory)
 

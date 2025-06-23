@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
+
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
@@ -39,18 +40,20 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
-        selected_date: str = workflow_args.get("selectedDate", "atlan-snowflake-miner-1743729606")
+        selected_date: str = workflow_args.get(
+            "selectedDate", "atlan-snowflake-miner-1743729606"
+        )
         output_type: str = workflow_args.get("outputType", "Local")
         output_prefix: str = workflow_args.get("outputPrefix", "")
         workflow.logger.info("Starting workflows observability workflow")
 
-        # Process workflow runs    
+        # Process workflow runs
         await workflow.execute_activity(
             "fetch_workflows_run",
             (selected_date, output_type, output_prefix),
             start_to_close_timeout=timedelta(seconds=3600),
         )
-            
+
         workflow.logger.info("Workflows observability workflow completed")
 
     @staticmethod

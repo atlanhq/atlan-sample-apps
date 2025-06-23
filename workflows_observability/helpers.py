@@ -1,9 +1,10 @@
-from pyatlan.client.atlan import AtlanClient
-from pyatlan.model.enums import AtlanWorkflowPhase
+import os
+
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.outputs.objectstore import ObjectStoreOutput
+from pyatlan.client.atlan import AtlanClient
+from pyatlan.model.enums import AtlanWorkflowPhase
 from temporalio import activity
-import os
 
 logger = get_logger(__name__)
 activity.logger = logger
@@ -25,12 +26,14 @@ def get_atlan_client() -> AtlanClient:
     """
     base_url = os.getenv("ATLAN_BASE_URL")
     api_key = os.getenv("ATLAN_API_KEY")
-    
+
     if not base_url or not api_key:
-        raise ValueError("Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY")
+        raise ValueError(
+            "Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY"
+        )
 
     return AtlanClient(base_url=base_url, api_key=api_key)
-    
+
 
 def save_result_locally(result, local_directory: str) -> None:
     """
@@ -50,8 +53,12 @@ def save_result_locally(result, local_directory: str) -> None:
         for subdir in subdirs:
             os.makedirs(os.path.join(local_directory, subdir), exist_ok=True)
 
-        status_dir = "SUCCESS" if result.status == AtlanWorkflowPhase.SUCCESS else "FAILED"
-        output_path = os.path.join(local_directory, date_str, status_dir, result.id + ".json")
+        status_dir = (
+            "SUCCESS" if result.status == AtlanWorkflowPhase.SUCCESS else "FAILED"
+        )
+        output_path = os.path.join(
+            local_directory, date_str, status_dir, result.id + ".json"
+        )
 
         with open(output_path, "w") as f:
             f.write(result.json(by_alias=True, exclude_none=True))
@@ -61,7 +68,7 @@ def save_result_locally(result, local_directory: str) -> None:
     except Exception as e:
         logger.error(f"Error saving workflow result locally: {str(e)}", exc_info=e)
         raise e
-    
+
 
 async def save_result_object_storage(output_prefix: str, local_directory: str) -> None:
     """
@@ -81,11 +88,12 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
     """
     try:
         await ObjectStoreOutput.push_files_to_object_store(
-            output_prefix=output_prefix,
-            input_files_path=local_directory
+            output_prefix=output_prefix, input_files_path=local_directory
         )
         logger.info("Files pushed to object storage.")
 
     except Exception as e:
-        logger.error(f"Error saving workflow result on object storage: {str(e)}", exc_info=e)
+        logger.error(
+            f"Error saving workflow result on object storage: {str(e)}", exc_info=e
+        )
         raise e

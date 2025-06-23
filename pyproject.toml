@@ -13,7 +13,7 @@ dependencies = [
 
 # If you have development dependencies, you can add them like this:
 [dependency-groups]
-ai-giphy = [
+ai_giphy = [
     "langchain>=0.3.25",
     "langchain-openai>=0.3.16",
     "langchainhub>=0.1.21",
@@ -25,7 +25,7 @@ dev = [
 mysql = [
     "pymysql>=1.1.1",
 ]
-freshness-monitor = [
+freshness_monitor = [
     "pyatlan",
 ]
 test = [
@@ -33,7 +33,7 @@ test = [
     "pytest-asyncio",
     "coverage",
 ]
-asset-description-reminder = [
+asset_description_reminder = [
     "slack-sdk",
     "pyatlan",
 ]

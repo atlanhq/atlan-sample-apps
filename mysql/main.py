@@ -8,6 +8,9 @@ setting up the workflow, worker, and server components.
 import asyncio
 
 from app.activities import SQLMetadataExtractionActivities
+from app.clients import SQLClient
+from app.transformer import SQLAtlasTransformer
+from app.workflows import SQLMetadataExtractionWorkflow
 from application_sdk.application.metadata_extraction.sql import (
     BaseSQLMetadataExtractionApplication,
 )
@@ -19,9 +22,6 @@ from application_sdk.observability.decorators.observability_decorator import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from app.clients import SQLClient
-from app.transformer import SQLAtlasTransformer
-from app.workflows import SQLMetadataExtractionWorkflow
 
 logger = get_logger(__name__)
 metrics = get_metrics()
