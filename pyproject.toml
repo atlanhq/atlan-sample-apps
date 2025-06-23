@@ -7,13 +7,13 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc10",
+    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc15",
     "poethepoet"
 ]
 
 # If you have development dependencies, you can add them like this:
 [dependency-groups]
-ai-giphy = [
+ai_giphy = [
     "langchain>=0.3.25",
     "langchain-openai>=0.3.16",
     "langchainhub>=0.1.21",
@@ -25,13 +25,17 @@ dev = [
 mysql = [
     "pymysql>=1.1.1",
 ]
-freshness-monitor = [
+freshness_monitor = [
     "pyatlan",
 ]
 test = [
     "pytest",
     "pytest-asyncio",
     "coverage",
+]
+asset_description_reminder = [
+    "slack-sdk",
+    "pyatlan",
 ]
 
 [tool.poe.tasks]
@@ -62,4 +66,4 @@ build-backend = "hatchling.build"
 
 [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
-# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "28e44136a73e923423fb19a7f3d2a802b75e19c6" }
+# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "cbfa0d332ac58e9fbf1a9c85b2199fed4b0423a0" }

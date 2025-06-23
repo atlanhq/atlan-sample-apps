@@ -21,10 +21,9 @@ async def main():
         activities_class=WorkflowsObservabilityActivities,
     )
 
-
     # Setup the application server
     await app.setup_server(workflow_class=WorkflowsObservabilityWorkflow)
-    
+
     # start worker
     await app.start_worker()
 

@@ -122,7 +122,7 @@ wheels = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc10"
+version = "0.1.1rc15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "duckdb" },
@@ -136,9 +136,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "uvloop" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cc/bb/0b4cf4104f299c0a55a9675d393a2a0535149c8966ec32cbd727e006995b/atlan_application_sdk-0.1.1rc10.tar.gz", hash = "sha256:b2e35a33b0a8646645f7b4aa0f4aa95af07d0a667238329b4de0b274405eac2f", size = 854612, upload-time = "2025-05-29T05:31:45.779Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/16/a1/0dc331a85e5dbe69c8ce748ac1703715aa1f825a370f163861efae9dbb43/atlan_application_sdk-0.1.1rc15.tar.gz", hash = "sha256:fe3eb1cd01baba40d6d5347f5143eb6d690d50de18e19a31e84cb8497deabd55", size = 860017, upload-time = "2025-06-16T20:03:23.591Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/e7/2fc337c6ec7c62ec00f253ed6bcf4dfd8a03230882a482f8083b61d5f97b/atlan_application_sdk-0.1.1rc10-py3-none-any.whl", hash = "sha256:5919085233c7784c4de5ed25c0cf75e2d1c48dbb76e5cd315f9696cffb885ca9", size = 182494, upload-time = "2025-05-29T05:31:44.141Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/f8/6fddc4edaf3aa20259ada27721f2b6f5ba4a77f55f4329d7dd5152b05e00/atlan_application_sdk-0.1.1rc15-py3-none-any.whl", hash = "sha256:1704a9725056c735c43636fcb1a281a45262d1023f9cf9a450e480c558302568", size = 186054, upload-time = "2025-06-16T20:03:22.409Z" },
 ]
 
 [package.optional-dependencies]
@@ -174,6 +174,10 @@ ai-giphy = [
     { name = "langchain-openai" },
     { name = "langchainhub" },
 ]
+asset-description-reminder = [
+    { name = "pyatlan" },
+    { name = "slack-sdk" },
+]
 dev = [
     { name = "pre-commit" },
     { name = "requests" },
@@ -192,7 +196,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["workflows", "sqlalchemy", "tests", "daft"], specifier = "==0.1.1rc10" },
+    { name = "atlan-application-sdk", extras = ["workflows", "sqlalchemy", "tests", "daft"], specifier = "==0.1.1rc15" },
     { name = "poethepoet" },
 ]
 
@@ -201,6 +205,10 @@ ai-giphy = [
     { name = "langchain", specifier = ">=0.3.25" },
     { name = "langchain-openai", specifier = ">=0.3.16" },
     { name = "langchainhub", specifier = ">=0.1.21" },
+]
+asset-description-reminder = [
+    { name = "pyatlan" },
+    { name = "slack-sdk" },
 ]
 dev = [
     { name = "pre-commit", specifier = ">=4.2.0,<5.0.0" },
@@ -1934,7 +1942,7 @@ wheels = [
 
 [[package]]
 name = "pyatlan"
-version = "6.2.0"
+version = "6.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
@@ -1948,9 +1956,9 @@ dependencies = [
     { name = "tenacity" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7f/16/0ffdf6317e50f70ba8d8d825ab769c5b08a970fa08e61e3efc697161ff0d/pyatlan-6.2.0.tar.gz", hash = "sha256:2956be897d8460aa011eb97a1147b0c9e1da843dfa09395af72bc3206bef8695", size = 743359, upload-time = "2025-05-27T11:23:21.484Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/e1/aa169a7043f0b68fa9ed0ebec32bdb39894add8d60263b0561b0e8f427f5/pyatlan-6.2.1.tar.gz", hash = "sha256:e6c5ba1358cbc751a7af423998454384f0eb713d69c8a06b2792d5424dd567f8", size = 743665, upload-time = "2025-05-30T16:28:27.93Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/ff/edb4697e3e622915a8d74a6d82c7a1f08379ec7471ebf6386327db10a670/pyatlan-6.2.0-py3-none-any.whl", hash = "sha256:f3bb55fb404a802cf23e83086643e146585b94634838fe4d712dc99498fa3798", size = 1228462, upload-time = "2025-05-27T11:23:20.102Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/64/95b8944cc1ada60b2d8a85b251b34da6247924947d18b15f73f576a21753/pyatlan-6.2.1-py3-none-any.whl", hash = "sha256:a3557522332364447d504f26d1c2413aa9fe7105cf904ef13041198f40c71fcf", size = 1228790, upload-time = "2025-05-30T16:28:25.96Z" },
 ]
 
 [[package]]
@@ -2402,6 +2410,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "slack-sdk"
+version = "3.35.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/32/a5/13077a5696ded22cc955ff6314028b7e6140b1c989b19ca27a6b26590e6e/slack_sdk-3.35.0.tar.gz", hash = "sha256:8183b6cbf26a0c1e2441478cd9c0dc4eef08d60c1394cfdc9a769e309a9b6459", size = 232887, upload-time = "2025-03-17T15:32:51.959Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/8e/eed71dc79a187ba32681f12a104786ab89355bc474082211d92e1fba6bcf/slack_sdk-3.35.0-py2.py3-none-any.whl", hash = "sha256:00933d171fbd8a068b321ebb5f89612cc781d3183d8e3447c85499eca9d865be", size = 293272, upload-time = "2025-03-17T15:32:50.294Z" },
 ]
 
 [[package]]
