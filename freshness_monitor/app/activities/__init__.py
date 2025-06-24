@@ -6,6 +6,7 @@ from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from pyatlan.client.atlan import AtlanClient
 from pyatlan.model.assets import Table
+from pyatlan.model.core import Announcement
 from pyatlan.model.enums import AnnouncementType
 from pyatlan.model.search import IndexSearchRequest
 from temporalio import activity
@@ -52,12 +53,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                         "must": [
                             {"term": {"__typeName.keyword": "Table"}},
                             {"term": {"__state": "ACTIVE"}},
-                            {
-                                "term": {
-                                    "connectionQualifiedName": "default/snowflake/1703211402"
-                                }
-                            },
-                        ]
+                        ]  
                     }
                 },
                 "from": 0,
@@ -107,7 +103,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
     async def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Activity 2: Filter and identify stale tables based on threshold"""
         tables_data = args["tables_data"]
-        threshold_days = 1
+        threshold_days = args["threshold_days"] or os.getenv("THRESHOLD_DAYS")
 
         stale_tables = []
         threshold_date = datetime.now() - timedelta(days=threshold_days)
@@ -145,35 +141,36 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         tagged_count = 0
         failed_count = 0
 
-        for table in stale_tables:
+        for table_info in stale_tables:
             try:
                 logger.info(
-                    f"Adding stale data announcement for {table['qualified_name']}"
+                    f"Adding stale data announcement for {table_info['qualified_name']}"
                 )
 
-                # Create minimal table object for update
-                table_with_announcement = Table.updater(
-                    qualified_name=table["qualified_name"], name=table["name"]
+                announcement = Announcement(
+                    announcement_type=AnnouncementType.WARNING,
+                    announcement_title="Stale Data Detected",
+                    announcement_message=f"This table contains stale data. Last updated: {table_info.get('stale_since', 'unknown')}. "
+                    f"Data freshness check performed on {table_info.get('check_date', 'unknown')}.",
                 )
 
-                # Set announcement properties directly on the table
-                table_with_announcement.announcement_type = AnnouncementType.WARNING
-                table_with_announcement.announcement_title = "Stale Data Detected"
-                table_with_announcement.announcement_message = (
-                    f"This table contains stale data. Last updated: {table.get('stale_since', 'unknown')}. "
-                    f"Data freshness check performed on {table.get('check_date', 'unknown')}."
+                table = client.asset.update_announcement(
+                    asset_type=Table,
+                    qualified_name=table_info["qualified_name"],
+                    name=table_info["name"],
+                    announcement=announcement,
                 )
 
                 # Save the announcement
-                client.asset.save(table_with_announcement)
+                client.asset.save(table)
                 tagged_count += 1
                 logger.info(
-                    f"✓ Stale data announcement added for {table['qualified_name']}"
+                    f"✓ Stale data announcement added for {table_info['qualified_name']}"
                 )
 
             except Exception as e:
                 logger.info(
-                    f"Failed to add announcement to table {table['qualified_name']}: {str(e)}"
+                    f"Failed to add announcement to table {table_info['qualified_name']}: {str(e)}"
                 )
                 failed_count += 1
 
