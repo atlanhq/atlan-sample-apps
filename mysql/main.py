@@ -39,8 +39,9 @@ async def main():
         )
 
         await application.setup_workflow(
-            workflow_classes=[SQLMetadataExtractionWorkflow],
-            activities_class=SQLMetadataExtractionActivities,
+            workflow_and_activities_classes=[
+                (SQLMetadataExtractionWorkflow, SQLMetadataExtractionActivities)
+            ],
         )
 
         # Start the worker

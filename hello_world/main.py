@@ -25,8 +25,7 @@ async def main():
 
     # setup workflow
     await app.setup_workflow(
-        workflow_classes=[HelloWorldWorkflow],
-        activities_class=HelloWorldActivities,
+        workflow_and_activities_classes=[(HelloWorldWorkflow, HelloWorldActivities)],
     )
 
     # start worker

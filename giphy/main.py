@@ -27,8 +27,7 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
 
     # setup workflow
     await app.setup_workflow(
-        workflow_classes=[GiphyWorkflow],
-        activities_class=GiphyActivities,
+        workflow_and_activities_classes=[(GiphyWorkflow, GiphyActivities)],
         passthrough_modules=["requests", "urllib3"],
     )
 

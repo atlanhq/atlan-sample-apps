@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc15",
+    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc20",
     "poethepoet"
 ]
 
@@ -39,7 +39,7 @@ asset_description_reminder = [
 ]
 
 [tool.poe.tasks]
-download-components = "python scripts/download_components.py --ref v0.1.1rc10"
+download-components = "python scripts/download_components.py --ref v0.1.1rc20"
 
 # Dapr and Temporal service tasks
 start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components"
