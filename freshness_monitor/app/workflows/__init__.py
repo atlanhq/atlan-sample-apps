@@ -18,7 +18,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
         workflow_args = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             workflow_args,
-            start_to_close_timeout=timedelta(seconds=10),
+            start_to_close_timeout=timedelta(seconds=60),
         )
 
         # Extract configuration from workflow args
@@ -28,21 +28,21 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
         tables_data = await workflow.execute_activity_method(
             activities_instance.fetch_tables_metadata,
             workflow_args,
-            start_to_close_timeout=timedelta(minutes=1),
+            start_to_close_timeout=timedelta(minutes=5),
         )
 
         # Step 2: Identify stale tables
         stale_tables = await workflow.execute_activity_method(
             activities_instance.identify_stale_tables,
             {"tables_data": tables_data, "threshold_days": threshold_days},
-            start_to_close_timeout=timedelta(minutes=1),
+            start_to_close_timeout=timedelta(minutes=5),
         )
 
         if stale_tables:
             await workflow.execute_activity_method(
                 activities_instance.tag_stale_tables,
                 {"stale_tables": stale_tables},
-                start_to_close_timeout=timedelta(minutes=1),
+                start_to_close_timeout=timedelta(minutes=60),
             )
 
     @staticmethod

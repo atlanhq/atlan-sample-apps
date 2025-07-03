@@ -28,13 +28,8 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         # Create the client and set it as current immediately
         self.atlan_client = AtlanClient(base_url=base_url, api_key=api_key)
 
-        # Set this as the current client for the library to use globally
-        AtlanClient.set_current_client(self.atlan_client)
-
     async def _get_atlan_client(self) -> AtlanClient:
-        """Return the initialized Atlan client and set it as current"""
-        # Ensure this client is set as current for the library
-        AtlanClient.set_current_client(self.atlan_client)
+        """Return the initialized Atlan client"""
         return self.atlan_client
 
     @activity.defn
@@ -53,7 +48,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                         "must": [
                             {"term": {"__typeName.keyword": "Table"}},
                             {"term": {"__state": "ACTIVE"}},
-                        ]  
+                        ]
                     }
                 },
                 "from": 0,

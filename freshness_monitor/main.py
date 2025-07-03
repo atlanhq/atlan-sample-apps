@@ -16,8 +16,9 @@ async def main():
 
     # Setup workflow and worker
     await app.setup_workflow(
-        workflow_classes=[FreshnessMonitorWorkflow],
-        activities_class=FreshnessMonitorActivities,
+        workflow_and_activities_classes=[
+            (FreshnessMonitorWorkflow, FreshnessMonitorActivities)
+        ],
     )
     await app.start_worker()
 
