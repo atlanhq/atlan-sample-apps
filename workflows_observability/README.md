@@ -78,7 +78,7 @@ workflows_observability/
 2. Configuration Retrieval: Uses the get_workflow_args activity to fetch input parameters from a state store.
 3. Calculates the time window from the current time to selectedDate
 4. Fetches all workflow runs with status SUCCESS or FAILED
-5. Stores result JSON in /tmp/workflows/<date>/<status>/ if outputType == "Local"
+5. Stores result JSON in ./local/workflows/<date>/<status>/ if outputType == "Local"
 6. Completion: Logs a summary and exits gracefully.
 
 ## Learning Resources

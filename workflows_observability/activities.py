@@ -33,7 +33,7 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             selected_date, output_type, output_prefix = args
 
             if output_type == "Local":
-                local_directory = "/tmp/workflows"
+                local_directory = "./local/workflows"
             elif output_type == "Object Storage":
                 local_directory = output_prefix
             os.makedirs(local_directory, exist_ok=True)
