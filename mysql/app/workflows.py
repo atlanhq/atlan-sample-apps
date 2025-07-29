@@ -9,7 +9,6 @@ import asyncio
 from datetime import timedelta
 from typing import Any, Callable, Dict, List
 
-from app.activities import SQLMetadataExtractionActivities
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
 )
@@ -21,6 +20,8 @@ from application_sdk.workflows.metadata_extraction.sql import (
 )
 from temporalio import workflow
 from temporalio.common import RetryPolicy
+
+from mysql.app.activities import SQLMetadataExtractionActivities
 
 logger = get_logger(__name__)
 workflow.logger = logger
@@ -38,25 +39,16 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
 
         :param workflow_args: The workflow arguments.
         """
-        workflow_id = workflow_config["workflow_id"]
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             self.activities_cls.get_workflow_args,
             workflow_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
 
-        workflow_run_id = workflow.info().run_id
-        workflow_args["workflow_run_id"] = workflow_run_id
-
-        logger.info(f"Starting extraction workflow for {workflow_id}")
         retry_policy = RetryPolicy(
             maximum_attempts=6,
             backoff_coefficient=2,
         )
-
-        output_prefix = workflow_args["output_prefix"]
-        output_path = f"{output_prefix}/{workflow_id}/{workflow_run_id}"
-        workflow_args["output_path"] = output_path
 
         await workflow.execute_activity_method(
             self.activities_cls.preflight_check,
