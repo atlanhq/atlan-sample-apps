@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "pokemon-connector"
+version = "0.1.0"
+description = ""
+authors = ["Akash Khamkar <akash.khamkar@atlan.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# use local application-sdk repository for development
+# application-sdk = { path = "../application-sdk/", develop = true, extras = ["workflows", "dashboard"]}
+# use remote application-sdk repository
+application-sdk = {git = "git@github.com:atlanhq/application-sdk.git", rev = "ce42f1c52b064e09bbf1f66aa3d912ab72f60e39", extras = ["workflows", "dashboard"]}
+jinja2 = "^3.1.2"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.8.0"
+isort = "^5.13.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.3"
+coverage = "^7.6.1"
+pytest-asyncio = "^0.24.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnknownVariableType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownMemberType = "none"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
