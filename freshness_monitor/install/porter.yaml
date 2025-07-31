@@ -1,0 +1,37 @@
+schemaType: Bundle
+schemaVersion: 1.0.1
+name: applications/phoenix-redshift-app-main
+description: "A CNAB bundle to manage the Redshift App"
+registry: "harbor-phoenix.atlan.dev"
+
+mixins:
+- exec
+- docker
+
+install:
+- docker:
+    description: "Spin up the Redshift App container on port 8000"
+    run:
+      image: "harbor-phoenix.atlan.dev/applications/phoenix-redshift-app:main-latest"
+      name: "redshift-app"
+      ports:
+      - host: 8000
+        container: 8000
+      env:
+        TEMPORAL_HOST: "host.docker.internal"
+        TEMPORAL_PORT: 7233
+
+upgrade:
+- exec:
+    description: "Upgrade the Redshift App"
+    command: /bin/bash
+    arguments:
+    - '-c'
+    - 'echo "No upgrade required"'
+
+uninstall:
+- docker:
+    description: "Remove redshift-app"
+    remove:
+      container: redshift-app
+      force: true

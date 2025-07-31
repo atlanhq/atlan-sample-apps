@@ -1,0 +1,51 @@
+# Accept BASE_IMAGE as a build argument
+ARG BASE_IMAGE
+
+# Use BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+# Switch back to root for installations
+USER root
+
+# Install Dapr CLI with the specified version
+RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.14.1
+
+# Install Supervisor
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir supervisor
+
+# Create home directory for appuser and necessary directories with proper permissions
+RUN mkdir -p /home/appuser /home/appuser/logs /home/appuser/runtime && \
+    chown -R appuser:appuser /home/appuser /home/appuser/logs /home/appuser/runtime
+
+# Copy Supervisord configuration
+COPY ./install/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Set default environment variables for ports
+ENV ATLAN_APP_HTTP_PORT=8000
+ENV ATLAN_APP_HTTP_HOST="0.0.0.0"
+ENV ATLAN_DAPR_APP_PORT=3000
+ENV ATLAN_DAPR_HTTP_PORT=3500
+ENV ATLAN_DAPR_GRPC_PORT=50001
+ENV ATLAN_DAPR_METRICS_PORT=3100
+ENV OTEL_PYTHON_EXCLUDED_URLS="/telemetry/.*,/system/.*"
+ENV ENABLE_OTLP_LOGS=true
+
+# Set working directory for the application
+WORKDIR /app
+
+# Download DAPR components
+RUN uv run poe download-components
+
+# Add entrypoint script
+COPY ./install/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Ensure proper ownership of all application files
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user for runtime
+USER appuser
+
+# Start entrypoint script
+ENTRYPOINT [ "/app/entrypoint.sh" ]
