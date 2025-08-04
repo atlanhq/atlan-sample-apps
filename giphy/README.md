@@ -77,12 +77,14 @@ uv run pytest
 
 ```
 giphy/
-├── components/         # Dapr components (auto-downloaded)
+├── app/                # Core application logic
+│   ├── activities.py   # Workflow activities
+│   └── workflow.py     # Workflow definitions
 ├── frontend/           # Frontend assets
 │   ├── static/        # Static files (CSS, JS)
 │   └── templates/     # HTML templates
-├── activities.py       # Workflow activities
-├── workflow.py        # Workflow definitions
+├── local/              # Local data storage
+├── tests/              # Test files
 ├── main.py            # Application entry point
 ├── pyproject.toml     # Dependencies and config
 └── README.md          # This file

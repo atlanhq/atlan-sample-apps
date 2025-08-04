@@ -91,13 +91,14 @@ uv run pytest
 
 ```
 ai_giphy/
-├── components/         # Dapr components (auto-downloaded)
+├── app/                # Core application logic
+│   ├── activities.py   # Temporal activities (AI agent execution)
+│   ├── ai_agent.py     # Core AI agent logic (Langchain tools, LLM interaction)
+│   └── workflow.py     # Temporal workflow definition
 ├── frontend/           # Frontend assets
 │   ├── static/         # Static files (CSS, JS)
 │   └── templates/      # HTML templates
-├── activities.py       # Temporal activities (AI agent execution)
-├── ai_agent.py         # Core AI agent logic (Langchain tools, LLM interaction)
-├── workflow.py         # Temporal workflow definition
+├── local/              # Local data storage
 ├── main.py             # Application entry point
 ├── pyproject.toml      # Dependencies and config
 └── README.md           # This file

@@ -50,10 +50,10 @@ A powerful application that extracts metadata from MySQL databases and transform
 
 ```mermaid
 graph TD
-    A[main.py] --> B[workflow.py]
-    A --> C[activities.py]
-    A --> D[transformer.py]
-    A --> E[client.py]
+    A[main.py] --> B[app/workflows.py]
+    A --> C[app/activities.py]
+    A --> D[app/transformer.py]
+    A --> E[app/clients.py]
     B --> C
     C --> E
     D --> E
@@ -61,17 +61,20 @@ graph TD
 
 ```
 mysql/
-├── components/       # Dapr components (auto-downloaded)
-├── main.py           # Application entry point and initialization
-├── workflow.py       # Workflow definitions and orchestration
-├── activities.py     # Database interaction activities
-├── transformer.py    # Metadata transformation logic
-├── client.py         # MySQL client implementation
-├── models/           # Data models and schemas
-├── app/sql/          # SQL query templates
-├── frontend/         # Web interface assets
-├── pyproject.toml    # Dependencies and config
-└── README.md         # This file
+├── app/                # Core application logic
+│   ├── sql/           # SQL query templates
+│   ├── activities.py  # Database interaction activities
+│   ├── clients.py     # MySQL client implementation
+│   ├── transformer.py # Metadata transformation logic
+│   └── workflows.py   # Workflow definitions and orchestration
+├── components/         # Dapr components (auto-downloaded)
+├── frontend/           # Web interface assets
+├── install/            # Installation and deployment files
+├── local/              # Local data storage
+├── models/             # Data models and schemas
+├── main.py             # Application entry point and initialization
+├── pyproject.toml      # Dependencies and config
+└── README.md           # This file
 ```
 
 ## Development

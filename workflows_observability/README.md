@@ -92,24 +92,25 @@ uv run pytest
 
 ```mermaid
 graph TD
-    A[main.py] --> B[workflow.py]
-    B --> C[activities.py]
-    C --> D[atlan_helpers.py]
+    A[main.py] --> B[app/workflow.py]
+    B --> C[app/activities.py]
+    C --> D[app/helpers.py]
     A --> C
 ```
 
 ```
 workflows_observability/
-├── components/       # Dapr components (auto-downloaded)
-├── main.py           # Application entry point and initialization
-├── workflow.py       # Workflow definitions and orchestration
-├── activities.py     # Atlan interaction activities
-├── helpers.py        # Atlan helper functions
-├── frontend/         # Web interface assets
-│   ├── static/      # Static files (CSS, JS)
-│   └── templates/   # HTML templates
-├── pyproject.toml    # Dependencies and config
-└── README.md         # This file
+├── app/                # Core application logic
+│   ├── activities.py   # Atlan interaction activities
+│   ├── helpers.py      # Atlan helper functions
+│   └── workflow.py     # Workflow definitions and orchestration
+├── frontend/           # Web interface assets
+│   ├── static/        # Static files (CSS, JS)
+│   └── templates/     # HTML templates
+├── local/              # Local data storage
+├── main.py             # Application entry point and initialization
+├── pyproject.toml      # Dependencies and config
+└── README.md           # This file
 ```
 
 ## Workflow Process

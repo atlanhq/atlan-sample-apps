@@ -83,21 +83,22 @@ uv run pytest
 
 ```mermaid
 graph TD
-    A[main.py] --> B[workflows/__init__.py]
-    A --> C[activities/__init__.py]
+    A[main.py] --> B[app/workflows.py]
+    A --> C[app/activities.py]
     B --> C
     C --> D[Atlan API]
 ```
 
 ```
 freshness_monitor/
+├── app/                # Core application logic
+│   ├── activities.py   # Task implementations
+│   └── workflows.py    # Workflow definitions
 ├── components/         # Dapr components (auto-downloaded)
-├── app/
-│   ├── activities/     # Task implementations
-│   └── workflows/      # Workflow definitions
 ├── frontend/           # Frontend assets
 │   ├── static/        # Static files (CSS, JS)
 │   └── templates/     # HTML templates
+├── local/              # Local data storage
 ├── main.py            # Application entry point
 ├── pyproject.toml     # Dependencies and config
 └── README.md          # This file
