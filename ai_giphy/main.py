@@ -1,10 +1,10 @@
 import asyncio
 from typing import Any, Dict
 
-from activities import AIGiphyActivities
+from app.activities import AIGiphyActivities
 from application_sdk.application import BaseApplication
 from application_sdk.observability.logger_adaptor import get_logger
-from workflow import AIGiphyWorkflow
+from app.workflow import AIGiphyWorkflow
 
 APPLICATION_NAME = "ai_giphy"
 

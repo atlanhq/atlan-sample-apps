@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
-from activities import AIGiphyActivities
+from app.activities import AIGiphyActivities
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface

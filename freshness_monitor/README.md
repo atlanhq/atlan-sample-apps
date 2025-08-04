@@ -2,6 +2,42 @@
 
 A powerful application that monitors data freshness across your data assets and automatically flags stale data. Built with Application SDK for automated freshness checks and reporting.
 
+## Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- Atlan instance access and API key
+
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)  
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+## Quick Start
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see below)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
+
+**Access the application:**
+- **Web Interface**: http://localhost:8000
+- **Temporal UI**: http://localhost:8233
+
 ## Features
 
 - Automated Monitoring: Continuous monitoring of data freshness across all tables
@@ -11,11 +47,6 @@ A powerful application that monitors data freshness across your data assets and 
 - Workflow Management: Leverages Application SDK for robust workflow orchestration
 - API Integration: HTTP endpoints for triggering checks and integration
 - Scalable Processing: Asynchronous worker for handling large datasets
-
-## Usage
-
-> [!NOTE]
-> To run, first see [README.md](../README.md) for prerequisites.
 
 ### Environment Variables
 
@@ -36,20 +67,17 @@ To obtain your Atlan API key:
 2. Follow the instructions in the [API Authentication Guide](https://ask.atlan.com/hc/en-us/articles/8312649180049-API-authentication)
 3. Copy the generated API key and use it in your `.env` file
 
-### Run the Freshness Monitor
+## Development
 
+### Stop Dependencies
 ```bash
-uv run main.py
+uv run poe stop-deps
 ```
 
-This will start the workflow worker and the FastAPI web server.
-
-### Access the Application
-
-Once the application is running:
-
-- Web Interface: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
-- Temporal UI: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
+### Run Tests
+```bash
+uv run pytest
+```
 
 ## Project Structure
 
@@ -63,6 +91,7 @@ graph TD
 
 ```
 freshness_monitor/
+├── components/         # Dapr components (auto-downloaded)
 ├── app/
 │   ├── activities/     # Task implementations
 │   └── workflows/      # Workflow definitions
@@ -70,6 +99,7 @@ freshness_monitor/
 │   ├── static/        # Static files (CSS, JS)
 │   └── templates/     # HTML templates
 ├── main.py            # Application entry point
+├── pyproject.toml     # Dependencies and config
 └── README.md          # This file
 ```
 

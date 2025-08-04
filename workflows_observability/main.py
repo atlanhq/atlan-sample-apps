@@ -1,9 +1,9 @@
 import asyncio
 
-from activities import WorkflowsObservabilityActivities
+from app.activities import WorkflowsObservabilityActivities
 from application_sdk.application import BaseApplication
 from application_sdk.observability.logger_adaptor import get_logger
-from workflow import WorkflowsObservabilityWorkflow
+from app.workflow import WorkflowsObservabilityWorkflow
 
 logger = get_logger(__name__)
 

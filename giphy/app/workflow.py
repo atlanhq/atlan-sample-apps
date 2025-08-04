@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
 # Import GiphyActivities outside of the workflow code
-from activities import GiphyActivities
+from app.activities import GiphyActivities
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface

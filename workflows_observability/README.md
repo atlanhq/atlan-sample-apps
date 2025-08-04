@@ -2,6 +2,43 @@
 
 A robust application that retrieves and logs workflow run metadata from Atlan. Built with the Atlan Application SDK and Temporal for highly observable and reliable operations.
 
+## Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- Atlan instance access and API key
+
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)  
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+## Quick Start
+
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see below)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
+
+**Access the application:**
+- **Web Interface**: http://localhost:8000
+- **Temporal UI**: http://localhost:8233
+
 ## Features
 
 - Scheduled fetching of Atlan workflow run data
@@ -9,23 +46,12 @@ A robust application that retrieves and logs workflow run metadata from Atlan. B
 - Real-time tracking via Temporal UI
 - Flexible output options
 
-## Usage
+## Environment Variables
 
-> [!NOTE]
-> To run, first see [README.md](../README.md) for environment setup and prerequisites.
-
-### Run the Observability Application
-
-Launch the application from the root:
-
-```bash
-uv run main.py
-```
-
-Set up the following env variables:
-```bash
-export ATLAN_BASE_URL=https://tenant.atlan.com
-export ATLAN_API_KEY="..."
+Set up the following environment variables:
+```env
+ATLAN_BASE_URL=https://tenant.atlan.com
+ATLAN_API_KEY=your_atlan_api_key
 ```
 
 If you plan to export to an object storage service, make sure to update the Dapr `components/objectstore.yaml` file accordingly. For example, if you're using Amazon S3, use the following configuration:"
@@ -50,9 +76,17 @@ spec:
       value: "false"
 ```
 
-### Access the Application
--   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
--   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
+## Development
+
+### Stop Dependencies
+```bash
+uv run poe stop-deps
+```
+
+### Run Tests
+```bash
+uv run pytest
+```
 
 ## Project Structure
 
@@ -66,11 +100,16 @@ graph TD
 
 ```
 workflows_observability/
+├── components/       # Dapr components (auto-downloaded)
 ├── main.py           # Application entry point and initialization
 ├── workflow.py       # Workflow definitions and orchestration
 ├── activities.py     # Atlan interaction activities
-├── atlan_helpers.py  # Atlan helper
-└── frontend/         # Web interface assets
+├── helpers.py        # Atlan helper functions
+├── frontend/         # Web interface assets
+│   ├── static/      # Static files (CSS, JS)
+│   └── templates/   # HTML templates
+├── pyproject.toml    # Dependencies and config
+└── README.md         # This file
 ```
 
 ## Workflow Process

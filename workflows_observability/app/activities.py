@@ -3,7 +3,7 @@ from datetime import datetime
 
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
-from helpers import get_atlan_client, save_result_locally, save_result_object_storage
+from app.helpers import get_atlan_client, save_result_locally, save_result_object_storage
 from temporalio import activity
 
 logger = get_logger(__name__)

@@ -4,6 +4,39 @@ An app that sends gifs to your friends via email. Built with Application SDK.
 
 https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
 
+## Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- Giphy API key
+- SMTP credentials (e.g., SendGrid)
+
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)  
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+## Quick Start
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see below)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
+
 ## Features
 
 - Search and send GIFs to multiple recipients
@@ -11,11 +44,6 @@ https://github.com/user-attachments/assets/f89fc296-d442-4317-91a5-4a7c8b28def6
 - Support for multiple email recipients
 - Integration with Temporal for workflow management
 - Integration with Giphy API and SendGrid
-
-## Usage
-
-> [!NOTE]
-> To run, first see [README.md](../README.md) for prerequisites.
 
 ## Environment Variables
 
@@ -33,33 +61,31 @@ SMTP_PASSWORD=your_smtp_password_or_api_key
 SMTP_SENDER=your_sender_email (e.g., support@yourdomain.com)
 ```
 
-### Run the Application
+## Development
 
-Start the application:
-
+### Stop Dependencies
 ```bash
-uv run main.py
+uv run poe stop-deps
 ```
 
-### Access the Application
-
-Once the application is running:
-
--   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
--   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
-
-## Development
+### Run Tests
+```bash
+uv run pytest
+```
 
 ### Project Structure
 
 ```
 giphy/
+├── components/         # Dapr components (auto-downloaded)
 ├── frontend/           # Frontend assets
 │   ├── static/        # Static files (CSS, JS)
 │   └── templates/     # HTML templates
 ├── activities.py       # Workflow activities
 ├── workflow.py        # Workflow definitions
-└── main.py            # Application entry point
+├── main.py            # Application entry point
+├── pyproject.toml     # Dependencies and config
+└── README.md          # This file
 ```
 
 > [!NOTE]

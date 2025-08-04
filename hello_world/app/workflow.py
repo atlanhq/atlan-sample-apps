@@ -2,7 +2,7 @@ import asyncio
 from datetime import timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Sequence
 
-from activities import HelloWorldActivities
+from app.activities import HelloWorldActivities
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.decorators.observability_decorator import (
     observability,

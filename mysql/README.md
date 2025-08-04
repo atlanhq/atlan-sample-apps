@@ -2,6 +2,42 @@
 
 A powerful application that extracts metadata from MySQL databases and transforms it into a standardized format. Built with Application SDK for robust workflow management.
 
+## Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- MySQL database access
+
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)  
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+## Quick Start
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see .env.example)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
+
+**Access the application:**
+- **Web Interface**: http://localhost:8000
+- **Temporal UI**: http://localhost:8233
+
 ## Features
 
 - Automated metadata extraction from MySQL databases
@@ -9,24 +45,6 @@ A powerful application that extracts metadata from MySQL databases and transform
 - Real-time workflow status tracking
 - Robust error handling and retry mechanisms
 - Standardized metadata transformation
-
-## Usage
-
-> [!NOTE]
-> To run, first see [README.md](../README.md) for prerequisites.
-
-### Run the MySQL Application
-Run the application in the main terminal:
-```bash
-uv run main.py
-```
-
-### Access the Application
-
-Once the application is running:
-
--   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
--   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
 
 ## Project Structure
 
@@ -43,6 +61,7 @@ graph TD
 
 ```
 mysql/
+├── components/       # Dapr components (auto-downloaded)
 ├── main.py           # Application entry point and initialization
 ├── workflow.py       # Workflow definitions and orchestration
 ├── activities.py     # Database interaction activities
@@ -50,7 +69,21 @@ mysql/
 ├── client.py         # MySQL client implementation
 ├── models/           # Data models and schemas
 ├── app/sql/          # SQL query templates
-└── frontend/         # Web interface assets
+├── frontend/         # Web interface assets
+├── pyproject.toml    # Dependencies and config
+└── README.md         # This file
+```
+
+## Development
+
+### Stop Dependencies
+```bash
+uv run poe stop-deps
+```
+
+### Run Tests
+```bash
+uv run pytest
 ```
 
 > [!NOTE]

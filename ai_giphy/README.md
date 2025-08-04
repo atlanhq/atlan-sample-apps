@@ -4,6 +4,45 @@ An intelligent application that uses an AI agent to fetch relevant GIFs based on
 
 https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 
+## Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- Giphy API key
+- SMTP credentials (e.g., SendGrid)
+- Azure OpenAI API credentials
+
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)  
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+## Quick Start
+
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see below)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
+
+**Access the application:**
+- **Web Interface**: http://localhost:8000
+- **Temporal UI**: http://localhost:8233
+
 ## Features
 
 - **AI-Powered GIF Selection**: Describe the GIF you want (e.g., "a happy cat dancing") and the AI agent will find a suitable one.
@@ -11,11 +50,6 @@ https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 - **Workflow Management**: Leverages Temporal for robust workflow orchestration.
 - **Extensible Agent**: Utilizes Langchain for building the AI agent, allowing for easy extension of its capabilities.
 - **Clear UI**: Simple web interface to interact with the AI agent.
-
-## Usage
-
-> [!NOTE]
-> To run, first see [README.md](../README.md) for prerequisites.
 
 
 ### Environment Variables
@@ -41,38 +75,31 @@ APP_AZURE_OPENAI_DEPLOYMENT_NAME=your_azure_openai_deployment_name
 
 ```
 
-### Run the AI Giphy Application
-
-```bash
-uv run main.py
-```
-This will start the Temporal worker and the FastAPI web server.
-
-### Access the Application
-
-Once the application is running:
-
--   **Web Interface**: Open your browser and go to `http://localhost:8000` (or the port configured for `APP_HTTP_PORT`).
--   **Temporal UI**: Access the Temporal Web UI at `http://localhost:8233` (or your Temporal UI address) to monitor workflow executions.
-
 ## Development
+
+### Stop Dependencies
+```bash
+uv run poe stop-deps
+```
+
+### Run Tests
+```bash
+uv run pytest
+```
 
 ### Project Structure
 
 ```
 ai_giphy/
-├── .venv/              # Virtual environment (created by uv)
+├── components/         # Dapr components (auto-downloaded)
 ├── frontend/           # Frontend assets
-│   ├── static/         # Static files (CSS, JS - if any)
-│   └── templates/      # HTML templates (e.g., index.html)
-├── activities.py       # Temporal activities (e.g., running the AI agent)
-├── ai_agent.py         # Core logic for the AI agent (Langchain tools, LLM interaction)
+│   ├── static/         # Static files (CSS, JS)
+│   └── templates/      # HTML templates
+├── activities.py       # Temporal activities (AI agent execution)
+├── ai_agent.py         # Core AI agent logic (Langchain tools, LLM interaction)
 ├── workflow.py         # Temporal workflow definition
-├── main.py             # Application entry point (FastAPI server, Temporal worker setup)
-├── pyproject.toml      # Project metadata and dependencies for uv
-├── uv.lock         # Exact versions of dependencies
-├── Makefile            # Make commands for common tasks
-├── .env                # Environment variables (create this file)
+├── main.py             # Application entry point
+├── pyproject.toml      # Dependencies and config
 └── README.md           # This file
 ```
 

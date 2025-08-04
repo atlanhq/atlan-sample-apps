@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Dict
 
-from activities import GiphyActivities
+from app.activities import GiphyActivities
 from application_sdk.application import BaseApplication
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
@@ -9,7 +9,7 @@ from application_sdk.observability.decorators.observability_decorator import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from workflow import GiphyWorkflow
+from app.workflow import GiphyWorkflow
 
 APPLICATION_NAME = "giphy"
 

@@ -2,46 +2,29 @@
 
 Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/application-sdk)
 
-## Usage
+## Quick Start
 
-### Setting up your environment
+Each sample app is **self-contained** with its own dependencies and setup instructions. This makes it easy to run individual apps without installing unnecessary dependencies.
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/atlanhq/atlan-sample-apps.git
    cd atlan-sample-apps
    ```
 
-2. Follow the setup instructions for your platform:
-   - [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
-   - [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
-   - [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
-
-3. Install dependencies:
+2. **Navigate to any sample app directory:**
    ```bash
-   uv sync --all-groups
+   cd hello_world  # or any other app directory
    ```
 
-4. Download required components:
-   ```bash
-   uv run poe download-components
-   ```
+3. **Follow the app's README for specific setup:**
+   Each app has its own `README.md` with complete setup instructions
 
-5. Start the dependencies (in a separate terminal):
-   ```bash
-   uv run poe start-deps
-   ```
-
-6. That loads all required dependencies. To run a sample, you just run the command in the main terminal. For example:
-   ```bash
-   cd hello_world
-   uv run main.py
-   ```
 
 > [!NOTE]
-> - Each sample app may require its own specific environment variables and additional dependencies
-> - Always check the README.md file in each sample app directory before running
-> - Switching between examples? please clear your browser's cache to avoid issues with the cached static files. (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
+> - Each app has its own environment variables and configuration requirements
+> - Always check the README.md file in each app directory for specific instructions
+> - When switching between apps, clear your browser cache to avoid cached static files (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
 
 
 ### Sample Apps

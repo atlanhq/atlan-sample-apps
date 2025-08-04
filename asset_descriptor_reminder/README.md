@@ -4,6 +4,44 @@ A powerful application that helps maintain data quality by reminding asset owner
 
 https://github.com/user-attachments/assets/61cd20b0-a734-4815-910f-8565c9daa727
 
+## Prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- Atlan instance access and API key
+- Slack bot token
+
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)  
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+
+## Quick Start
+
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see Configuration below)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
+
+**Access the application:**
+- **Web Interface**: http://localhost:8000
+- **Temporal UI**: http://localhost:8233
+
 ## Features
 
 - Tenant User Management: Fetch and display list of users in your Atlan tenant
@@ -13,11 +51,6 @@ https://github.com/user-attachments/assets/61cd20b0-a734-4815-910f-8565c9daa727
 - Web Interface: User-friendly frontend for selecting users and triggering workflows
 - Workflow Management: Leverages Application SDK for robust workflow orchestration
 - API Integration: HTTP endpoints for triggering checks and integration
-
-## Usage
-
-> [!NOTE]
-> To run, first see [README.md](../README.md) for prerequisites.
 
 ### Configuration
 
@@ -56,20 +89,17 @@ To obtain your Atlan API key:
 4. Install the app to your workspace
 5. Copy the Bot User OAuth Token (starts with xoxb-)
 
-### Run the Application
+## Development
 
+### Stop Dependencies
 ```bash
-uv run main.py
+uv run poe stop-deps
 ```
 
-This will start the workflow worker and the FastAPI web server.
-
-### Access the Application
-
-Once the application is running:
-
-- Web Interface: Open your browser and go to `http://localhost:8000`
-- Temporal UI: Access the Temporal Web UI at `http://localhost:8233` to monitor workflow executions
+### Run Tests
+```bash
+uv run pytest
+```
 
 ## Project Structure
 
@@ -83,17 +113,19 @@ graph TD
 ```
 
 ```
-asset-description-reminder/
-├── activities/
-│   └── description_reminder_activities.py  # Task implementations
-├── workflows/
-│   └── description_reminder_workflow.py    # Workflow definitions
-├── frontend/
-│   └── templates/
-│       └── index.html                      # Web interface
-├── application.py                          # Application setup
-├── main.py                                 # Entry point
-└── README.md                               # This file
+asset_descriptor_reminder/
+├── components/         # Dapr components (auto-downloaded)
+├── app/
+│   ├── activities/     # Task implementations
+│   ├── application/    # Application setup
+│   ├── clients/        # API clients
+│   └── workflows/      # Workflow definitions
+├── frontend/           # Frontend assets
+│   ├── static/        # Static files (CSS, JS)
+│   └── templates/     # HTML templates
+├── main.py            # Application entry point
+├── pyproject.toml     # Dependencies and config
+└── README.md          # This file
 ```
 
 ## Workflow Process

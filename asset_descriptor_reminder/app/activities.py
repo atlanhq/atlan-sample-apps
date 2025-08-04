@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Optional
 
-from app.clients import AssetDescriptionClient
+from app.client import AssetDescriptionClient
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from pyatlan.model.search import IndexSearchRequest

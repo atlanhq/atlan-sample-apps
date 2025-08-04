@@ -21,7 +21,7 @@ from application_sdk.workflows.metadata_extraction.sql import (
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
-from mysql.app.activities import SQLMetadataExtractionActivities
+from app.activities import SQLMetadataExtractionActivities
 
 logger = get_logger(__name__)
 workflow.logger = logger

@@ -2,7 +2,7 @@ from application_sdk.application import BaseApplication
 from typing import Any, Dict
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.server.fastapi import APIServer, HttpWorkflowTrigger
-from app.clients import AssetDescriptionClient
+from app.client import AssetDescriptionClient
 from fastapi import APIRouter
 from fastapi import Body
 from pydantic import BaseModel
