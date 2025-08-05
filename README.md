@@ -14,7 +14,7 @@ Each sample app is **self-contained** with its own dependencies and setup instru
 
 2. **Navigate to any sample app directory:**
    ```bash
-   cd hello_world  # or any other app directory
+   cd quickstart/hello_world  # or any other app directory
    ```
 
 3. **Follow the app's README for specific setup:**
@@ -31,13 +31,13 @@ Each sample app is **self-contained** with its own dependencies and setup instru
 
 | Sample App | Description | Directory |
 |------------|-------------|-----------|
-| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [ai_giphy](./ai_giphy) |
-| 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [hello_world](./hello_world) |
-| 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [giphy](./giphy) |
-| 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [mysql](./mysql) |
-| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [workflows_observability](./workflows_observability) |
-| 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [asset_descriptor_reminder](./asset_descriptor_reminder) |
-| ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [freshness_monitor](./freshness_monitor)                 |
+| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [quickstart/ai_giphy](./quickstart/ai_giphy) |
+| 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [quickstart/hello_world](./quickstart/hello_world) |
+| 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [quickstart/giphy](./quickstart/giphy) |
+| 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [connectors/mysql](./connectors/mysql) |
+| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [utilities/workflows_observability](./utilities/workflows_observability) |
+| 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [utilities/asset_descriptor_reminder](./utilities/asset_descriptor_reminder) |
+| ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [utilities/freshness_monitor](./utilities/freshness_monitor)                 |
 
 ## Contributing
 
