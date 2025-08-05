@@ -2,59 +2,42 @@
 
 Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/application-sdk)
 
-## Usage
+## Quick Start
 
-### Setting up your environment
+Each sample app is **self-contained** with its own dependencies and setup instructions. This makes it easy to run individual apps without installing unnecessary dependencies.
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/atlanhq/atlan-sample-apps.git
    cd atlan-sample-apps
    ```
 
-2. Follow the setup instructions for your platform:
-   - [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
-   - [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
-   - [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
-
-3. Install dependencies:
+2. **Navigate to any sample app directory:**
    ```bash
-   uv sync --all-groups
+   cd quickstart/hello_world  # or any other app directory
    ```
 
-4. Download required components:
-   ```bash
-   uv run poe download-components
-   ```
+3. **Follow the app's README for specific setup:**
+   Each app has its own `README.md` with complete setup instructions
 
-5. Start the dependencies (in a separate terminal):
-   ```bash
-   uv run poe start-deps
-   ```
-
-6. That loads all required dependencies. To run a sample, you just run the command in the main terminal. For example:
-   ```bash
-   cd hello_world
-   uv run main.py
-   ```
 
 > [!NOTE]
-> - Each sample app may require its own specific environment variables and additional dependencies
-> - Always check the README.md file in each sample app directory before running
-> - Switching between examples? please clear your browser's cache to avoid issues with the cached static files. (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
+> - Each app has its own environment variables and configuration requirements
+> - Always check the README.md file in each app directory for specific instructions
+> - When switching between apps, clear your browser cache to avoid cached static files (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
 
 
 ### Sample Apps
 
 | Sample App | Description | Directory |
 |------------|-------------|-----------|
-| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [ai_giphy](./ai_giphy) |
-| 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [hello_world](./hello_world) |
-| 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [giphy](./giphy) |
-| 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [mysql](./mysql) |
-| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [workflows_observability](./workflows_observability) |
-| 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [asset_descriptor_reminder](./asset_descriptor_reminder) |
-| ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [freshness_monitor](./freshness_monitor)                 |
+| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [quickstart/ai_giphy](./quickstart/ai_giphy) |
+| 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [quickstart/hello_world](./quickstart/hello_world) |
+| 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [quickstart/giphy](./quickstart/giphy) |
+| 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [connectors/mysql](./connectors/mysql) |
+| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [utilities/workflows_observability](./utilities/workflows_observability) |
+| 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [utilities/asset_descriptor_reminder](./utilities/asset_descriptor_reminder) |
+| ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [utilities/freshness_monitor](./utilities/freshness_monitor)                 |
 
 ## Contributing
 
