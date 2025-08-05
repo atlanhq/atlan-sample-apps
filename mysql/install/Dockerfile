@@ -35,15 +35,10 @@ RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install
 # Copy supervisor config
 COPY ./install/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Set environment variables
-ENV ATLAN_APP_HTTP_PORT=8000 \
-    ATLAN_APP_HTTP_HOST="0.0.0.0" \
-    ATLAN_DAPR_APP_PORT=3000 \
+ENV ATLAN_DAPR_APP_PORT=3000 \
     ATLAN_DAPR_HTTP_PORT=3500 \
     ATLAN_DAPR_GRPC_PORT=50001 \
     ATLAN_DAPR_METRICS_PORT=3100 \
-    OTEL_PYTHON_EXCLUDED_URLS="/telemetry/.*,/system/.*" \
-    ENABLE_OTLP_LOGS=true \
     UV_CACHE_DIR=/home/appuser/.cache/uv \
     XDG_CACHE_HOME=/home/appuser/.cache
 

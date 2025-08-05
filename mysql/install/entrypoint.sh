@@ -22,14 +22,6 @@ error() {
 
 log "Entrypoint execution started."
 
-echo "Starting Supervisor with the following ports:"
-echo "DAPR_APP_PORT=${ATLAN_DAPR_APP_PORT}"
-echo "DAPR_HTTP_PORT=${ATLAN_DAPR_HTTP_PORT}"
-echo "DAPR_GRPC_PORT=${ATLAN_DAPR_GRPC_PORT}"
-echo "DAPR_METRICS_PORT=${ATLAN_DAPR_METRICS_PORT}"
-echo "APP_HTTP_PORT=${ATLAN_APP_HTTP_PORT}"
-echo "APP_HTTP_HOST=${ATLAN_APP_HTTP_HOST}"
-
 # Create necessary directories in user home directory
 WORK_DIR="/home/appuser/runtime"
 log "Creating necessary directories for logs and supervisor configurations..."
