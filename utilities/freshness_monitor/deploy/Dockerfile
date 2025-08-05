@@ -33,7 +33,7 @@ RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install
     pip install --no-cache-dir supervisor
 
 # Copy supervisor config
-COPY ./install/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ENV ATLAN_DAPR_APP_PORT=3000 \
     ATLAN_DAPR_HTTP_PORT=3500 \
@@ -49,7 +49,7 @@ USER appuser
 RUN uv run poe download-components
 
 # Copy and set executable entrypoint
-COPY --chown=appuser:appuser ./install/entrypoint.sh /app/entrypoint.sh
+COPY --chown=appuser:appuser ./deploy/entrypoint.sh /app/entrypoint.sh
 USER root
 RUN chmod +x /app/entrypoint.sh
 USER appuser

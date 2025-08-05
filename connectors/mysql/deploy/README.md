@@ -9,8 +9,13 @@
 ## Build and Run
 
 ### Build the Docker image:
+
+**Important: Run from the app's root directory**
+
+You must be in the app's root directory (where `main.py` is located), not in the `deploy/` folder, as Docker needs the full app context for building.
+
 ```bash
-docker build --no-cache -f install/Dockerfile -t app:latest .
+docker build --no-cache -f ./deploy/Dockerfile -t app:latest .
 ```
 
 ### Run the Docker container:

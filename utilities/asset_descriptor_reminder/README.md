@@ -124,6 +124,7 @@ asset_descriptor_reminder/
 │   ├── static/        # Static files (CSS, JS)
 │   └── templates/     # HTML templates
 ├── local/              # Local data storage
+├── deploy/            # Installation and deployment files
 ├── main.py            # Application entry point
 ├── pyproject.toml     # Dependencies and config
 └── README.md          # This file

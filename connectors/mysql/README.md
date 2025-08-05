@@ -69,7 +69,7 @@ mysql/
 │   └── workflows.py   # Workflow definitions and orchestration
 ├── components/         # Dapr components (auto-downloaded)
 ├── frontend/           # Web interface assets
-├── install/            # Installation and deployment files
+├── deploy/            # Installation and deployment files
 ├── local/              # Local data storage
 ├── models/             # Data models and schemas
 ├── main.py             # Application entry point and initialization
