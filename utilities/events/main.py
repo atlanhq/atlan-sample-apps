@@ -6,30 +6,30 @@ from application_sdk.application import BaseApplication
 from application_sdk.clients.utils import get_workflow_client
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.worker import Worker
-from events.workflows import WorkflowTriggeredByEvent, WorkflowTriggeredByUI
-from events.activities import SampleActivities
+from app.workflows import WorkflowTriggeredByEvent, WorkflowTriggeredByUI
+from app.activities import SampleActivities
 
 logger = get_logger(__name__)
 
 APPLICATION_NAME = "events-app"
 
-async def start_worker():
-    workflow_client = get_workflow_client(
-        application_name=APPLICATION_NAME,
-    )
-    await workflow_client.load()
+# async def start_worker():
+#     workflow_client = get_workflow_client(
+#         application_name=APPLICATION_NAME,
+#     )
+#     await workflow_client.load()
 
-    activities = SampleActivities()
+#     activities = SampleActivities()
 
-    worker = Worker(
-        workflow_client=workflow_client,
-        workflow_activities=WorkflowTriggeredByEvent.get_activities(activities),
-        workflow_classes=[WorkflowTriggeredByEvent],
-        passthrough_modules=["application_sdk", "os", "pandas"],
-    )
+#     worker = Worker(
+#         workflow_client=workflow_client,
+#         workflow_activities=WorkflowTriggeredByEvent.get_activities(activities),
+#         workflow_classes=[WorkflowTriggeredByEvent],
+#         passthrough_modules=["application_sdk", "os", "pandas"],
+#     )
 
-    # Start the worker in a separate thread
-    await worker.start(daemon=True)
+#     # Start the worker in a separate thread
+#     await worker.start(daemon=True)
 
 async def application_subscriber():
     # Open the application manifest in the current directory
@@ -56,7 +56,7 @@ async def application_subscriber():
 
     # Setup the workflow is needed to start the worker
     await application.setup_workflow(
-        workflow_classes=[WorkflowTriggeredByEvent, WorkflowTriggeredByUI], activities_class=SampleActivities
+        workflow_and_activities_classes=[(WorkflowTriggeredByEvent, SampleActivities), (WorkflowTriggeredByUI, SampleActivities)]
     )
     await application.start_worker()
 

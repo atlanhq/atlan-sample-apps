@@ -8,7 +8,7 @@ from temporalio import workflow
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
-from events.activities import SampleActivities
+from app.activities import SampleActivities
 
 logger = get_logger(__name__)
 

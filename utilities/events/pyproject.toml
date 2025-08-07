@@ -1,7 +1,7 @@
 [project]
-name = "mysql-app"
+name = "events-app"
 version = "0.1.0"
-description = "MySQL metadata extraction app built using Atlan Application SDK"
+description = "Events app built using Atlan Application SDK"
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
 requires-python = ">=3.11"
 license = "Apache-2.0"

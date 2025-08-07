@@ -11,16 +11,37 @@ A simple application demonstrating how to build apps with the Atlan Application 
 - Demonstrates async and sync activities in a workflow
 - Example of basic workflow implementation
 
-## Usage
+## Prerequisites
 
-> [!NOTE]
-> To run, first see the [main project README](../README.md) for prerequisites.
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
+- Atlan instance access and API key
 
-### Run the Events Application
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
 
-```bash
-uv run main.py
-```
+## Quick Start
+
+1. **Download required components:**
+   ```bash
+   uv run poe download-components
+   ```
+
+2. **Set up environment variables (see below)**
+
+3. **Start dependencies (in separate terminal):**
+   ```bash
+   uv run poe start-deps
+   ```
+
+4. **Run the application:**
+   ```bash
+   uv run main.py
+   ```
 
 ### Access the Application
 
