@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Freshness Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <h1>Data Freshness Monitor</h1>
+
+    <div class="container">
+      <form id="monitorForm">
+        <div class="form-group">
+          <label for="thresholdDays">Threshold Days</label>
+          <input
+            type="number"
+            id="thresholdDays"
+            min="1"
+            max="365"
+            value="30"
+            required
+            placeholder="Enter number of days (1-365)"
+          />
+        </div>
+
+        <button type="submit" id="startMonitorBtn">Start Monitoring</button>
+      </form>
+
+      <div id="result" class="result">
+        <div id="resultContent"></div>
+      </div>
+
+      <div id="stats" class="stats">
+        <div class="stat-card">
+          <div class="stat-title">Total Assets Scanned</div>
+          <div class="stat-value" id="totalAssets">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Freshness Status</div>
+          <div class="stat-value">
+            <div>
+              <span class="freshness-indicator fresh"></span>
+              Fresh: <span id="freshCount">0</span>
+            </div>
+            <div>
+              <span class="freshness-indicator stale"></span>
+              Stale: <span id="staleCount">0</span>
+            </div>
+            <div>
+              <span class="freshness-indicator outdated"></span>
+              Outdated: <span id="outdatedCount">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySQL App</title>
+    <link rel="icon" type="image/png" sizes="96x96" href="https://atlan.com/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://atlan.com/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://atlan.com/favicon-16x16.png">
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+    <script>
+        // You can use this to set the environment variables for the frontend
+        window.env = {
+          APP_HTTP_HOST: "{{ app_http_host }}",
+          APP_HTTP_PORT: "{{ app_http_port }}",
+          APP_DASHBOARD_HTTP_HOST: "{{ app_dashboard_http_host }}",
+          APP_DASHBOARD_HTTP_PORT: "{{ app_dashboard_http_port }}",
+          TENANT_ID: "{{ tenant_id }}",
+          APP_NAME: "{{ app_name }}",
+          TEMPORAL_UI_HOST: "{{ workflow_ui_host }}",
+          TEMPORAL_UI_PORT: "{{ workflow_ui_port }}",
+        }
+    </script>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968313.png" alt="MySQL Logo" class="logo" width="100" height="100">
+                <h1>MySQL App</h1>
+            </div>
+            <div class="doc-link">
+                <a href="https://ask.atlan.com/hc/en-us/articles/6329210006289-How-to-crawl-MySQL" target="_blank" class="doc-link-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span>Documentation</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="step-list">
+                    <div class="step active" data-step="1" onclick="goToPage(1)">
+                        <div class="step-indicator">1</div>
+                        <span>Credential</span>
+                    </div>
+                    <div class="step" data-step="2" onclick="goToPage(2)">
+                        <div class="step-indicator">2</div>
+                        <span>Connection</span>
+                    </div>
+                    <div class="step" data-step="3" onclick="goToPage(3)">
+                        <div class="step-indicator">3</div>
+                        <span>Metadata</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container">
+                <!-- Page 1: Credentials -->
+                <div id="page1" class="page active">
+                    <div class="form-group horizontal">
+                        <div class="input-wrapper flex-grow">
+                            <label>Host *</label>
+                            <input type="text" id="host" placeholder="[database-identifier].[unique-identifier].[aws-region].rds">
+                        </div>
+                        <div class="input-wrapper" style="width: 100px;">
+                            <label>Port *</label>
+                            <input type="text" id="port" value="3306">
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Authentication</h2>
+                        <div class="button-group">
+                            <button class="btn btn-primary">Basic</button>
+                            <button class="btn btn-secondary">IAM User</button>
+                            <button class="btn btn-secondary">IAM Role</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group horizontal">
+                        <div class="input-wrapper flex-half">
+                            <label>Username *</label>
+                            <input type="text" id="user" value="mysql">
+                        </div>
+                        <div class="input-wrapper flex-half">
+                            <label>Password *</label>
+                            <input type="password" id="password" placeholder="Password">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Database *</label>
+                        <input type="text" id="database" value="mysql">
+                    </div>
+
+                    <button class="btn btn-outline test-connection" onclick="testConnection()">Test Connection</button>
+                    <div class="error-message" id="connectionError"></div>
+
+                    <div class="bottom-bar">
+                        <div id="page1-nav" class="nav-buttons">
+                            <div></div> <!-- Empty div for spacing -->
+                            <button onclick="nextPage()" class="btn btn-primary" id="nextButton">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: Connection -->
+                <div id="page2" class="page">
+                    <div class="form-group">
+                        <label>Connection Name *</label>
+                        <input type="text" id="connectionName" placeholder="development">
+                    </div>
+
+                    <div class="bottom-bar">
+                        <div id="page2-nav" class="nav-buttons" style="display: none;">
+                            <button onclick="previousPage()" class="btn btn-secondary">Previous</button>
+                            <button onclick="nextPage()" class="btn btn-primary" id="page2Next">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 3: Metadata -->
+                <div id="page3" class="page">
+                    <div class="metadata-grid">
+                        <div class="form-group">
+                            <label>Exclude Metadata</label>
+                            <div class="metadata-dropdown" id="excludeMetadata">
+                                <div class="dropdown-header" onclick="toggleDropdown('excludeMetadata')">
+                                    <span>Select databases and schemas</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-content">
+                                    <!-- Will be populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Include Metadata</label>
+                            <div class="metadata-dropdown" id="includeMetadata">
+                                <div class="dropdown-header" onclick="toggleDropdown('includeMetadata')">
+                                    <span>Select databases and schemas</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-content">
+                                    <!-- Will be populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Exclude regex for tables & views</label>
+                        <input type="text" id="temp-table-regex" placeholder=".*_TMP|.*_TEMP|TMP:*|TEMP:*" >
+                    </div>
+
+
+                    <div class="preflight-section">
+                        <div class="preflight-header">
+                            <h2>Preflight Checks</h2>
+                            <button id="runPreflightChecks" class="btn btn-primary">Check</button>
+                        </div>
+                        <div class="preflight-content">
+                            <!-- Results will be dynamically inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="bottom-bar">
+                        <div id="page3-nav" class="nav-buttons" style="display: none;">
+                            <button onclick="previousPage()" class="btn btn-secondary">Previous</button>
+                            <div class="action-buttons">
+                                <button id="runWorkflowButton" class="btn btn-primary">Run</button>
+                                <button class="btn btn-secondary">Schedule & Run</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add this at the end of body but before scripts -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="success-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <h2>Workflow Started Successfully!</h2>
+            <p>Your workflow has been initiated and is now running.</p>
+            <div class="modal-actions">
+                <a href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows" class="btn btn-primary" target="_blank">Go to Dashboard</a>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+</body>
+</html>

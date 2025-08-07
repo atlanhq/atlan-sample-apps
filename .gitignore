@@ -174,3 +174,6 @@ docstring-cov.md
 
 
 components/
+local/
+**/local/**
+*.db

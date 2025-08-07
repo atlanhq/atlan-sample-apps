@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asset Description Reminder</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <h1>Asset Description Reminder</h1>
+
+    <form id="reminderForm">
+      <!-- Step 1: Credentials -->
+      <div id="credentialsStep" class="step active">
+        <h2>Step 1: Enter Credentials</h2>
+        <div class="form-group">
+          <label for="baseUrl">Base URL</label>
+          <input
+            type="url"
+            id="baseUrl"
+            required
+            placeholder="https://app.atlan.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="atlanToken">Atlan Token</label>
+          <input
+            type="password"
+            id="atlanToken"
+            required
+            placeholder="Enter your Atlan API token"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="slackToken">Slack Bot Token</label>
+          <input
+            type="password"
+            id="slackToken"
+            required
+            placeholder="Enter your Slack bot token"
+          />
+        </div>
+
+        <button type="button" id="nextStepBtn">Next Step</button>
+      </div>
+
+      <!-- Step 2: User Selection -->
+      <div id="userStep" class="step">
+        <h2>Step 2: Select User</h2>
+        <div class="form-group">
+          <label for="userSelect">Select User</label>
+          <select id="userSelect" required>
+            <option value="">Loading users...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="assetLimit">Asset Limit</label>
+          <input
+            type="number"
+            id="assetLimit"
+            value="50"
+            min="1"
+            max="100"
+            placeholder="Number of assets to check (1-100)"
+          />
+        </div>
+
+        <button type="button" id="prevStepBtn">Previous</button>
+        <button type="button" id="sendReminderBtn">Send Reminder</button>
+      </div>
+    </form>
+
+    <div id="result" class="result">
+      <div id="resultContent"></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="temporalModal" class="modal">
+      <div class="modal-content">
+        <h2>Workflow Started!</h2>
+        <p>Your workflow has been started successfully.</p>
+        <p>You can track its progress in the Temporal UI.</p>
+        <a href="http://localhost:8233" target="_blank">Open Temporal UI</a>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+  </body>
+</html>
