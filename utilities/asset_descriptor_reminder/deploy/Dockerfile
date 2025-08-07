@@ -48,10 +48,12 @@ USER appuser
 # Download DAPR components and set up entrypoint
 RUN uv run poe download-components
 
-# Copy and set executable entrypoint
+# Copy and set executable entrypoint with line ending fix
 COPY --chown=appuser:appuser ./deploy/entrypoint.sh /app/entrypoint.sh
 USER root
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh && \
+    # Fix potential Windows line endings
+    sed -i 's/\r$//' /app/entrypoint.sh
 USER appuser
 
 ENTRYPOINT ["/app/entrypoint.sh"]
