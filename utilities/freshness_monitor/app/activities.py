@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.clients.atlan_client import get_client
 from pyatlan.client.atlan import AtlanClient
 from pyatlan.model.assets import Table
 from pyatlan.model.core import Announcement
@@ -17,27 +18,18 @@ logger = get_logger(__name__)
 class FreshnessMonitorActivities(ActivitiesInterface):
     def __init__(self):
         # Initialize AtlanClient immediately
-        base_url = os.getenv("ATLAN_BASE_URL")
-        api_key = os.getenv("ATLAN_API_KEY")
+        self.atlan_client = get_client()
 
-        if not base_url or not api_key:
-            raise ValueError(
-                "Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY"
-            )
-
-        # Create the client and set it as current immediately
-        self.atlan_client = AtlanClient(base_url=base_url, api_key=api_key)
-
-    async def _get_atlan_client(self) -> AtlanClient:
+    def _get_atlan_client(self) -> AtlanClient:
         """Return the initialized Atlan client"""
         return self.atlan_client
 
     @activity.defn
-    async def fetch_tables_metadata(
+    def fetch_tables_metadata(
         self, workflow_args: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """Activity 1: Fetch table metadata from Atlan"""
-        client = await self._get_atlan_client()
+        client = self._get_atlan_client()
 
         # Build search request for tables
         logger.info("Fetching tables metadata...")
@@ -95,7 +87,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         return tables_data
 
     @activity.defn
-    async def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Activity 2: Filter and identify stale tables based on threshold"""
         tables_data = args["tables_data"]
         threshold_days = args["threshold_days"] or os.getenv("THRESHOLD_DAYS")
@@ -104,9 +96,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         threshold_date = datetime.now() - timedelta(days=threshold_days)
 
         for table in tables_data:
-            # Check if table is stale based on update_time
-            update_time = table.get("update_time")
-            if update_time:
+            if update_time := table.get("update_time"):
                 # Convert timestamp to datetime if needed
                 if isinstance(update_time, (int, float)):
                     update_datetime = datetime.fromtimestamp(
@@ -127,11 +117,11 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         return stale_tables
 
     @activity.defn
-    async def tag_stale_tables(self, args: Dict[str, Any]) -> Dict[str, Any]:
+    def tag_stale_tables(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Activity 3: Add announcement to mark stale tables"""
         stale_tables = args["stale_tables"]
 
-        client = await self._get_atlan_client()
+        client = self._get_atlan_client()
 
         tagged_count = 0
         failed_count = 0
