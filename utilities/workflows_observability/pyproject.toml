@@ -7,8 +7,8 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,tests]==0.1.1rc23",
-    "poethepoet"
+    "atlan-application-sdk[tests,workflows]==0.1.1rc30",
+    "poethepoet",
 ]
 
 [dependency-groups]
