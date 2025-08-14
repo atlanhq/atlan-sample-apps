@@ -16,7 +16,7 @@ activity.logger = logger
 
 class WorkflowsObservabilityActivities(ActivitiesInterface):
     @activity.defn
-    def fetch_workflows_run(self, args: tuple[str, str, str]) -> dict:
+    def fetch_workflows_run(self, args: tuple[str, str, str]):
         """
         Fetch workflow runs from Atlan within a time range, based on a selected date and output type.
         If output_type is 'Local', the workflow run results are stored as JSON files under /tmp/workflows.
