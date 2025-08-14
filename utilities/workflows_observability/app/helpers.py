@@ -1,7 +1,6 @@
 import asyncio
 import os
 
-from application_sdk.clients.atlan_client import get_client
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.outputs.objectstore import ObjectStoreOutput
 from pyatlan.model.enums import AtlanWorkflowPhase
