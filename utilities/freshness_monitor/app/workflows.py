@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
 from app.activities import FreshnessMonitorActivities
-from application_sdk.activities import ActivitiesInterface
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
@@ -10,7 +9,7 @@ from temporalio import workflow
 @workflow.defn
 class FreshnessMonitorWorkflow(WorkflowInterface):
     @workflow.run
-    async def run(self, workflow_args: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, workflow_args: Dict[str, Any]):
         """Main workflow execution"""
 
         activities_instance = FreshnessMonitorActivities()
@@ -46,7 +45,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
             )
 
     @staticmethod
-    def get_activities(activities: ActivitiesInterface) -> Sequence[Callable]:
+    def get_activities(activities: FreshnessMonitorActivities) -> Sequence[Callable]:
         """Return list of activity methods for worker registration"""
         return [
             activities.get_workflow_args,
