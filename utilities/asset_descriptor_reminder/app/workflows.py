@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
 from app.activities import AssetDescriptionReminderActivities
-from application_sdk.activities import ActivitiesInterface
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
 
@@ -70,7 +69,7 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
         }
 
     @staticmethod
-    def get_activities(activities: ActivitiesInterface) -> Sequence[Callable]:
+    def get_activities(activities: AssetDescriptionReminderActivities) -> Sequence[Callable]:
         """Return list of activity methods for worker registration"""
         return [
             activities.get_workflow_args,
