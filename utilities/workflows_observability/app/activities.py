@@ -6,7 +6,7 @@ from app.helpers import (
     save_result_object_storage,
 )
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.clients.atlan_client import get_client
+from application_sdk.clients.atlan import get_client
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 

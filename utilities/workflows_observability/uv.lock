@@ -122,7 +122,7 @@ wheels = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc30"
+version = "0.1.1rc31"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -137,9 +137,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/53/9e4ea83219b3ec3d617e87232ec34b477a1952dea35ab37a3ef6d769fa9d/atlan_application_sdk-0.1.1rc30.tar.gz", hash = "sha256:3f2aaf2bd89d7b7cc99531ec25736a43d228954a995f371128954271e4f9768d", size = 913666, upload-time = "2025-08-13T11:44:38.298Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/06/19b01bc9e96da949b5b8c80cbdad4b4001672e3d1ed60c83b5517e455742/atlan_application_sdk-0.1.1rc31.tar.gz", hash = "sha256:3005fbabef5b19cbb5b9425274b9ec7f0b37bacace5c42c7f0737b37e02955ee", size = 917838, upload-time = "2025-08-14T08:48:22.083Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/58/0b9671900fbfbd16d454106802a2ab3797190f1e33f66b5152e3d4a711dd/atlan_application_sdk-0.1.1rc30-py3-none-any.whl", hash = "sha256:a251565403d01ab4dc0f25b64afe1a49f157ed69a83a6fc481466a7ef01e11e1", size = 202816, upload-time = "2025-08-13T11:44:36.939Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/19/e39dcd37c4b21e7209fb62c019f3a231cc8543798cf32ab00abf11f1206c/atlan_application_sdk-0.1.1rc31-py3-none-any.whl", hash = "sha256:026562d2eba914baf4fab0500b73adc6dd644f9ecf379d647db870efd7059bb1", size = 205333, upload-time = "2025-08-14T08:48:20.808Z" },
 ]
 
 [package.optional-dependencies]
@@ -2484,7 +2484,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc30" },
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc31" },
     { name = "poethepoet" },
 ]
 

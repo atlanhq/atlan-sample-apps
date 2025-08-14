@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.clients.atlan_client import get_client
+from application_sdk.clients.atlan import get_client
 from pyatlan.client.atlan import AtlanClient
 from pyatlan.model.assets import Table
 from pyatlan.model.core import Announcement
