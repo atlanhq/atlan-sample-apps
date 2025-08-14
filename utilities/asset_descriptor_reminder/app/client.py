@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 import requests
 from application_sdk.clients import ClientInterface
-from application_sdk.clients.atlan_client import get_client
+from application_sdk.clients.atlan import get_client
 from pyatlan.client.atlan import AtlanClient
 from slack_sdk import WebClient
 
