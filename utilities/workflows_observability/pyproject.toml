@@ -26,7 +26,7 @@ stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || 
 
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v0.1.1rc23" }
+env = { SDK_VERSION = "v0.1.1rc31" }
 shell = """
 import pathlib, requests, os
 
