@@ -8,7 +8,7 @@
   </head>
   <body>
     <div class="card">
-      <h2>Hello World Workflow Application</h2>
+      <h2>Hello World Application</h2>
       <form id="nameForm" onsubmit="handleSubmit(event)">
         <div class="form-group">
           <label for="name">Enter your name:</label>
@@ -16,7 +16,6 @@
         </div>
         <button id="runWorkflowButton" type="submit">Submit</button>
       </form>
-      <a id="temporal-link" href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows" target="_blank">Temporal UI</a>
     </div>
     <div id="successModal" class="modal">
       <div class="modal-content">
