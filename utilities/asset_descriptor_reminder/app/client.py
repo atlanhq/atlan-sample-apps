@@ -1,19 +1,19 @@
 from typing import Any, Dict, Optional
 
-import requests
+import httpx
 from application_sdk.clients import ClientInterface
-from application_sdk.clients.atlan import get_client
-from pyatlan.client.atlan import AtlanClient
+from application_sdk.clients.async_atlan import get_client
+from pyatlan.client.aio import AsyncAtlanClient
 from slack_sdk import WebClient
 
 
 class AssetDescriptionClient(ClientInterface):
     def __init__(self):
-        self.atlan_client: Optional[AtlanClient] = None
+        self.atlan_client: Optional[AsyncAtlanClient] = None
         self.slack_client: Optional[WebClient] = None
         self.credentials: Optional[Dict[str, str]] = None
 
-    def load(self, credentials: Dict[str, Any]) -> None:
+    async def load(self, credentials: Dict[str, Any]) -> None:
         """Load and establish connections to Atlan and Slack."""
         self.credentials = credentials
 
@@ -24,7 +24,7 @@ class AssetDescriptionClient(ClientInterface):
                 "Missing required Atlan credentials (atlan_token)"
             )
 
-        self.atlan_client = get_client(api_token_guid=self.credentials["atlan_token"])
+        self.atlan_client = await get_client(api_token_guid=self.credentials["atlan_token"])
         if self.credentials.get("slack_bot_token"):
             self.slack_client = WebClient(token=self.credentials["slack_bot_token"])
 
@@ -36,10 +36,10 @@ class AssetDescriptionClient(ClientInterface):
         self.slack_client = None
         self.credentials = None
 
-    def get_atlan_client(self) -> AtlanClient:
+    async def get_atlan_client(self) -> AsyncAtlanClient:
         """Get the Atlan client instance."""
         if not self.atlan_client and self.credentials:
-            self.load(self.credentials)
+            await self.load(self.credentials)
         elif not self.credentials:
             raise ValueError(
                 "Client not initialized - call load() with credentials first"
@@ -54,14 +54,14 @@ class AssetDescriptionClient(ClientInterface):
             and self.credentials
             and self.credentials.get("slack_bot_token")
         ):
-            self.load(self.credentials)
+            await self.load(self.credentials)
         elif not self.credentials:
             raise ValueError(
                 "Client not initialized - call load() with credentials first"
             )
         return self.slack_client
 
-    def get(
+    async def get(
         self, url: str, params: Dict[str, Any], bearer: Optional[str] = None
     ) -> Dict[str, Any]:
         """Make a GET request with optional bearer token."""
@@ -69,6 +69,7 @@ class AssetDescriptionClient(ClientInterface):
         if bearer:
             headers["Authorization"] = f"Bearer {bearer}"
 
-        response = requests.get(url, headers=headers, params=params)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, params=params, headers=headers)
         response.raise_for_status()
         return response.json()

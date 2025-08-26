@@ -1,12 +1,14 @@
 import os
 from typing import Any, Dict, List, Optional
 
+from pyatlan.model.assets import Asset
+
 from app.client import AssetDescriptionClient
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
-from pyatlan.model.search import IndexSearchRequest
 from slack_sdk.errors import SlackApiError
 from temporalio import activity
+from pyatlan.model.fluent_search import FluentSearch
 
 logger = get_logger(__name__)
 
@@ -15,57 +17,38 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
     def __init__(self):
         self.client = None
 
-    def _get_client(self, config: Dict[str, str]) -> AssetDescriptionClient:
+    async def _get_client(self, config: Dict[str, str]) -> AssetDescriptionClient:
         """Get or create a client with config."""
         if not self.client:
             self.client = AssetDescriptionClient()
-            self.client.load(config)
+            await self.client.load(config)
         return self.client
 
     @activity.defn
-    def fetch_user_assets(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def fetch_user_assets(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Activity 1: Fetch assets owned by the selected user"""
-        client = self._get_client(args["config"])
-        atlan_client = client.get_atlan_client()
+        client = await self._get_client(args["config"])
+        atlan_client = await client.get_atlan_client()
         user_username = args["user_username"]
         limit = args.get("limit", 50)
 
         logger.info(f"Fetching assets owned by user: {user_username}")
-
         try:
-            search_request = IndexSearchRequest(
-                dsl={
-                    "query": {
-                        "bool": {
-                            "must": [
-                                {"term": {"__state": "ACTIVE"}},
-                                {
-                                    "terms": {
-                                        "__typeName.keyword": [
-                                            "Table",
-                                            "View",
-                                            "Database",
-                                        ]
-                                    }
-                                },
-                                {"term": {"ownerUsers": user_username}},
-                            ]
-                        }
-                    },
-                    "from": 0,
-                    "size": limit,
-                    "attributes": [
-                        "qualifiedName",
-                        "name",
-                        "description",
-                        "ownerUsers",
-                        "userDescription",
-                    ],
-                }
+            search_results = await (
+                FluentSearch()
+                .select()
+                .where(Asset.TYPE_NAME.within(["Table", "View", "Database"]))
+                .where(Asset.OWNER_USERS.eq(user_username))
+                .include_on_results(Asset.QUALIFIED_NAME)
+                .include_on_results(Asset.NAME)
+                .include_on_results(Asset.DESCRIPTION)
+                .include_on_results(Asset.OWNER_USERS)
+                .include_on_results(Asset.USER_DESCRIPTION)
+                .page_size(limit)
+                .execute_async(client=atlan_client)
             )
-
             assets_data = []
-            for asset in atlan_client.asset.search(search_request):
+            async for asset in search_results:
                 asset_info = {
                     "qualified_name": getattr(asset.attributes, "qualified_name", ""),
                     "name": getattr(asset.attributes, "name", ""),
@@ -81,8 +64,10 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
                 logger.info(
                     f"Found asset: {asset_info['name']} - Description: {bool(asset_info['description'] or asset_info['user_description'])}"
                 )
+                if len(assets_data) >= limit:
+                    logger.info("Limit of assets reached")
+                    break
             return assets_data
-
         except Exception as e:
             logger.error(f"Error searching for user assets: {str(e)}")
             return [{"error": str(e)}]
@@ -110,7 +95,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
     @activity.defn
     async def find_slack_user(self, args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Activity 3: Find the person by email in Slack"""
-        client = self._get_client(args["config"])
+        client = await self._get_client(args["config"])
         slack_client = await client.get_slack_client()
         email_to_find = os.getenv("SLACK_USER_EMAIL")
         username = args["user_username"]
@@ -151,7 +136,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
     @activity.defn
     async def send_slack_reminder(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Activity 4: Send a Slack message to the person about missing description"""
-        client = self._get_client(args["config"])
+        client = await self._get_client(args["config"])
         slack_client = await client.get_slack_client()
         slack_user = args["slack_user"]
         assets = args["assets"]

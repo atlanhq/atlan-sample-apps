@@ -126,6 +126,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "atlan-application-sdk", extra = ["tests", "workflows"] },
+    { name = "httpx" },
     { name = "poethepoet" },
     { name = "slack-sdk" },
 ]
@@ -139,7 +140,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc31" },
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc33" },
+    { name = "httpx", specifier = "~=0.28.1" },
     { name = "poethepoet" },
     { name = "slack-sdk" },
 ]
@@ -153,7 +155,7 @@ dev = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc31"
+version = "0.1.1rc33"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -168,9 +170,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/06/19b01bc9e96da949b5b8c80cbdad4b4001672e3d1ed60c83b5517e455742/atlan_application_sdk-0.1.1rc31.tar.gz", hash = "sha256:3005fbabef5b19cbb5b9425274b9ec7f0b37bacace5c42c7f0737b37e02955ee", size = 917838, upload-time = "2025-08-14T08:48:22.083Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/3c/c28cfdffae97cea6bfede40081bbd51f767ea073f2239bf5ffe0aab75cbf/atlan_application_sdk-0.1.1rc33.tar.gz", hash = "sha256:bf2f722743ced4c5dc1e69e84926b86de85406206d65538dba3483e45d15048f", size = 920832, upload-time = "2025-08-26T12:55:15.236Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e9/19/e39dcd37c4b21e7209fb62c019f3a231cc8543798cf32ab00abf11f1206c/atlan_application_sdk-0.1.1rc31-py3-none-any.whl", hash = "sha256:026562d2eba914baf4fab0500b73adc6dd644f9ecf379d647db870efd7059bb1", size = 205333, upload-time = "2025-08-14T08:48:20.808Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/53/cd1905f0210e537feca0eb46c65cb20ba8c29863060322b7f254f4aef65c/atlan_application_sdk-0.1.1rc33-py3-none-any.whl", hash = "sha256:3920652328027e6bd75afc7083d332bcff773549e95d94ed7bd85c6c05fadca2", size = 207109, upload-time = "2025-08-26T12:55:13.967Z" },
 ]
 
 [package.optional-dependencies]
@@ -802,6 +804,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "httpx-retries"
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2a/cd/4aabdb837943ab1e890cd6104f84d35a94ae4ae0efb684d95792a1f16f45/httpx_retries-0.4.1.tar.gz", hash = "sha256:008c10a57ee73665fa82bfa28466c736da5214b31ee6eacec8707c36493ed152", size = 12588, upload-time = "2025-08-23T12:21:12.57Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/40/72/a580f4ecfa22f59b7c3ecd551174cf46c78f4633c687d08eafeacb445144/httpx_retries-0.4.1-py3-none-any.whl", hash = "sha256:756020a4d67eccea5785b30a27c0df413bda5f718b5e5847fa163b51e3348144", size = 8240, upload-time = "2025-08-23T12:21:11.665Z" },
 ]
 
 [[package]]
@@ -1589,23 +1603,24 @@ wheels = [
 
 [[package]]
 name = "pyatlan"
-version = "7.2.0"
+version = "8.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "httpx" },
+    { name = "httpx-retries" },
     { name = "jinja2" },
     { name = "lazy-loader" },
     { name = "nanoid" },
     { name = "pydantic" },
+    { name = "pytest-asyncio" },
     { name = "python-dateutil" },
     { name = "pytz" },
     { name = "pyyaml" },
-    { name = "requests" },
     { name = "tenacity" },
-    { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/c4/84d43d5a7e0e9c6adc5a5a8337fe4d24f15038a9a1a35e3aa3b3f600f9c3/pyatlan-7.2.0.tar.gz", hash = "sha256:cfccd24bda19421868400f35c7fe11415a8658444f65edc209e3259c570f4b3c", size = 654855, upload-time = "2025-08-13T12:17:24.147Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/7c/5be0fbd21dd956f91f59c0d5ec54a80a204683035155fea2f41468f7cb64/pyatlan-8.0.1.tar.gz", hash = "sha256:489740c00e5ac8f6afbf5a95ebc81aef9ebc4078e52733eee69ff85f6709f4ab", size = 758542, upload-time = "2025-08-26T06:35:37.511Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/eb/0d579703375b21d2f2d696aa29006f0fd2a6caba766ea0ace4b0544b28e4/pyatlan-7.2.0-py3-none-any.whl", hash = "sha256:83404f9421821161b23fe2a9e4d3ca8322a7cef2ca0d2924a8bf215a476107a9", size = 1178281, upload-time = "2025-08-13T12:17:21.136Z" },
+    { url = "https://files.pythonhosted.org/packages/43/a1/e6130adca5205f1596d247a1e46db478591e974447a8943d40783503d1a3/pyatlan-8.0.1-py3-none-any.whl", hash = "sha256:90d9a24145ab939c19eda32bd9c34015f39d7b6fab8b0b00178b3e1471b0f5bb", size = 1332557, upload-time = "2025-08-26T06:35:35.631Z" },
 ]
 
 [[package]]
