@@ -1,6 +1,6 @@
 import pytest
-from activities import HelloWorldActivities
-from workflow import HelloWorldWorkflow
+from app.activities import HelloWorldActivities
+from app.workflow import HelloWorldWorkflow
 
 
 class TestHelloWorldWorkflowWorker:

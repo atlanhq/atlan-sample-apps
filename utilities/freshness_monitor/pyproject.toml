@@ -17,6 +17,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "coverage",
+    "pre-commit",
 ]
 
 [tool.poe.tasks]

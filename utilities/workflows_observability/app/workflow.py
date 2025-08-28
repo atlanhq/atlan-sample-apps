@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
+
 from app.activities import WorkflowsObservabilityActivities
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
@@ -56,7 +57,9 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
         workflow.logger.info("Workflows observability workflow completed")
 
     @staticmethod
-    def get_activities(activities: WorkflowsObservabilityActivities) -> Sequence[Callable[..., Any]]:
+    def get_activities(
+        activities: WorkflowsObservabilityActivities,
+    ) -> Sequence[Callable[..., Any]]:
         """Get the sequence of activities to be executed by the workflow.
 
         Args:

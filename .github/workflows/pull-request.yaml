@@ -1,0 +1,160 @@
+name: Sample App Pull Request CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+# Explicit permissions for security (principle of least privilege)
+permissions:
+  contents: read
+  pull-requests: write  # Required for coverage comments on PRs
+
+jobs:
+  # Pre-commit checks for code quality
+  pre-commit:
+    name: Pre-commit Checks 🧹
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for pre-commit to work correctly
+
+      - name: Set up Python 3.11 🐍
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install pre-commit ⚡️
+        run: |
+          pip install pre-commit
+
+      - name: Cache pre-commit environments 💾
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-
+
+      - name: Run pre-commit on all files 🔍
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+
+  # Detect which apps have changes to optimize CI runs
+  detect-changes:
+    name: Detect Changes 🔍
+    runs-on: ubuntu-latest
+    needs: pre-commit  # Run after pre-commit passes
+    outputs:
+      apps: ${{ steps.changes.outputs.apps }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes
+        id: changes
+        run: |
+          # Get list of changed files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+          fi
+
+          # Check which apps have changes
+          APPS_WITH_CHANGES=""
+
+          # Always test these apps if they have tests
+          TEST_APPS=("quickstart/giphy" "quickstart/ai_giphy" "quickstart/hello_world")
+
+          for app in "${TEST_APPS[@]}"; do
+            if echo "$CHANGED_FILES" | grep -q "^$app/" || [ "${{ github.event_name }}" = "push" ]; then
+              if [ -d "$app/tests" ]; then
+                APPS_WITH_CHANGES="$APPS_WITH_CHANGES $app"
+              fi
+            fi
+          done
+
+          # If no specific app changes detected, test all apps with tests (for push to main)
+          if [ -z "$APPS_WITH_CHANGES" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            for app in "${TEST_APPS[@]}"; do
+              if [ -d "$app/tests" ]; then
+                APPS_WITH_CHANGES="$APPS_WITH_CHANGES $app"
+              fi
+            done
+          fi
+
+          # Convert to JSON array manually (more reliable than jq)
+          if [ -n "$APPS_WITH_CHANGES" ]; then
+            # Clean up the space-separated list and convert to JSON array
+            CLEAN_APPS=$(echo "$APPS_WITH_CHANGES" | xargs -n1 | sort -u)
+            APPS_JSON="["
+            FIRST=true
+            for app in $CLEAN_APPS; do
+              if [ "$FIRST" = true ]; then
+                APPS_JSON="$APPS_JSON\"$app\""
+                FIRST=false
+              else
+                APPS_JSON="$APPS_JSON,\"$app\""
+              fi
+            done
+            APPS_JSON="$APPS_JSON]"
+          else
+            APPS_JSON="[]"
+          fi
+
+          echo "apps=$APPS_JSON" >> $GITHUB_OUTPUT
+          echo "Apps to test: $APPS_JSON"
+
+  test:
+    name: Test ${{ matrix.app }} 📦
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.apps != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.detect-changes.outputs.apps) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11 🐍
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install uv ⚡️
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "${{ matrix.app }}/uv.lock"
+
+      - name: Install dependencies ⬇️
+        working-directory: ${{ matrix.app }}
+        run: |
+          uv sync --dev
+
+      - name: Run tests 🧪
+        working-directory: ${{ matrix.app }}
+        run: |
+          uv run python -m pytest tests/ -v --tb=short
+
+      - name: Run tests with coverage 🔄
+        working-directory: ${{ matrix.app }}
+        run: |
+          uv run coverage run -m pytest tests/ -v
+          uv run coverage report --show-missing
+          uv run coverage xml
+
+      - name: Comment Coverage Report on PR 📊
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: ${{ matrix.app }}/coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}

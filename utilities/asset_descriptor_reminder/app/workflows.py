@@ -69,7 +69,9 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
         }
 
     @staticmethod
-    def get_activities(activities: AssetDescriptionReminderActivities) -> Sequence[Callable]:
+    def get_activities(
+        activities: AssetDescriptionReminderActivities,
+    ) -> Sequence[Callable]:
         """Return list of activity methods for worker registration"""
         return [
             activities.get_workflow_args,

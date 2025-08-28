@@ -19,6 +19,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "coverage",
+    "pre-commit",
 ]
 
 [tool.poe.tasks]
@@ -52,6 +53,11 @@ for file_info in response.json():
         file_path.write_text(file_response.text)
         print(f"Downloaded: {file_info['name']}")
 """
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20"
+]
 
 [build-system]
 requires = ["hatchling"]
