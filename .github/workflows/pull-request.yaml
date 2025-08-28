@@ -1,0 +1,128 @@
+name: Sample App Pull Request CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  # Detect which apps have changes to optimize CI runs
+  detect-changes:
+    name: Detect Changes 🔍
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.changes.outputs.apps }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes
+        id: changes
+        run: |
+          # Get list of changed files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+          fi
+          
+          # Check which apps have changes
+          APPS_WITH_CHANGES=""
+          
+          # Always test these apps if they have tests
+          TEST_APPS=("quickstart/giphy" "quickstart/ai_giphy" "quickstart/hello_world")
+          
+          for app in "${TEST_APPS[@]}"; do
+            if echo "$CHANGED_FILES" | grep -q "^$app/" || [ "${{ github.event_name }}" = "push" ]; then
+              if [ -d "$app/tests" ]; then
+                APPS_WITH_CHANGES="$APPS_WITH_CHANGES $app"
+              fi
+            fi
+          done
+          
+          # If no specific app changes detected, test all apps with tests (for push to main)
+          if [ -z "$APPS_WITH_CHANGES" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            for app in "${TEST_APPS[@]}"; do
+              if [ -d "$app/tests" ]; then
+                APPS_WITH_CHANGES="$APPS_WITH_CHANGES $app"
+              fi
+            done
+          fi
+          
+          # Convert to JSON array
+          APPS_JSON=$(echo $APPS_WITH_CHANGES | tr ' ' '\n' | grep -v '^$' | jq -R . | jq -s .)
+          echo "apps=$APPS_JSON" >> $GITHUB_OUTPUT
+          echo "Apps to test: $APPS_JSON"
+
+  test:
+    name: Test ${{ matrix.app }} 📦
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.apps != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.detect-changes.outputs.apps) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11 🐍
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install uv ⚡️
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "${{ matrix.app }}/uv.lock"
+
+      - name: Install dependencies ⬇️
+        working-directory: ${{ matrix.app }}
+        run: |
+          uv sync --dev
+
+      - name: Run tests 🧪
+        working-directory: ${{ matrix.app }}
+        run: |
+          uv run python -m pytest tests/ -v --tb=short
+
+      - name: Run tests with coverage 🔄
+        working-directory: ${{ matrix.app }}
+        run: |
+          uv run coverage run -m pytest tests/ -v
+          uv run coverage report --show-missing
+          uv run coverage xml
+
+      - name: Upload coverage to Codecov 📝
+        uses: codecov/codecov-action@v3
+        with:
+          file: ${{ matrix.app }}/coverage.xml
+          flags: ${{ matrix.app }}
+          name: ${{ matrix.app }}-coverage
+          fail_ci_if_error: false
+
+  test-summary:
+    name: Test Summary 📊
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [[ "${{ needs.test.result }}" == "failure" ]]; then
+            echo "❌ Some tests failed"
+            exit 1
+          elif [[ "${{ needs.test.result }}" == "cancelled" ]]; then
+            echo "⚠️  Tests were cancelled"
+            exit 1
+          else
+            echo "✅ All tests passed!"
+          fi
+
+

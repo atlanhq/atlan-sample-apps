@@ -53,6 +53,11 @@ for file_info in response.json():
         print(f"Downloaded: {file_info['name']}")
 """
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20"
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

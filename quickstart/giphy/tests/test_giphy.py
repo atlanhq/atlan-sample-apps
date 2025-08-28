@@ -1,11 +1,17 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from activities import GiphyActivities
-from workflow import GiphyWorkflow
+from app.activities import GiphyActivities
+from app.workflow import GiphyWorkflow
 
 
 class TestGiphyWorkflowWorker:
+    @pytest.fixture(scope="class", autouse=True)
+    def mock_env_vars(self):
+        """Mock environment variables for all tests in this class."""
+        with patch("app.activities.GIPHY_API_KEY", "test_api_key"), patch("app.activities.SMTP_PASSWORD", "test_password"):
+            yield
+
     @pytest.fixture(scope="class")
     def workflow(self) -> GiphyWorkflow:
         return GiphyWorkflow()
