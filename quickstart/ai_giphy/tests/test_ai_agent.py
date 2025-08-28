@@ -23,8 +23,10 @@ class TestAIAgent:
                 "APP_AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
                 "APP_AZURE_OPENAI_DEPLOYMENT_NAME": "test-deployment",
             }
-            mock_env_get.side_effect = lambda key, default=None: env_vars.get(key, default)
-            
+            mock_env_get.side_effect = lambda key, default=None: env_vars.get(
+                key, default
+            )
+
             yield
 
     @staticmethod
@@ -49,7 +51,9 @@ class TestAIAgent:
             mock_get.side_effect = Exception("API Error")
 
             result = fetch_gif("test")
-            assert result == "https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"
+            assert (
+                result == "https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"
+            )
             mock_get.assert_called_once()
 
     @staticmethod
@@ -88,13 +92,13 @@ class TestAIAgent:
         ):
             mock_llm_instance = Mock()
             mock_llm.return_value = mock_llm_instance
-            
+
             mock_prompt = Mock()
             mock_hub_pull.return_value = mock_prompt
-            
+
             mock_agent = Mock()
             mock_create_agent.return_value = mock_agent
-            
+
             mock_executor = Mock()
             mock_agent_executor.return_value = mock_executor
 

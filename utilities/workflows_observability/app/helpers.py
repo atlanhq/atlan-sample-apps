@@ -61,10 +61,12 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
         OSError: If there is an issue accessing the local directory or files.
         Exception: For any other errors during the upload process.
     """
+
     async def save_results():
         await ObjectStoreOutput.push_files_to_object_store(
             output_prefix=output_prefix, input_files_path=local_directory
         )
+
     try:
         asyncio.run(save_results())
         logger.info("Files pushed to object storage.")

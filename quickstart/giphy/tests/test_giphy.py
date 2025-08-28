@@ -9,7 +9,9 @@ class TestGiphyWorkflowWorker:
     @pytest.fixture(scope="class", autouse=True)
     def mock_env_vars(self):
         """Mock environment variables for all tests in this class."""
-        with patch("app.activities.GIPHY_API_KEY", "test_api_key"), patch("app.activities.SMTP_PASSWORD", "test_password"):
+        with patch("app.activities.GIPHY_API_KEY", "test_api_key"), patch(
+            "app.activities.SMTP_PASSWORD", "test_password"
+        ):
             yield
 
     @pytest.fixture(scope="class")

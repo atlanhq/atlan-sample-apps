@@ -16,7 +16,7 @@ class TestAIGiphyActivities:
         test_input = "Fetch a dog gif and send it to user@example.com"
         expected_output = {
             "output": "I've found a dog gif and sent it to user@example.com",
-            "intermediate_steps": []
+            "intermediate_steps": [],
         }
 
         with patch("app.activities.get_chain") as mock_get_chain:
@@ -67,10 +67,14 @@ class TestAIGiphyActivities:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_run_ai_agent_get_chain_failure(activities: AIGiphyActivities) -> None:
+    async def test_run_ai_agent_get_chain_failure(
+        activities: AIGiphyActivities,
+    ) -> None:
         """Test AI agent execution when get_chain fails."""
         test_input = "Test input"
 
-        with patch("app.activities.get_chain", side_effect=Exception("Chain creation failed")):
+        with patch(
+            "app.activities.get_chain", side_effect=Exception("Chain creation failed")
+        ):
             with pytest.raises(Exception, match="Chain creation failed"):
                 await activities.run_ai_agent(test_input)

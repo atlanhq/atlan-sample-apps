@@ -35,7 +35,7 @@ def fetch_gif(search_term: str) -> str:
         raise ValueError(
             "GIPHY_API_KEY is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
         )
-    
+
     url = f"https://api.giphy.com/v1/gifs/random?api_key={GIPHY_API_KEY}&tag={search_term}&rating=pg"
     try:
         response = requests.get(url, timeout=5)
@@ -56,7 +56,7 @@ def send_email_with_gify(to: str, gify_url: str):
         raise ValueError(
             "SMTP_PASSWORD is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
         )
-    
+
     sender = "support@atlan.app"
     subject = "Your Surprise GIF!"
     body = f"""
@@ -92,17 +92,17 @@ def get_chain():
     # Check for required Azure OpenAI environment variables
     required_azure_vars = [
         "APP_AZURE_OPENAI_API_KEY",
-        "APP_AZURE_OPENAI_API_VERSION", 
+        "APP_AZURE_OPENAI_API_VERSION",
         "APP_AZURE_OPENAI_ENDPOINT",
-        "APP_AZURE_OPENAI_DEPLOYMENT_NAME"
+        "APP_AZURE_OPENAI_DEPLOYMENT_NAME",
     ]
-    
+
     for var in required_azure_vars:
         if not os.getenv(var):
             raise ValueError(
                 f"{var} is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
             )
-    
+
     local_llm = AzureChatOpenAI(
         api_key=os.getenv("APP_AZURE_OPENAI_API_KEY"),
         api_version=os.getenv("APP_AZURE_OPENAI_API_VERSION"),

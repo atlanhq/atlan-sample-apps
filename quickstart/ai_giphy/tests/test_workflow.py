@@ -1,5 +1,4 @@
 from unittest.mock import AsyncMock, Mock, patch
-from typing import Any, Dict
 
 import pytest
 from app.activities import AIGiphyActivities
@@ -25,12 +24,16 @@ class TestAIGiphyWorkflow:
         }
         agent_output = {
             "output": "I've found a cute cat gif and sent it to test@example.com successfully!",
-            "intermediate_steps": []
+            "intermediate_steps": [],
         }
 
         with (
-            patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args,
-            patch("app.workflow.workflow.execute_activity", new_callable=AsyncMock) as mock_execute_activity,
+            patch(
+                "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+            ) as mock_get_args,
+            patch(
+                "app.workflow.workflow.execute_activity", new_callable=AsyncMock
+            ) as mock_execute_activity,
         ):
             mock_get_args.return_value = workflow_args
             mock_execute_activity.return_value = agent_output
@@ -50,12 +53,16 @@ class TestAIGiphyWorkflow:
         workflow_args = {}  # No ai_input_string provided
         agent_output = {
             "output": "I've found a cat gif and sent it to test@example.com using the default input!",
-            "intermediate_steps": []
+            "intermediate_steps": [],
         }
 
         with (
-            patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args,
-            patch("app.workflow.workflow.execute_activity", new_callable=AsyncMock) as mock_execute_activity,
+            patch(
+                "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+            ) as mock_get_args,
+            patch(
+                "app.workflow.workflow.execute_activity", new_callable=AsyncMock
+            ) as mock_execute_activity,
         ):
             mock_get_args.return_value = workflow_args
             mock_execute_activity.return_value = agent_output
@@ -74,7 +81,9 @@ class TestAIGiphyWorkflow:
         """Test workflow handling when get_workflow_args activity fails."""
         workflow_config = {"workflow_id": "test_workflow_789"}
 
-        with patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args:
+        with patch(
+            "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+        ) as mock_get_args:
             mock_get_args.side_effect = Exception("Failed to get workflow args")
 
             with pytest.raises(Exception, match="Failed to get workflow args"):
@@ -88,8 +97,12 @@ class TestAIGiphyWorkflow:
         workflow_args = {"ai_input_string": "Test input"}
 
         with (
-            patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args,
-            patch("app.workflow.workflow.execute_activity", new_callable=AsyncMock) as mock_execute_activity,
+            patch(
+                "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+            ) as mock_get_args,
+            patch(
+                "app.workflow.workflow.execute_activity", new_callable=AsyncMock
+            ) as mock_execute_activity,
         ):
             mock_get_args.return_value = workflow_args
             mock_execute_activity.side_effect = Exception("AI Agent execution failed")
@@ -98,7 +111,9 @@ class TestAIGiphyWorkflow:
                 await workflow.run(workflow_config)
 
     @staticmethod
-    def test_get_activities_success(workflow: AIGiphyWorkflow, activities: AIGiphyActivities) -> None:
+    def test_get_activities_success(
+        workflow: AIGiphyWorkflow, activities: AIGiphyActivities
+    ) -> None:
         """Test get_activities returns correct activity methods."""
         activity_methods = workflow.get_activities(activities)
 
@@ -111,7 +126,9 @@ class TestAIGiphyWorkflow:
         """Test get_activities raises TypeError for wrong activities type."""
         wrong_activities = Mock()  # Not an AIGiphyActivities instance
 
-        with pytest.raises(TypeError, match="Activities must be an instance of AIGiphyActivities"):
+        with pytest.raises(
+            TypeError, match="Activities must be an instance of AIGiphyActivities"
+        ):
             workflow.get_activities(wrong_activities)
 
     @staticmethod
@@ -121,14 +138,15 @@ class TestAIGiphyWorkflow:
         workflow_config = {"workflow_id": "test_workflow_custom"}
         custom_input = "Find a funny dog gif and send it to custom@example.com"
         workflow_args = {"ai_input_string": custom_input}
-        agent_output = {
-            "output": f"Executed: {custom_input}",
-            "intermediate_steps": []
-        }
+        agent_output = {"output": f"Executed: {custom_input}", "intermediate_steps": []}
 
         with (
-            patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args,
-            patch("app.workflow.workflow.execute_activity", new_callable=AsyncMock) as mock_execute_activity,
+            patch(
+                "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+            ) as mock_get_args,
+            patch(
+                "app.workflow.workflow.execute_activity", new_callable=AsyncMock
+            ) as mock_execute_activity,
         ):
             mock_get_args.return_value = workflow_args
             mock_execute_activity.return_value = agent_output

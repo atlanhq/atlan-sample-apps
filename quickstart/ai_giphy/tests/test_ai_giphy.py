@@ -1,9 +1,8 @@
 from unittest.mock import AsyncMock, Mock, patch
-from typing import Any, Dict
 
 import pytest
 from app.activities import AIGiphyActivities
-from app.ai_agent import fetch_gif, get_chain, send_email_with_gify
+from app.ai_agent import fetch_gif, send_email_with_gify
 from app.workflow import AIGiphyWorkflow
 
 
@@ -28,8 +27,10 @@ class TestAIGiphyIntegration:
                 "APP_AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
                 "APP_AZURE_OPENAI_DEPLOYMENT_NAME": "test-deployment",
             }
-            mock_env_get.side_effect = lambda key, default=None: env_vars.get(key, default)
-            
+            mock_env_get.side_effect = lambda key, default=None: env_vars.get(
+                key, default
+            )
+
             yield
 
     @pytest.fixture(scope="class")
@@ -51,25 +52,29 @@ class TestAIGiphyIntegration:
         workflow_args = {
             "ai_input_string": "Find a cute puppy gif and send it to user@example.com"
         }
-        
+
         # Mock the AI agent chain response
         ai_agent_response = {
             "output": "I found a cute puppy gif and sent it to user@example.com successfully!",
             "intermediate_steps": [
                 ("Searching for puppy gif...", "Found gif: https://test-puppy.gif"),
-                ("Sending email...", "Email sent successfully to user@example.com")
-            ]
+                ("Sending email...", "Email sent successfully to user@example.com"),
+            ],
         }
 
         with (
-            patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args,
-            patch("app.workflow.workflow.execute_activity", new_callable=AsyncMock) as mock_ai_activity,
+            patch(
+                "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+            ) as mock_get_args,
+            patch(
+                "app.workflow.workflow.execute_activity", new_callable=AsyncMock
+            ) as mock_ai_activity,
             patch("app.activities.get_chain") as mock_get_chain,
         ):
             # Setup mocks
             mock_get_args.return_value = workflow_args
             mock_ai_activity.return_value = ai_agent_response
-            
+
             mock_chain = Mock()
             mock_chain.invoke.return_value = ai_agent_response
             mock_get_chain.return_value = mock_chain
@@ -85,15 +90,14 @@ class TestAIGiphyIntegration:
     @pytest.mark.asyncio
     async def test_ai_agent_tools_integration() -> None:
         """Test the AI agent with its tools in isolation."""
-        test_input = "Get a cat gif and email it to test@example.com"
-        
+
         with (
             patch("requests.get") as mock_requests,
             patch("smtplib.SMTP") as mock_smtp,
-            patch("app.ai_agent.AzureChatOpenAI") as mock_llm,
-            patch("app.ai_agent.hub.pull") as mock_hub_pull,
-            patch("app.ai_agent.create_tool_calling_agent") as mock_create_agent,
-            patch("app.ai_agent.AgentExecutor") as mock_agent_executor,
+            patch("app.ai_agent.AzureChatOpenAI"),
+            patch("app.ai_agent.hub.pull"),
+            patch("app.ai_agent.create_tool_calling_agent"),
+            patch("app.ai_agent.AgentExecutor"),
         ):
             # Mock HTTP request for gif
             mock_response = Mock()
@@ -139,13 +143,13 @@ class TestAIGiphyIntegration:
     ) -> None:
         """Test that workflow is correctly configured with activities."""
         activity_methods = workflow.get_activities(activities)
-        
+
         # Verify all required activities are present
         expected_activities = [
             activities.run_ai_agent,
             activities.get_workflow_args,
         ]
-        
+
         assert len(activity_methods) == len(expected_activities)
         for expected_activity in expected_activities:
             assert expected_activity in activity_methods
@@ -158,8 +162,12 @@ class TestAIGiphyIntegration:
         workflow_args = {}  # Empty args to trigger default
 
         with (
-            patch("app.workflow.workflow.execute_activity_method", new_callable=AsyncMock) as mock_get_args,
-            patch("app.workflow.workflow.execute_activity", new_callable=AsyncMock) as mock_ai_activity,
+            patch(
+                "app.workflow.workflow.execute_activity_method", new_callable=AsyncMock
+            ) as mock_get_args,
+            patch(
+                "app.workflow.workflow.execute_activity", new_callable=AsyncMock
+            ) as mock_ai_activity,
         ):
             mock_get_args.return_value = workflow_args
             mock_ai_activity.return_value = {"output": "Default execution completed"}
