@@ -6,6 +6,10 @@ on:
   push:
     branches: [ main, develop ]
 
+# Explicit permissions for security (principle of least privilege)
+permissions:
+  contents: read
+
 jobs:
   # Pre-commit checks for code quality
   pre-commit:
