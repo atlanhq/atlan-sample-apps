@@ -35,7 +35,7 @@ class TestAnaplanTransformer:
         """Test that all required YAML template files exist."""
         # Get the correct path to the transformers directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        transformer_dir = os.path.join(current_dir, "../../../app/transformers")
+        transformer_dir = os.path.join(current_dir, "../../app/transformers")
         transformer_dir = os.path.normpath(transformer_dir)
 
         expected_yaml_files = [
@@ -79,7 +79,7 @@ class TestAnaplanTransformer:
         """Test that YAML templates have the expected structure."""
         # Get the correct path to the transformers directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        transformer_dir = os.path.join(current_dir, "../../../app/transformers")
+        transformer_dir = os.path.join(current_dir, "../../app/transformers")
         transformer_dir = os.path.normpath(transformer_dir)
 
         # Test a few key YAML files for structure
