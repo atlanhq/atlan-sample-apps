@@ -1,0 +1,41 @@
+test_workflow_args:
+  credentials:
+    host: $E2E_ANAPLAN_HOST
+    username: $E2E_ANAPLAN_USERNAME
+    password: $E2E_ANAPLAN_PASSWORD
+    authType: "basic"
+  metadata:
+    include-metadata: "{}"
+    exclude-metadata: "{}"
+  connection:
+    connection_name: "anaplan_e2e_test"
+    connection_qualified_name: "default/anaplan/e2e_test"
+test_name: "test_anaplan_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  auth:
+    success: true
+    message: "Authentication successful"
+  metadata:
+    success: true
+  preflight_check:
+    success: true
+    data:
+      inputValidation:
+        success: true
+        # Message can vary, so we don't specify exact text
+        failureMessage: ""
+      authenticationCheck:
+        success: true
+        # Message can vary, so we don't specify exact text
+        failureMessage: ""
+      hostCheck:
+        success: true
+        # Message can vary, so we don't specify exact text
+        failureMessage: ""
+      permissionsCheck:
+        success: true
+        # Message can vary, so we don't specify exact text
+        failureMessage: ""

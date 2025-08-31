@@ -1,0 +1,50 @@
+{
+    "entityDefs": [
+      {
+        "name": "AnaplanPage",
+        "category": "ENTITY",
+        "description": "Instances of an AnaplanPage in Atlan.",
+        "serviceType": "atlan",
+        "typeVersion": "1.0",
+        "attributeDefs": [
+          {
+            "name": "anaplanAppQualifiedName",
+            "description": "Unique name of the AnaplanApp asset that contains this asset.",
+            "typeName": "string",
+            "isOptional": true,
+            "cardinality": "SINGLE",
+            "isUnique": false,
+            "isIndexable": false,
+            "includeInNotification": true,
+            "skipScrubbing": true,
+            "indexType": "STRING"
+          },
+          {
+            "name": "anaplanPageCategoryName",
+            "description": "Category name of the AnaplanPage from the source system.",
+            "typeName": "string",
+            "isOptional": true,
+            "cardinality": "SINGLE",
+            "isUnique": false,
+            "isIndexable": false,
+            "includeInNotification": true,
+            "skipScrubbing": true,
+            "indexType": "STRING"
+          },
+          {
+            "name": "anaplanPageType",
+            "description": "Type of the AnaplanPage from the source system.",
+            "typeName": "string",
+            "isOptional": true,
+            "cardinality": "SINGLE",
+            "isUnique": false,
+            "isIndexable": false,
+            "includeInNotification": true,
+            "skipScrubbing": true,
+            "indexType": "STRING"
+          }
+        ],
+        "superTypes": ["Anaplan"]
+      }
+    ]
+  }
