@@ -32,7 +32,11 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
     logger.info("Starting weather application")
 
     # initialize application
-    app = BaseApplication(name=APPLICATION_NAME, handlerWeatherHandler)
+    app = BaseApplication(
+        name=APPLICATION_NAME,
+        client_class=WeatherApiClient,
+        handler_class=WeatherHandler,
+    )
 
     # setup workflow (include requests as passthrough for the activity sandbox)
     await app.setup_workflow(

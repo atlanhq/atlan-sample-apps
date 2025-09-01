@@ -3,7 +3,7 @@ from typing import Any, Dict
 from application_sdk.handlers import HandlerInterface
 from application_sdk.observability.logger_adaptor import get_logger
 
-from app.client import WeatherApiClient, _map_units
+from .client import WeatherApiClient, _map_units
 
 logger = get_logger(__name__)
 
@@ -20,13 +20,13 @@ class WeatherHandler(HandlerInterface):
     then wraps responses in standard format ({"success": true/false, "data": ...})
     """
 
-    def __init__(self, weather_client: WeatherApiClient | None = None):
+    def __init__(self, client: WeatherApiClient | None = None):
         """Initialize Weather handler with optional client instance.
 
         Args:
-            weather_client (Optional[WeatherApiClient]): Optional WeatherApiClient instance
+            client (Optional[WeatherApiClient]): Optional WeatherApiClient instance
         """
-        self.weather_client = weather_client or WeatherApiClient()
+        self.weather_client = client or WeatherApiClient()
 
     # ============================================================================
     # SECTION 1: SDK INTERFACE METHODS (Called by FastAPI endpoints)
