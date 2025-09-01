@@ -57,7 +57,7 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
                 started_at=f"now-{difference_in_hours}h",
             )
 
-            for result in results:
+            async for result in results:
                 save_result_locally(result, local_directory)
 
             if output_type == "Object Storage":
