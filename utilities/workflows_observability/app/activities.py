@@ -6,7 +6,7 @@ from app.helpers import (
     save_result_object_storage,
 )
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.clients.atlan import get_client
+from application_sdk.clients.async_atlan import get_client
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
@@ -16,7 +16,7 @@ activity.logger = logger
 
 class WorkflowsObservabilityActivities(ActivitiesInterface):
     @activity.defn
-    def fetch_workflows_run(self, args: tuple[str, str, str]):
+    async def fetch_workflows_run(self, args: tuple[str, str, str]):
         """
         Fetch workflow runs from Atlan within a time range, based on a selected date and output type.
         If output_type is 'Local', the workflow run results are stored as JSON files under /tmp/workflows.
@@ -49,10 +49,10 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             time_difference = current_datetime - input_date
             difference_in_hours = int(time_difference.total_seconds() / 3600)
 
-            client = get_client()
+            client = await get_client()
             from pyatlan.model.enums import AtlanWorkflowPhase
 
-            results = client.workflow.find_runs_by_status_and_time_range(
+            results = await client.workflow.find_runs_by_status_and_time_range(
                 status=[AtlanWorkflowPhase.SUCCESS, AtlanWorkflowPhase.FAILED],
                 started_at=f"now-{difference_in_hours}h",
             )
@@ -61,7 +61,7 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
                 save_result_locally(result, local_directory)
 
             if output_type == "Object Storage":
-                save_result_object_storage("", local_directory)
+                await save_result_object_storage("", local_directory)
 
         except Exception as e:
             logger.error(f"Failed to process workflows: {str(e)}", exc_info=e)
