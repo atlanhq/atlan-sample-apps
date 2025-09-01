@@ -9,6 +9,10 @@ from temporalio.common import RetryPolicy
 
 from app.activities import AnaplanMetadataExtractionActivities
 
+# Constants for activity retry policies
+ACTIVITY_RETRY_MAX_ATTEMPTS = 3
+ACTIVITY_RETRY_BACKOFF_COEFFICIENT = 2
+
 logger = get_logger(__name__)
 workflow.logger = logger
 
@@ -35,16 +39,13 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
         }
         """
         logger.info("Starting Anaplan metadata extraction workflow")
-        logger.info(f"Workflow config received: {workflow_config}")
-
-        logger.info("Starting workflow execution")
 
         try:
             workflow_run_id = workflow.info().run_id
             workflow_args: Dict[str, Any] = {}  # Initialize workflow_args
 
             # activity retry policy
-            retry_policy = RetryPolicy(maximum_attempts=2, backoff_coefficient=2)
+            retry_policy = RetryPolicy(maximum_attempts=ACTIVITY_RETRY_MAX_ATTEMPTS, backoff_coefficient=ACTIVITY_RETRY_BACKOFF_COEFFICIENT)
 
             # Execute setup activities first
             activities_instance = self.activities_cls()
@@ -54,7 +55,7 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
             result = await workflow.execute_activity_method(
                 activities_instance.get_workflow_args,
                 args=[workflow_config],
-                retry_policy=RetryPolicy(maximum_attempts=3, backoff_coefficient=2),
+                retry_policy=retry_policy,
                 start_to_close_timeout=self.default_start_to_close_timeout,
                 heartbeat_timeout=self.default_heartbeat_timeout,
                 summary="Get workflow args",
@@ -73,7 +74,9 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
                 summary="Preflight check",
             )
 
-            # STEP 3: Set metadata filter state
+            # STEP 3: Set metadata filter state variables
+            # NOTE: This activity is used to evaluate the precedence of the metadata filters and to maintain
+            # state variables, which can be used in subsequent acitivities without needing to evaluate the filter precedence again
             logger.info("Executing set_metadata_filter_state")
             await workflow.execute_activity_method(
                 activities_instance.set_metadata_filter_state,
@@ -145,13 +148,12 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
                 logger.info(f"Transforming asset type: {asset_type}")
 
                 # Set typename for transformation
-                transform_workflow_args = workflow_args.copy()
-                transform_workflow_args["typename"] = asset_type
+                workflow_args["typename"] = asset_type
 
                 try:
                     await workflow.execute_activity_method(
                         activities_instance.transform_data,
-                        args=[transform_workflow_args],
+                        args=[workflow_args],
                         retry_policy=retry_policy,
                         start_to_close_timeout=self.default_start_to_close_timeout,
                         heartbeat_timeout=self.default_heartbeat_timeout,
