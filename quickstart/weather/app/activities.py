@@ -27,6 +27,40 @@ class WeatherActivities(ActivitiesInterface):
         self.weather_handler = weather_handler or WeatherHandler()
 
     @activity.defn
+    async def get_workflow_args(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get and merge workflow arguments with defaults.
+        
+        This method merges the provided configuration with default values
+        to ensure all required parameters are available for the workflow.
+
+        Args:
+            config (Dict[str, Any]): Input configuration that may include:
+                - username (str): Name of the user to greet
+                - city (str): City name to look up
+                - units (str): Temperature units preference
+
+        Returns:
+            Dict[str, Any]: Complete workflow configuration with defaults applied
+        """
+        logger.info(f"Processing workflow args from config: {config}")
+        
+        # Extract parameters with defaults
+        username: str = (config.get("username") or "Friend").strip() or "Friend"
+        city: str = (config.get("city") or "London").strip() or "London"
+        units: str = (config.get("units") or "celsius").strip() or "celsius"
+        
+        # Build complete workflow args
+        workflow_args = {
+            "username": username,
+            "city": city,
+            "units": units
+        }
+        
+        logger.info(f"Generated workflow args: {workflow_args}")
+        return workflow_args
+
+    @activity.defn
     async def get_weather_summary(self, config: Dict[str, Any]) -> str:
         """
         Build a friendly weather summary for the provided user and city.
@@ -38,7 +72,7 @@ class WeatherActivities(ActivitiesInterface):
             config (Dict[str, Any]): Input configuration that may include:
                 - username (str): Name of the user to greet
                 - city (str): City name to look up (default: "London")
-                - units (str): "celsius" or "fahrenheit" (also accepts "metric"/"imperial")
+                - units (str): "celsius" or "fahrenheit"
 
         Returns:
             str: Summary string, e.g., "Hello Alice! Weather in London: 23°C, Clear sky"

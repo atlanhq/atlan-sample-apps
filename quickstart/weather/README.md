@@ -4,23 +4,25 @@ A simple weather application built using the Atlan Application SDK that fetches 
 
 ## Features
 
-- **User Input**: Enter your username in the frontend
+- **User Input**: Enter username, city, and temperature units in the frontend
 - **Weather Data**: Fetches current weather from Open-Meteo API
 - **Geocoding**: Automatically resolves city names to coordinates
-- **Configurable**: Supports city and temperature units via workflow args
+- **Configurable**: Supports city and temperature units via frontend or workflow args
 - **Beautiful UI**: Modern, responsive frontend design
+- **Reference Pattern**: Demonstrates credentials handling for APIs that require authentication
 
 ## How It Works
 
-1. **Get workflow args** → Read city & units, with defaults if not provided
-2. **Fetch weather data** → Call Open-Meteo REST API (no API key needed)
-3. **Process/Format results** → Pick out temperature, weather condition, etc.
-4. **Return a summary string** → e.g., "Hello Alice! Weather in London: 23°C, Clear sky"
+1. **User Input** → Frontend collects username, city, and temperature units
+2. **Get workflow args** → Merge user input with defaults (city: London, units: celsius)
+3. **Fetch weather data** → Call Open-Meteo REST API (no API key needed)
+4. **Process/Format results** → Extract temperature, weather condition, etc.
+5. **Return a summary string** → e.g., "Hello Alice! Weather in Paris: 23°F, Clear sky"
 
 ## Default Configuration
 
-- **City**: London
-- **Units**: Celsius (supports "celsius", "fahrenheit", "metric", "imperial")
+- **City**: London (can be overridden via frontend)
+- **Units**: Celsius (supports "celsius" or "fahrenheit")
 - **Username**: From frontend input (required)
 
 ## Getting Started
@@ -47,31 +49,41 @@ A simple weather application built using the Atlan Application SDK that fetches 
 
 3. Download components (optional):
    ```bash
-   poe download-components
+   uv run poe download-components
    ```
 
 4. Start dependencies:
    ```bash
-   poe start-deps
+   uv run poe start-deps
    ```
 
 5. Run the application:
    ```bash
    python main.py
+   # or
+   uv run main.py
    ```
 
 6. Open your browser and navigate to the application (typically `http://localhost:3000`)
 
 ### Usage
 
-1. Enter your username in the form
-2. Click "Get Weather 🚀"
-3. Check the Temporal UI for the workflow execution and weather summary logs
+1. **Enter your username** (required)
+2. **Optionally enter a city** (defaults to London if empty)
+3. **Select temperature units** (Celsius or Fahrenheit)
+4. **Click "Get Weather 🚀"**
+5. **Check the Temporal UI** for the workflow execution and weather summary logs
+
 
 ### Customizing City and Units
 
-You can override the default city and units by including them in the POST request body:
+You can override the default city and units via:
 
+**Frontend Form:**
+- Enter city name in the city field
+- Select temperature units from the dropdown
+
+**API Request:**
 ```javascript
 {
   "username": "Alice",
@@ -80,9 +92,9 @@ You can override the default city and units by including them in the POST reques
 }
 ```
 
-Supported units:
-- `"celsius"` or `"metric"` → °C
-- `"fahrenheit"` or `"imperial"` → °F
+**Supported Units:**
+- `"celsius"` → °C
+- `"fahrenheit"` → °F
 
 ## API Reference
 
@@ -94,7 +106,7 @@ The app uses these Open-Meteo endpoints:
 ## Example Output
 
 ```
-Hello Alice! Weather in London, United Kingdom: 18°C, Partly cloudy
+Hello Alice! Weather in Paris, France: 23°F, Clear sky
 ```
 
 ## Architecture
@@ -103,15 +115,30 @@ Hello Alice! Weather in London, United Kingdom: 18°C, Partly cloudy
 - **app/workflow.py**: Orchestrates the weather summary flow
 - **app/activities.py**: Temporal activities that coordinate workflow execution
 - **app/handler.py**: SDK interface handler for weather operations (follows HandlerInterface pattern)
-- **app/client.py**: Direct API client for Open-Meteo weather services
+- **app/client.py**: Direct API client for Open-Meteo weather services with credentials pattern
 - **frontend/**: Modern web UI for user interaction
 
 ### Component Responsibilities
 
 - **WeatherHandler**: Provides SDK interface, handles authentication testing, preflight checks, and coordinates weather operations
-- **WeatherApiClient**: Handles direct HTTP requests to Open-Meteo APIs (geocoding and weather data)
-- **WeatherActivities**: Temporal activities that delegate to the handler for workflow execution
+- **WeatherApiClient**: Handles direct HTTP requests to Open-Meteo APIs with credentials support for reference
+- **WeatherActivities**: Temporal activities that handle workflow args and delegate to the handler
 - **WeatherWorkflow**: Orchestrates the overall weather summary generation process
+
+### Credentials Pattern
+
+The app demonstrates a credentials handling pattern for APIs that require authentication:
+
+```python
+# Example usage for APIs with authentication
+credentials = {
+    "api_key": "your_api_key",
+    "headers": {"Authorization": "Bearer token"}
+}
+client = WeatherApiClient(credentials)
+```
+
+While Open-Meteo doesn't require authentication, this pattern serves as a reference for other apps.
 
 ## Development
 

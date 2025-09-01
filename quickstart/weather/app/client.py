@@ -1,5 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
-
+from typing import Dict, Tuple
 import requests
 from application_sdk.observability.logger_adaptor import get_logger
 
@@ -8,18 +7,16 @@ logger = get_logger(__name__)
 
 def _map_units(units: str) -> Tuple[str, str]:
     """
-    Map a human-friendly units string to Open-Meteo temperature unit and display suffix.
-
+    Map units to Open-Meteo temperature unit and display suffix.
+    
     Args:
-        units (str): units hint, e.g. "celsius", "fahrenheit", "metric", "imperial"
-
+        units (str): "celsius" or "fahrenheit"
+        
     Returns:
         (str, str): (temperature_unit_query_param, display_suffix)
     """
-    normalized = (units or "").strip().lower()
-    if normalized in {"f", "fahrenheit", "imperial"}:
+    if units.lower() == "fahrenheit":
         return "fahrenheit", "°F"
-    # default to celsius
     return "celsius", "°C"
 
 
@@ -65,24 +62,35 @@ def _wmo_code_to_text(code: int) -> str:
 class WeatherApiClient:
     """Client for Open-Meteo API interactions.
     
-    This client handles all direct API communications with Open-Meteo services,
-    including geocoding and weather data retrieval.
+    Reference example showing how to handle credentials for APIs that require authentication.
+    Open-Meteo doesn't require auth, but this pattern can be used for other APIs.
     """
 
-    def __init__(self, credentials: Optional[Dict[str, Any]] = None):
+    def __init__(self, credentials: Dict = None):
         """Initialize Weather API client.
-
+        
         Args:
-            credentials (Optional[Dict[str, Any]]): Optional credentials dict.
-                For Open-Meteo, no authentication is required.
+            credentials (Dict, optional): API credentials. For Open-Meteo, not required.
+                Example structure for other APIs:
+                {
+                    "api_key": "your_api_key",
+                    "base_url": "https://api.example.com",
+                    "headers": {"Authorization": "Bearer token"}
+                }
         """
         self.credentials = credentials or {}
         self.geocoding_base_url = "https://geocoding-api.open-meteo.com/v1"
         self.weather_base_url = "https://api.open-meteo.com/v1"
+        
+        # Log credential status for debugging
+        if self.credentials:
+            logger.debug(f"Client initialized with {len(self.credentials)} credential items")
+        else:
+            logger.debug("Client initialized without credentials (Open-Meteo doesn't require auth)")
 
     async def geocode_city(self, city: str) -> Tuple[float, float, str]:
         """
-        Resolve a city name to (latitude, longitude, resolved_city_name).
+        Resolve a city name to coordinates and resolved name.
 
         Args:
             city (str): The city name to geocode
@@ -96,13 +104,16 @@ class WeatherApiClient:
         url = f"{self.geocoding_base_url}/search"
         params = {"name": city, "count": 1, "language": "en", "format": "json"}
         
+        # Example of how to use credentials for APIs that need them
+        headers = self.credentials.get("headers", {})
+        
         try:
             logger.debug(f"Geocoding city: {city}")
-            resp = requests.get(url, params=params, timeout=10)
+            resp = requests.get(url, params=params, headers=headers, timeout=10)
             resp.raise_for_status()
             data = resp.json()
             
-            results = (data or {}).get("results") or []
+            results = data.get("results", [])
             if not results:
                 raise ValueError(f"Could not find coordinates for city '{city}'")
                 
@@ -122,7 +133,7 @@ class WeatherApiClient:
         self, lat: float, lon: float, temp_unit: str
     ) -> Tuple[float, int]:
         """
-        Fetch the current weather for the given coordinates.
+        Fetch current weather for the given coordinates.
 
         Args:
             lat (float): Latitude
@@ -143,22 +154,23 @@ class WeatherApiClient:
             "temperature_unit": temp_unit,
         }
         
+        # Example of how to use credentials for APIs that need them
+        headers = self.credentials.get("headers", {})
+        
         try:
             logger.debug(f"Fetching weather for coordinates ({lat}, {lon})")
-            resp = requests.get(url, params=params, timeout=10)
+            resp = requests.get(url, params=params, headers=headers, timeout=10)
             resp.raise_for_status()
             data = resp.json()
             
-            current = (data or {}).get("current_weather") or {}
+            current = data.get("current_weather", {})
             if "temperature" not in current or "weathercode" not in current:
                 raise ValueError("Invalid Open-Meteo response: missing current weather")
                 
             temperature = float(current["temperature"])
             weather_code = int(current["weathercode"])
             
-            logger.info(
-                f"Fetched weather for ({lat}, {lon}): {temperature} ({temp_unit}), code={weather_code}"
-            )
+            logger.info(f"Fetched weather: {temperature}° ({temp_unit}), code={weather_code}")
             return temperature, weather_code
             
         except Exception as e:
@@ -172,7 +184,7 @@ class WeatherApiClient:
         Args:
             username (str): Name of the user to greet
             city (str): City name to look up
-            units (str): "celsius" or "fahrenheit" (also accepts "metric"/"imperial")
+            units (str): "celsius" or "fahrenheit"
 
         Returns:
             str: Summary string, e.g., "Hello Alice! Weather in London: 23°C, Clear sky"

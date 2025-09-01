@@ -45,7 +45,7 @@ h2 {
 .form-group {
   display: grid;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 label {
@@ -63,6 +63,22 @@ input[type="text"] {
   outline: none;
 }
 
+input[type="text"]:focus {
+  border-color: var(--primary);
+}
+
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0e1420;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
 .helper-text {
   color: var(--muted);
   font-size: 12px;
@@ -70,15 +86,37 @@ input[type="text"] {
 
 button {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid #1f6f2f;
   background: linear-gradient(180deg, var(--primary), var(--primary-hover));
   color: white;
   cursor: pointer;
   font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  margin-top: 8px;
 }
-button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
+}
+
+button:disabled { 
+  opacity: 0.7; 
+  cursor: not-allowed; 
+  transform: none;
+}
+
+button.error {
+  background: linear-gradient(180deg, #dc2626, #b91c1c);
+  border-color: #dc2626;
+}
+
+button.error:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
 
 .modal {
   position: fixed;

@@ -13,9 +13,24 @@
       <form id="nameForm" onsubmit="handleSubmit(event)">
         <div class="form-group">
           <label for="username">Enter your username:</label>
-          <input type="text" id="username" name="username" required />
-          <div class="helper-text">Workflow uses defaults: city=London, units=celsius (you can override via config)</div>
+          <input type="text" id="username" name="username" placeholder="e.g., Alice, John, or your name" required />
         </div>
+        
+        <div class="form-group">
+          <label for="city">City name:</label>
+          <input type="text" id="city" name="city" placeholder="e.g., Paris, Tokyo, New York" />
+          <div class="helper-text">Leave empty to use default (London) • Supports any city worldwide</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="units">Temperature units:</label>
+          <select id="units" name="units">
+            <option value="celsius">Celsius (°C)</option>
+            <option value="fahrenheit">Fahrenheit (°F)</option>
+          </select>
+          <div class="helper-text">Choose your preferred temperature scale • Celsius is the default</div>
+        </div>
+        
         <button id="runWorkflowButton" type="submit">Get Weather 🚀</button>
       </form>
     </div>
