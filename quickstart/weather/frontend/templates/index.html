@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App ⛅</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <div class="card">
+      <h2>Weather App ⛅</h2>
+      <p class="subtitle">Get a friendly hello and the current weather in your city.</p>
+      <form id="nameForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="username">Enter your username:</label>
+          <input type="text" id="username" name="username" required />
+          <div class="helper-text">Workflow uses defaults: city=London, units=celsius (you can override via config)</div>
+        </div>
+        <button id="runWorkflowButton" type="submit">Get Weather 🚀</button>
+      </form>
+    </div>
+
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <div class="success-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <h2>Workflow Started Successfully!</h2>
+        <p>Check the Temporal UI for logs and status.</p>
+        <div class="modal-actions">
+          <a id="dashboard-link" class="btn btn-primary" target="_blank"
+             href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows">
+            Go to Temporal UI
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+  </body>
+</html> 
