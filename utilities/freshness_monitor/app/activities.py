@@ -3,11 +3,10 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
-
-from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.clients.async_atlan import get_client
+from application_sdk.observability.logger_adaptor import get_logger
 from pyatlan.client.aio import AsyncAtlanClient
-from pyatlan.model.assets import Table, Asset
+from pyatlan.model.assets import Asset, Table
 from pyatlan.model.core import Announcement
 from pyatlan.model.enums import AnnouncementType
 from pyatlan.model.fluent_search import FluentSearch

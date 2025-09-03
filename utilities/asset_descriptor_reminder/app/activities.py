@@ -1,14 +1,13 @@
 import os
 from typing import Any, Dict, List, Optional
 
-from pyatlan.model.assets import Asset
-
 from app.client import AssetDescriptionClient
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
+from pyatlan.model.assets import Asset
+from pyatlan.model.fluent_search import FluentSearch
 from slack_sdk.errors import SlackApiError
 from temporalio import activity
-from pyatlan.model.fluent_search import FluentSearch
 
 logger = get_logger(__name__)
 
