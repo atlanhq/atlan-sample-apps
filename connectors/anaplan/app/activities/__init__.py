@@ -3,6 +3,12 @@ import os
 from typing import Any, Dict, Type
 
 import pandas as pd
+from app.activities.extracts.apps import extract_apps_data
+from app.activities.extracts.pages import extract_pages_with_details
+from app.activities.utils import get_app_guids, setup_parquet_output
+from app.clients import AnaplanApiClient
+from app.handlers import AnaplanHandler
+from app.transformers import AnaplanTransformer
 from application_sdk.activities.common.models import ActivityStatistics
 from application_sdk.activities.common.utils import auto_heartbeater, get_workflow_id
 from application_sdk.activities.metadata_extraction.base import (
@@ -16,16 +22,6 @@ from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.outputs.json import JsonOutput
 from application_sdk.transformers import TransformerInterface
 from temporalio import activity
-
-from app.activities.extracts.apps import extract_apps_data
-from app.activities.extracts.pages import extract_pages_with_details
-from app.activities.utils import (
-    get_app_guids,
-    setup_parquet_output,
-)
-from app.clients import AnaplanApiClient
-from app.handlers import AnaplanHandler
-from app.transformers import AnaplanTransformer
 
 logger = get_logger(__name__)
 metrics = get_metrics()
@@ -126,7 +122,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
             try:
                 temp_include_metadata = json.loads(metadata.get("include-metadata"))
                 temp_exclude_metadata = json.loads(metadata.get("exclude-metadata"))
-                
+
                 if temp_include_metadata:
                     state.metadata_filter_state = "include"
                     state.metadata_filter = temp_include_metadata
@@ -178,7 +174,9 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
             parquet_output = setup_parquet_output(workflow_args, "raw/anaplanapp")
 
             # Extract apps data
-            app_data = await extract_apps_data(state.client, state.metadata_filter_state, state.metadata_filter)
+            app_data = await extract_apps_data(
+                state.client, state.metadata_filter_state, state.metadata_filter
+            )
 
             # Create DataFrame and write to parquet
             if app_data:
@@ -223,7 +221,10 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
             # Extract pages data with details and filtering
             detailed_page_data = await extract_pages_with_details(
-                state.client, all_apps, state.metadata_filter_state, state.metadata_filter
+                state.client,
+                all_apps,
+                state.metadata_filter_state,
+                state.metadata_filter,
             )
 
             # Create DataFrame and write to parquet

@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from app.clients import AnaplanApiClient
 from app.handlers import AnaplanHandler
 
@@ -195,10 +194,22 @@ class TestAnaplanHandler:
         ]
 
         # Mock the page fetching method
-        with patch.object(AnaplanHandler, "_extract_pages_for_handler") as mock_get_pages:
+        with patch.object(
+            AnaplanHandler, "_extract_pages_for_handler"
+        ) as mock_get_pages:
             mock_get_pages.return_value = [
-                {"guid": "page_1", "name": "Page 1", "appGuid": "app_1", "deletedAt": None},
-                {"guid": "page_2", "name": "Page 2", "appGuid": "app_1", "deletedAt": None},
+                {
+                    "guid": "page_1",
+                    "name": "Page 1",
+                    "appGuid": "app_1",
+                    "deletedAt": None,
+                },
+                {
+                    "guid": "page_2",
+                    "name": "Page 2",
+                    "appGuid": "app_1",
+                    "deletedAt": None,
+                },
             ]
 
             # Act
@@ -547,7 +558,7 @@ class TestAnaplanHandler:
                 {"guid": "app_1", "name": "App 1", "deletedAt": None},
                 {"guid": "app_2", "name": "App 2", "deletedAt": None},
             ],
-            "paging": {"totalItemCount": 2}
+            "paging": {"totalItemCount": 2},
         }
         mock_response.is_success = True
         mock_execute_get.return_value = mock_response
@@ -568,16 +579,28 @@ class TestAnaplanHandler:
         mock_response1 = MagicMock()
         mock_response1.json.return_value = {
             "items": [
-                {"guid": "page_1", "name": "Page 1", "appGuid": "app_1", "deletedAt": None, "isArchived": False},
-                {"guid": "page_2", "name": "Page 2", "appGuid": "app_1", "deletedAt": None, "isArchived": False},
+                {
+                    "guid": "page_1",
+                    "name": "Page 1",
+                    "appGuid": "app_1",
+                    "deletedAt": None,
+                    "isArchived": False,
+                },
+                {
+                    "guid": "page_2",
+                    "name": "Page 2",
+                    "appGuid": "app_1",
+                    "deletedAt": None,
+                    "isArchived": False,
+                },
             ]
         }
         mock_response1.is_success = True
-        
+
         mock_response2 = MagicMock()
         mock_response2.json.return_value = {"items": []}
         mock_response2.is_success = True
-        
+
         mock_execute_get.side_effect = [mock_response1, mock_response2]
 
         # Act
@@ -610,7 +633,13 @@ class TestAnaplanHandler:
             {"guid": "app_1", "name": "App 1", "deletedAt": None},
         ]
         mock_get_pages.return_value = [
-            {"guid": "page_1", "name": "Page 1", "appGuid": "app_1", "deletedAt": None, "isArchived": False},
+            {
+                "guid": "page_1",
+                "name": "Page 1",
+                "appGuid": "app_1",
+                "deletedAt": None,
+                "isArchived": False,
+            },
         ]
 
         # Act

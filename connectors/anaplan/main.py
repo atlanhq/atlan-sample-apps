@@ -1,5 +1,9 @@
 import asyncio
 
+from app.activities import AnaplanMetadataExtractionActivities
+from app.clients import AnaplanApiClient
+from app.handlers import AnaplanHandler
+from app.workflows import AnaplanMetadataExtractionWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.constants import APPLICATION_NAME
 from application_sdk.observability.decorators.observability_decorator import (
@@ -8,11 +12,6 @@ from application_sdk.observability.decorators.observability_decorator import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-
-from app.activities import AnaplanMetadataExtractionActivities
-from app.clients import AnaplanApiClient
-from app.handlers import AnaplanHandler
-from app.workflows import AnaplanMetadataExtractionWorkflow
 
 logger = get_logger(__name__)
 metrics = get_metrics()

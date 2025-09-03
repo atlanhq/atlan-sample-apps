@@ -2,7 +2,6 @@ import os
 
 import daft
 import pytest
-
 from app.transformers import AnaplanTransformer
 
 
@@ -118,4 +117,4 @@ class TestAnaplanTransformer:
                     content = f.read()
                     assert "qualifiedName:" in content
                     assert "concat(" in content
-                    assert "connection_qualified_name" in content 
+                    assert "connection_qualified_name" in content

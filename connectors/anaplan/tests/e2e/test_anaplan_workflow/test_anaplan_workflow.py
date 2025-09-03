@@ -2,9 +2,9 @@ import unittest
 
 import pytest
 import requests
+from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.test_utils.e2e.base import BaseTest
 from application_sdk.test_utils.e2e.conftest import workflow_details
-from application_sdk.observability.logger_adaptor import get_logger
 from temporalio.client import WorkflowExecutionStatus
 
 logger = get_logger(__name__)
@@ -351,12 +351,12 @@ class TestAnaplanWorkflow(unittest.TestCase, BaseTest):
         )
         # Verify that the Anaplan-specific metadata filters were updated
         self.assertEqual(
-            response_data["data"]["metadata"]["include-metadata"], 
-            '{"app_guid_1": {"page_guid_1": {}}}'
+            response_data["data"]["metadata"]["include-metadata"],
+            '{"app_guid_1": {"page_guid_1": {}}}',
         )
         self.assertEqual(
-            response_data["data"]["metadata"]["exclude-metadata"], 
-            '{"app_guid_2": {"page_guid_2": {}}}'
+            response_data["data"]["metadata"]["exclude-metadata"],
+            '{"app_guid_2": {"page_guid_2": {}}}',
         )
 
     @pytest.mark.order(13)

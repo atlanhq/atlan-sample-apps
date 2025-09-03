@@ -1,14 +1,17 @@
 from typing import Any, Dict, List
 
-from application_sdk.observability.logger_adaptor import get_logger
-
-from app.clients import AnaplanApiClient
 from app.activities.utils import should_include_asset
+from app.clients import AnaplanApiClient
+from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
 
-async def extract_apps_data(client: AnaplanApiClient, metadata_filter_state: str, metadata_filter: Dict[str, Any]) -> List[Dict[str, Any]]:
+async def extract_apps_data(
+    client: AnaplanApiClient,
+    metadata_filter_state: str,
+    metadata_filter: Dict[str, Any],
+) -> List[Dict[str, Any]]:
     """Extract apps data from Anaplan.
 
     ------------------------------------------------------------
@@ -76,7 +79,14 @@ async def extract_apps_data(client: AnaplanApiClient, metadata_filter_state: str
 
         # Filter out deleted apps during extraction
         # NOTE: can become a blocking code if the number of apps is very large and heartbeat is not sent during that time
-        filtered_app_data = [app for app in app_data if app.get("deletedAt") is None and should_include_asset(app, "anaplanapp", metadata_filter_state, metadata_filter)]
+        filtered_app_data = [
+            app
+            for app in app_data
+            if app.get("deletedAt") is None
+            and should_include_asset(
+                app, "anaplanapp", metadata_filter_state, metadata_filter
+            )
+        ]
 
         logger.info(
             f"Successfully extracted {len(filtered_app_data)} non-deleted apps from {len(app_data)} total apps"

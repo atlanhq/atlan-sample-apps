@@ -1,10 +1,9 @@
 import json
 from typing import Any, Dict, List, Set
 
+from app.clients import AnaplanApiClient
 from application_sdk.handlers.base import BaseHandler
 from application_sdk.observability.logger_adaptor import get_logger
-
-from app.clients import AnaplanApiClient
 
 logger = get_logger(__name__)
 
@@ -123,10 +122,12 @@ class AnaplanHandler(BaseHandler):
 
             # Step 3: Get all pages for all apps concurrently
             logger.info("Fetching pages for all apps...")
-            
+
             # Get all pages for the active apps
-            all_pages = await self._extract_pages_for_handler({app[0] for app in active_apps})
-            
+            all_pages = await self._extract_pages_for_handler(
+                {app[0] for app in active_apps}
+            )
+
             # Group pages by app GUID
             app_pages_mapping = {}
             for page in all_pages:
@@ -141,7 +142,7 @@ class AnaplanHandler(BaseHandler):
             # Add page items to app children
             for app_guid, app_name in active_apps:
                 pages_for_app = app_pages_mapping.get(app_guid, [])
-                
+
                 # Find the app item and add pages to its children
                 for app_item in metadata_items:
                     if app_item["value"] == app_guid:
@@ -204,7 +205,9 @@ class AnaplanHandler(BaseHandler):
             ] = await AnaplanHandler._validate_authentication(self.client)
 
             # Check 3: App Permissions Check
-            results["appPermissions"] = await AnaplanHandler._validate_app_permissions(self.client)
+            results["appPermissions"] = await AnaplanHandler._validate_app_permissions(
+                self.client
+            )
 
             return results
 
@@ -311,7 +314,8 @@ class AnaplanHandler(BaseHandler):
             }
 
     @staticmethod
-    async def _validate_authentication(anaplan_client: AnaplanApiClient | None
+    async def _validate_authentication(
+        anaplan_client: AnaplanApiClient | None,
     ) -> Dict[str, Any]:
         """Validate authentication credentials"""
         try:
@@ -355,7 +359,9 @@ class AnaplanHandler(BaseHandler):
             }
 
     @staticmethod
-    async def _validate_app_permissions(anaplan_client: AnaplanApiClient | None) -> Dict[str, Any]:
+    async def _validate_app_permissions(
+        anaplan_client: AnaplanApiClient | None,
+    ) -> Dict[str, Any]:
         """Validate app permissions"""
         try:
             if not anaplan_client:
@@ -457,11 +463,15 @@ class AnaplanHandler(BaseHandler):
             while True:
                 params = {"limit": limit, "offset": offset}
 
-                response = await self.client.execute_http_get_request(url, params=params)
+                response = await self.client.execute_http_get_request(
+                    url, params=params
+                )
 
                 if response is None:
                     logger.error("Failed to extract apps data: No response received")
-                    raise ValueError("Failed to extract apps data: No response received")
+                    raise ValueError(
+                        "Failed to extract apps data: No response received"
+                    )
 
                 if not response.is_success:
                     raise ValueError(f"Failed to fetch apps: {response.status_code}")
@@ -477,7 +487,9 @@ class AnaplanHandler(BaseHandler):
                     break
 
             # Filter out deleted apps only (no other filters applied)
-            filtered_app_data = [app for app in app_data if app.get("deletedAt") is None]
+            filtered_app_data = [
+                app for app in app_data if app.get("deletedAt") is None
+            ]
 
             logger.info(
                 f"Successfully extracted {len(filtered_app_data)} non-deleted apps from {len(app_data)} total apps for handler"
@@ -488,9 +500,11 @@ class AnaplanHandler(BaseHandler):
             logger.error(f"Error extracting apps data for handler: {str(e)}")
             raise
 
-    async def _extract_pages_for_handler(self, app_guids: Set[str]) -> List[Dict[str, Any]]:
+    async def _extract_pages_for_handler(
+        self, app_guids: Set[str]
+    ) -> List[Dict[str, Any]]:
         """Extract pages data for handler
-        
+
         Args:
             app_guids: Set of app GUIDs to filter pages by
         """
@@ -515,18 +529,22 @@ class AnaplanHandler(BaseHandler):
                     "includeReportPages": True,
                 }
 
-                response = await self.client.execute_http_get_request(url, params=params)
+                response = await self.client.execute_http_get_request(
+                    url, params=params
+                )
 
                 if response is None:
                     logger.error("Failed to extract pages data: No response received")
-                    raise ValueError("Failed to extract pages data: No response received")
+                    raise ValueError(
+                        "Failed to extract pages data: No response received"
+                    )
 
                 if not response.is_success:
                     raise ValueError(f"Failed to fetch pages: {response.status_code}")
 
                 response_dict = response.json()
                 items = response_dict.get("items", [])
-                
+
                 if not items:
                     break  # No more pages to fetch
 

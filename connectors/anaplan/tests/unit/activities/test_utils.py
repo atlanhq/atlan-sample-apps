@@ -1,11 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from app.activities.utils import (
-    setup_parquet_output,
-    should_include_asset,
-)
+from app.activities.utils import setup_parquet_output, should_include_asset
 
 
 class TestUtils:

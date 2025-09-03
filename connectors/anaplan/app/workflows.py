@@ -1,13 +1,12 @@
 from typing import Any, Dict, Type
 
+from app.activities import AnaplanMetadataExtractionActivities
 from application_sdk.activities.common.models import ActivityStatistics
 from application_sdk.constants import APPLICATION_NAME
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows.metadata_extraction import MetadataExtractionWorkflow
 from temporalio import workflow
 from temporalio.common import RetryPolicy
-
-from app.activities import AnaplanMetadataExtractionActivities
 
 # Constants for activity retry policies
 ACTIVITY_RETRY_MAX_ATTEMPTS = 3
@@ -45,7 +44,10 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
             workflow_args: Dict[str, Any] = {}  # Initialize workflow_args
 
             # activity retry policy
-            retry_policy = RetryPolicy(maximum_attempts=ACTIVITY_RETRY_MAX_ATTEMPTS, backoff_coefficient=ACTIVITY_RETRY_BACKOFF_COEFFICIENT)
+            retry_policy = RetryPolicy(
+                maximum_attempts=ACTIVITY_RETRY_MAX_ATTEMPTS,
+                backoff_coefficient=ACTIVITY_RETRY_BACKOFF_COEFFICIENT,
+            )
 
             # Execute setup activities first
             activities_instance = self.activities_cls()
@@ -178,8 +180,8 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
         NOTE: This is a necessary function for worker registration, thus exists here. Not used for execution order, as executioin is controlled in the run method.
         """
         return [
-            activities.get_workflow_args, # NOTE: Present in ActicityInterface
-            activities.preflight_check, # NOTE: Present in ActicityInterface
+            activities.get_workflow_args,  # NOTE: Present in ActicityInterface
+            activities.preflight_check,  # NOTE: Present in ActicityInterface
             activities.set_metadata_filter_state,
             activities.extract_anaplanapp,
             activities.extract_anaplanpage,

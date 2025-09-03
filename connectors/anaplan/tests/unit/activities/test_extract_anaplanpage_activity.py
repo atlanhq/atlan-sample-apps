@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.activities import AnaplanMetadataExtractionActivities
 
 

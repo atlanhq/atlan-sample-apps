@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.activities import AnaplanMetadataExtractionActivities
 
 
@@ -111,9 +110,7 @@ class TestExtractAnaplanAppActivity:
                 "app.activities.setup_parquet_output",
                 return_value=mock_parquet_output,
             ),
-            patch(
-                "app.activities.extract_apps_data", return_value=[]
-            ),
+            patch("app.activities.extract_apps_data", return_value=[]),
         ):
             # Act
             result = await mock_activities.extract_anaplanapp(workflow_args)

@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.activities.extracts.apps import extract_apps_data
 
 
@@ -17,7 +16,7 @@ class TestAppsExtract:
         client.auth_token = "test_token"
         return client
 
-    @patch('app.activities.extracts.apps.should_include_asset')
+    @patch("app.activities.extracts.apps.should_include_asset")
     async def test_extract_apps_data_success(self, mock_should_include, mock_client):
         """Test successful apps extraction with specific scenario."""
         # Arrange - Minimal inline test data for specific scenario
@@ -83,8 +82,10 @@ class TestAppsExtract:
         assert "springboard-definition-service/apps" in call_args[0][0]
         assert call_args[1]["params"] == {"limit": 100, "offset": 0}
 
-    @patch('app.activities.extracts.apps.should_include_asset')
-    async def test_extract_apps_data_filters_deleted_apps(self, mock_should_include, mock_client):
+    @patch("app.activities.extracts.apps.should_include_asset")
+    async def test_extract_apps_data_filters_deleted_apps(
+        self, mock_should_include, mock_client
+    ):
         """Test specific business logic: deleted apps should be filtered out."""
         # Arrange - Hardcoded scenario with deleted apps
         sample_response = {
@@ -137,7 +138,7 @@ class TestAppsExtract:
         deleted_app_guids = [app["guid"] for app in result]
         assert "app_guid_2" not in deleted_app_guids
 
-    @patch('app.activities.extracts.apps.should_include_asset')
+    @patch("app.activities.extracts.apps.should_include_asset")
     async def test_extract_apps_data_pagination(self, mock_should_include, mock_client):
         """Test specific scenario: pagination logic."""
         # Arrange - Hardcoded pagination scenario
@@ -215,8 +216,10 @@ class TestAppsExtract:
         # Second call
         assert calls[1][1]["params"] == {"limit": 100, "offset": 100}
 
-    @patch('app.activities.extracts.apps.should_include_asset')
-    async def test_extract_apps_data_empty_response(self, mock_should_include, mock_client):
+    @patch("app.activities.extracts.apps.should_include_asset")
+    async def test_extract_apps_data_empty_response(
+        self, mock_should_include, mock_client
+    ):
         """Test specific scenario: empty response."""
         # Arrange - Hardcoded empty response
         empty_response = {
@@ -261,8 +264,10 @@ class TestAppsExtract:
         ):
             await extract_apps_data(mock_client, "none", {})
 
-    @patch('app.activities.extracts.apps.should_include_asset')
-    async def test_extract_apps_data_missing_items_field(self, mock_should_include, mock_client):
+    @patch("app.activities.extracts.apps.should_include_asset")
+    async def test_extract_apps_data_missing_items_field(
+        self, mock_should_include, mock_client
+    ):
         """Test specific edge case: missing items field."""
         # Arrange - Hardcoded incomplete response
         incomplete_response = {
@@ -283,8 +288,10 @@ class TestAppsExtract:
         # Assert
         assert len(result) == 0
 
-    @patch('app.activities.extracts.apps.should_include_asset')
-    async def test_extract_apps_data_missing_paging_field(self, mock_should_include, mock_client):
+    @patch("app.activities.extracts.apps.should_include_asset")
+    async def test_extract_apps_data_missing_paging_field(
+        self, mock_should_include, mock_client
+    ):
         """Test specific edge case: missing paging field."""
         # Arrange - Hardcoded incomplete response
         incomplete_response = {
@@ -313,8 +320,10 @@ class TestAppsExtract:
         assert len(result) == 1
         assert result[0]["guid"] == "app_guid_1"
 
-    @patch('app.activities.extracts.apps.should_include_asset')
-    async def test_extract_apps_data_all_apps_deleted(self, mock_should_include, mock_client):
+    @patch("app.activities.extracts.apps.should_include_asset")
+    async def test_extract_apps_data_all_apps_deleted(
+        self, mock_should_include, mock_client
+    ):
         """Test specific scenario: all apps are deleted."""
         # Arrange - Hardcoded scenario with all deleted apps
         all_deleted_response = {

@@ -1,10 +1,9 @@
 import asyncio
 from typing import Any, Dict, List, Set
 
-from application_sdk.observability.logger_adaptor import get_logger
-
-from app.clients import AnaplanApiClient
 from app.activities.utils import should_include_asset
+from app.clients import AnaplanApiClient
+from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
@@ -170,7 +169,10 @@ async def get_page_details(
 
 
 async def extract_pages_with_details(
-    client: AnaplanApiClient, valid_app_guids: Set[str], metadata_filter_state: str, metadata_filter: Dict[str, Any]
+    client: AnaplanApiClient,
+    valid_app_guids: Set[str],
+    metadata_filter_state: str,
+    metadata_filter: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Extract pages data with detailed information: controller function"""
 
@@ -187,7 +189,9 @@ async def extract_pages_with_details(
             if page.get("deletedAt") is None
             and not page.get("isArchived", False)
             and page.get("appGuid") in valid_app_guids
-            and should_include_asset(page, "anaplanpage", metadata_filter_state, metadata_filter)
+            and should_include_asset(
+                page, "anaplanpage", metadata_filter_state, metadata_filter
+            )
         ]
 
         if not valid_pages:
