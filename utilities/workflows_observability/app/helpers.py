@@ -1,8 +1,7 @@
-import asyncio
 import os
 
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.objectstore import ObjectStoreOutput
+from application_sdk.services import ObjectStore
 from pyatlan.model.enums import AtlanWorkflowPhase
 from temporalio import activity
 
@@ -61,13 +60,11 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
         OSError: If there is an issue accessing the local directory or files.
         Exception: For any other errors during the upload process.
     """
-    async def save_results():
-        await ObjectStoreOutput.push_files_to_object_store(
-            output_prefix=output_prefix, input_files_path=local_directory
-        )
     try:
-        asyncio.run(save_results())
-        logger.info("Files pushed to object storage.")
+        await ObjectStore.upload_prefix(
+            destination=output_prefix, source=local_directory
+        )
+        logger.info(f"{local_directory} pushed to object storage.")
 
     except Exception as e:
         logger.error(
