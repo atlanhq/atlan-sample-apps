@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
+
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.clients.async_atlan import get_client
 from pyatlan.client.aio import AsyncAtlanClient

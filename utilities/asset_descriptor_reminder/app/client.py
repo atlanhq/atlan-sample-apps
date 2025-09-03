@@ -17,12 +17,8 @@ class AssetDescriptionClient(ClientInterface):
         """Load and establish connections to Atlan and Slack."""
         self.credentials = credentials
 
-        if not self.credentials.get(
-            "atlan_token"
-        ):
-            raise ValueError(
-                "Missing required Atlan credentials (atlan_token)"
-            )
+        if not self.credentials.get("atlan_token"):
+            raise ValueError("Missing required Atlan credentials (atlan_token)")
 
         self.atlan_client = await get_client(api_token_guid=self.credentials["atlan_token"])
         if self.credentials.get("slack_bot_token"):

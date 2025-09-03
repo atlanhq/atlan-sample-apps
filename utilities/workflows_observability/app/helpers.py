@@ -64,7 +64,7 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
         await ObjectStore.upload_prefix(
             destination=output_prefix, source=local_directory
         )
-        logger.info("Files pushed to object storage.")
+        logger.info(f"{local_directory} pushed to object storage.")
 
     except Exception as e:
         logger.error(

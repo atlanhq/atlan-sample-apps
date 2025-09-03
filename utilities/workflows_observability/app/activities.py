@@ -1,10 +1,7 @@
 import os
 from datetime import datetime
 
-from app.helpers import (
-    save_result_locally,
-    save_result_object_storage,
-)
+from app.helpers import save_result_locally, save_result_object_storage
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.clients.async_atlan import get_client
 from application_sdk.observability.logger_adaptor import get_logger
@@ -58,10 +55,12 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             )
 
             async for result in results:
+                logger.info(f"Saving locally to {local_directory}")
                 save_result_locally(result, local_directory)
 
             if output_type == "Object Storage":
-                await save_result_object_storage("", local_directory)
+                logger.info(f"Uploading to {local_directory}")
+                await save_result_object_storage(output_prefix, local_directory)
 
         except Exception as e:
             logger.error(f"Failed to process workflows: {str(e)}", exc_info=e)
