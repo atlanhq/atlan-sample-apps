@@ -13,6 +13,7 @@ from application_sdk.activities.metadata_extraction.sql import (
     BaseSQLMetadataExtractionActivities,
     BaseSQLMetadataExtractionActivitiesState,
 )
+from application_sdk.common.credential_utils import get_credentials
 from application_sdk.common.utils import prepare_query
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
@@ -20,7 +21,6 @@ from application_sdk.observability.decorators.observability_decorator import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from application_sdk.common.credential_utils import get_credentials
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -47,7 +47,7 @@ class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
 
         # reference to credentials passed as user inputs are available as 'credential_guid' in workflow_args
         # in this case refer to https://github.com/atlanhq/atlan-sample-apps/blob/main/connectors/mysql/frontend/static/script.js#L740
-        credentials = await get_credentials(workflow_args["credential_guid"])
+        await get_credentials(workflow_args["credential_guid"])
         logger.info("credentials retrieved successfully")
 
         return None
