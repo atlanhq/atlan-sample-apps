@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.clients.async_atlan import get_client
+from application_sdk.clients.atlan import get_async_client
 from application_sdk.observability.logger_adaptor import get_logger
 from pyatlan.client.aio import AsyncAtlanClient
 from pyatlan.model.assets import Asset, Table
@@ -22,7 +22,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
     async def _get_atlan_client(self) -> AsyncAtlanClient:
         """Return the initialized Atlan client"""
         if self.atlan_client is None:
-            self.atlan_client = await get_client()
+            self.atlan_client = await get_async_client()
         return self.atlan_client
 
     @activity.defn
@@ -73,7 +73,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     )
                     break
 
-        logger.info("Total tables processed: {count}")
+        logger.info(f"Total tables processed: {count}")
         return tables_data
 
     @activity.defn
