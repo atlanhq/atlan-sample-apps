@@ -31,6 +31,9 @@ class WorkflowClass(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
+        # Log the workflow arguments for debugging
+        logger.info(f"Processing workflow with args: {workflow_args}")
+
         # Call other activities here
         pass
 
