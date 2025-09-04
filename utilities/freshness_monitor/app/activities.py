@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.clients.async_atlan import get_client
 from application_sdk.observability.logger_adaptor import get_logger
-from pyatlan.client.atlan import AtlanClient
-from pyatlan.model.assets import Table
+from pyatlan.client.aio import AsyncAtlanClient
+from pyatlan.model.assets import Asset, Table
 from pyatlan.model.core import Announcement
 from pyatlan.model.enums import AnnouncementType
-from pyatlan.model.search import IndexSearchRequest
+from pyatlan.model.fluent_search import FluentSearch
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -16,20 +17,12 @@ logger = get_logger(__name__)
 
 class FreshnessMonitorActivities(ActivitiesInterface):
     def __init__(self):
-        # Initialize AtlanClient immediately
-        base_url = os.getenv("ATLAN_BASE_URL")
-        api_key = os.getenv("ATLAN_API_KEY")
+        self.atlan_client = None
 
-        if not base_url or not api_key:
-            raise ValueError(
-                "Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY"
-            )
-
-        # Create the client and set it as current immediately
-        self.atlan_client = AtlanClient(base_url=base_url, api_key=api_key)
-
-    async def _get_atlan_client(self) -> AtlanClient:
+    async def _get_atlan_client(self) -> AsyncAtlanClient:
         """Return the initialized Atlan client"""
+        if self.atlan_client is None:
+            self.atlan_client = await get_client()
         return self.atlan_client
 
     @activity.defn
@@ -41,35 +34,24 @@ class FreshnessMonitorActivities(ActivitiesInterface):
 
         # Build search request for tables
         logger.info("Fetching tables metadata...")
-        search_request = IndexSearchRequest(
-            dsl={
-                "query": {
-                    "bool": {
-                        "must": [
-                            {"term": {"__typeName.keyword": "Table"}},
-                            {"term": {"__state": "ACTIVE"}},
-                        ]
-                    }
-                },
-                "from": 0,
-                "size": 30,
-                "attributes": [
-                    "qualifiedName",
-                    "name",
-                    "lastUpdatedAt",
-                ],
-            }
+        search_results = await (
+            FluentSearch()
+            .select()
+            .where(Asset.TYPE_NAME.eq("Table"))
+            .include_on_results(Asset.QUALIFIED_NAME)
+            .include_on_results(Asset.NAME)
+            .include_on_results(Asset.UPDATE_TIME)
+            .include_on_results(Asset.CREATE_TIME)
+            .page_size(30)
+            .execute_async(client=client)
         )
-
-        logger.info("search_request", search_request)
-        logger.info("search_request", type(search_request))
 
         tables_data = []
         max_tables = 30  # Limit the number of tables to process
         count = 0
 
         # Iterate directly over search results with limit
-        for asset in client.asset.search(search_request):
+        async for asset in search_results:
             if isinstance(asset, Table):
                 table_info = {
                     "qualified_name": asset.attributes.qualified_name,
@@ -91,12 +73,12 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     )
                     break
 
-        logger.info(f"Total tables processed: {count}")
+        logger.info("Total tables processed: {count}")
         return tables_data
 
     @activity.defn
-    async def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Activity 2: Filter and identify stale tables based on threshold"""
+    def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Activity 2: Filter and identify stale tables based on the threshold days"""
         tables_data = args["tables_data"]
         threshold_days = args["threshold_days"] or os.getenv("THRESHOLD_DAYS")
 
@@ -104,9 +86,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         threshold_date = datetime.now() - timedelta(days=threshold_days)
 
         for table in tables_data:
-            # Check if table is stale based on update_time
-            update_time = table.get("update_time")
-            if update_time:
+            if update_time := table.get("update_time"):
                 # Convert timestamp to datetime if needed
                 if isinstance(update_time, (int, float)):
                     update_datetime = datetime.fromtimestamp(
@@ -123,12 +103,13 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     stale_tables.append(table)
             else:
                 logger.info(f"Table {table['name']} has no update_time")
+        logger.info(f"Found {len(stale_tables)} stale tables.")
 
         return stale_tables
 
     @activity.defn
     async def tag_stale_tables(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """Activity 3: Add announcement to mark stale tables"""
+        """Activity 3: Add an announcement to mark stale tables"""
         stale_tables = args["stale_tables"]
 
         client = await self._get_atlan_client()
@@ -149,15 +130,13 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     f"Data freshness check performed on {table_info.get('check_date', 'unknown')}.",
                 )
 
-                table = client.asset.update_announcement(
+                await client.asset.update_announcement(
                     asset_type=Table,
                     qualified_name=table_info["qualified_name"],
                     name=table_info["name"],
                     announcement=announcement,
                 )
 
-                # Save the announcement
-                client.asset.save(table)
                 tagged_count += 1
                 logger.info(
                     f"✓ Stale data announcement added for {table_info['qualified_name']}"

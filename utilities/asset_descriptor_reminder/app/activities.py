@@ -4,7 +4,8 @@ from typing import Any, Dict, List, Optional
 from app.client import AssetDescriptionClient
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
-from pyatlan.model.search import IndexSearchRequest
+from pyatlan.model.assets import Asset
+from pyatlan.model.fluent_search import FluentSearch
 from slack_sdk.errors import SlackApiError
 from temporalio import activity
 
@@ -16,7 +17,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         self.client = None
 
     async def _get_client(self, config: Dict[str, str]) -> AssetDescriptionClient:
-        """Get or create client with config."""
+        """Get or create a client with config."""
         if not self.client:
             self.client = AssetDescriptionClient()
             await self.client.load(config)
@@ -31,41 +32,22 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         limit = args.get("limit", 50)
 
         logger.info(f"Fetching assets owned by user: {user_username}")
-
         try:
-            search_request = IndexSearchRequest(
-                dsl={
-                    "query": {
-                        "bool": {
-                            "must": [
-                                {"term": {"__state": "ACTIVE"}},
-                                {
-                                    "terms": {
-                                        "__typeName.keyword": [
-                                            "Table",
-                                            "View",
-                                            "Database",
-                                        ]
-                                    }
-                                },
-                                {"term": {"ownerUsers": user_username}},
-                            ]
-                        }
-                    },
-                    "from": 0,
-                    "size": limit,
-                    "attributes": [
-                        "qualifiedName",
-                        "name",
-                        "description",
-                        "ownerUsers",
-                        "userDescription",
-                    ],
-                }
+            search_results = await (
+                FluentSearch()
+                .select()
+                .where(Asset.TYPE_NAME.within(["Table", "View", "Database"]))
+                .where(Asset.OWNER_USERS.eq(user_username))
+                .include_on_results(Asset.QUALIFIED_NAME)
+                .include_on_results(Asset.NAME)
+                .include_on_results(Asset.DESCRIPTION)
+                .include_on_results(Asset.OWNER_USERS)
+                .include_on_results(Asset.USER_DESCRIPTION)
+                .page_size(limit)
+                .execute_async(client=atlan_client)
             )
-
             assets_data = []
-            for asset in atlan_client.asset.search(search_request):
+            async for asset in search_results:
                 asset_info = {
                     "qualified_name": getattr(asset.attributes, "qualified_name", ""),
                     "name": getattr(asset.attributes, "name", ""),
@@ -81,17 +63,19 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
                 logger.info(
                     f"Found asset: {asset_info['name']} - Description: {bool(asset_info['description'] or asset_info['user_description'])}"
                 )
+                if len(assets_data) >= limit:
+                    logger.info("Limit of assets reached")
+                    break
             return assets_data
-
         except Exception as e:
             logger.error(f"Error searching for user assets: {str(e)}")
             return [{"error": str(e)}]
 
     @activity.defn
-    async def find_asset_without_description(
+    def find_asset_without_description(
         self, args: Dict[str, Any]
     ) -> Optional[Dict[str, Any]]:
-        """Activity 2: Check if description of any asset is empty, get the first one"""
+        """Activity 2: Check if the description of any asset is empty, get the first one"""
         assets_data = args["assets_data"]
         without_description_assets = []
         for asset in assets_data:
@@ -122,9 +106,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         try:
             logger.info(f"🔍 Looking for Slack user with email: {email_to_find}")
             response = slack_client.users_lookupByEmail(email=email_to_find)
-            user = response.get("user")
-
-            if user:
+            if user := response.get("user"):
                 return {
                     "id": user["id"],
                     "name": user.get("name"),
@@ -152,7 +134,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
 
     @activity.defn
     async def send_slack_reminder(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """Activity 4: Send Slack message to the person about missing description"""
+        """Activity 4: Send a Slack message to the person about missing description"""
         client = await self._get_client(args["config"])
         slack_client = await client.get_slack_client()
         slack_user = args["slack_user"]
@@ -176,12 +158,12 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
             asset_details.append("\n".join(asset_text))
 
         # Format the footer
-        footer = "\nAdding a description helps other team members understand what this asset is used for "
-        footer += "and makes it easier to discover and use.\n\n"
-        footer += (
-            "Could you please add a description when you get a chance? Thanks! 🙏\n\n"
-        )
-        footer += "_This is an automated reminder from the Asset Description Monitor._"
+        footer = """
+Adding a description helps other team members understand what this asset is used for and makes it easier to discover and use.
+
+Could you please add a description when you get a chance? Thanks! 🙏
+
+_This is an automated reminder from the Asset Description Monitor._"""
 
         # Combine all parts
         message = header + "\n\n".join(asset_details) + footer
@@ -195,7 +177,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
             }
 
         try:
-            response = slack_client.chat_postMessage(
+            slack_client.chat_postMessage(
                 channel=slack_user["id"],
                 text=message.strip(),
                 username="Asset Description Monitor",

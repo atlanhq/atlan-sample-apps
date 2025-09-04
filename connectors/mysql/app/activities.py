@@ -13,6 +13,7 @@ from application_sdk.activities.metadata_extraction.sql import (
     BaseSQLMetadataExtractionActivities,
     BaseSQLMetadataExtractionActivitiesState,
 )
+from application_sdk.common.credential_utils import get_credentials
 from application_sdk.common.utils import prepare_query
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
@@ -29,6 +30,28 @@ traces = get_traces()
 
 
 class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
+    @observability(logger=logger, metrics=metrics, traces=traces)
+    @activity.defn
+    @auto_heartbeater
+    async def credential_extraction_demo_activity(
+        self, workflow_args: Dict[str, Any]
+    ) -> Optional[ActivityStatistics]:
+        """A custom activity demostrating the use of various utilities provided by the application SDK.
+
+        Args:
+            workflow_args: The workflow arguments.
+
+        Returns:
+            Optional[ActivityStatistics]: The activity statistics.
+        """
+
+        # reference to credentials passed as user inputs are available as 'credential_guid' in workflow_args
+        # in this case refer to https://github.com/atlanhq/atlan-sample-apps/blob/main/connectors/mysql/frontend/static/script.js#L740
+        await get_credentials(workflow_args["credential_guid"])
+        logger.info("credentials retrieved successfully")
+
+        return None
+
     @observability(logger=logger, metrics=metrics, traces=traces)
     @activity.defn
     @auto_heartbeater

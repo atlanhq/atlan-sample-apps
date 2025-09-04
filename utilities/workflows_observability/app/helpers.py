@@ -1,38 +1,12 @@
 import os
 
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.objectstore import ObjectStoreOutput
-from pyatlan.client.atlan import AtlanClient
+from application_sdk.services import ObjectStore
 from pyatlan.model.enums import AtlanWorkflowPhase
 from temporalio import activity
 
 logger = get_logger(__name__)
 activity.logger = logger
-
-
-def get_atlan_client() -> AtlanClient:
-    """
-    Initialize and return an authenticated AtlanClient instance.
-
-    This function retrieves the Atlan base URL and API key from environment variables
-    (`ATLAN_BASE_URL` and `ATLAN_API_KEY`) and uses them to create an instance of
-    `AtlanClient` for interacting with the Atlan API.
-
-    Returns:
-        AtlanClient: An authenticated client for making API requests to Atlan.
-
-    Raises:
-        ValueError: If either environment variable is missing or empty.
-    """
-    base_url = os.getenv("ATLAN_BASE_URL")
-    api_key = os.getenv("ATLAN_API_KEY")
-
-    if not base_url or not api_key:
-        raise ValueError(
-            "Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY"
-        )
-
-    return AtlanClient(base_url=base_url, api_key=api_key)
 
 
 def save_result_locally(result, local_directory: str) -> None:
@@ -57,7 +31,7 @@ def save_result_locally(result, local_directory: str) -> None:
             "SUCCESS" if result.status == AtlanWorkflowPhase.SUCCESS else "FAILED"
         )
         output_path = os.path.join(
-            local_directory, date_str, status_dir, result.id + ".json"
+            local_directory, date_str, status_dir, f"{result.id}.json"
         )
 
         with open(output_path, "w") as f:
@@ -87,10 +61,10 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
         Exception: For any other errors during the upload process.
     """
     try:
-        await ObjectStoreOutput.push_files_to_object_store(
-            output_prefix=output_prefix, input_files_path=local_directory
+        await ObjectStore.upload_prefix(
+            destination=output_prefix, source=local_directory
         )
-        logger.info("Files pushed to object storage.")
+        logger.info(f"{local_directory} pushed to object storage.")
 
     except Exception as e:
         logger.error(
