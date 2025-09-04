@@ -26,10 +26,6 @@ class HandlerClass(HandlerInterface):
         """
         self.client = client or ClientClass()
 
-    # ============================================================================
-    # SECTION 1: SDK INTERFACE METHODS (Called by FastAPI endpoints)
-    # ============================================================================
-
     async def load(self, credentials: Dict[str, Any]) -> None:
         """SDK interface: Initialize client with credentials.
 
