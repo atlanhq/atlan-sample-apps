@@ -16,10 +16,10 @@ class WorkflowClass(WorkflowInterface):
     @workflow.run
     async def run(self, workflow_config: Dict[str, Any]) -> None:
         """
-        Orchestrate the weather summary flow:
+        Orchestrate the workflow summary flow:
 
         1. Read workflow args (supports username, city, units with defaults)
-        2. Fetch and format current weather via activities
+        2. Fetch and format current metadata via activities
         3. Log the summary
         """
         activities_instance = ActivitiesClass()

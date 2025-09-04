@@ -12,6 +12,6 @@ class ActivitiesClass(ActivitiesInterface):
 
 
     def __init__(self, handler: HandlerClass | None = None):
-        self.weather_handler = handler or HandlerClass()
+        self.handler = handler or HandlerClass()
 
     #Define activities here

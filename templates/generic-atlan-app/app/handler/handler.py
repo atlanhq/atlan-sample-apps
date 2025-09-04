@@ -19,10 +19,10 @@ class HandlerClass(HandlerInterface):
     """
 
     def __init__(self, client: ClientClass | None = None):
-        """Initialize Weather handler with optional client instance.
+        """Initialize handler with optional client instance.
 
         Args:
-            client (Optional[WeatherApiClient]): Optional WeatherApiClient instance
+            client (Optional[ApiClient]): Optional ApiClient instance
         """
         self.client = client or ClientClass()
 
@@ -30,7 +30,7 @@ class HandlerClass(HandlerInterface):
         """SDK interface: Initialize client with credentials.
 
         Args:
-            credentials (Dict[str, Any]): Configuration dict (not required for Open-Meteo)
+            credentials (Dict[str, Any]): Configuration dict
         """
         if self.self.client:
             self.self.client.credentials = credentials
@@ -47,10 +47,9 @@ class HandlerClass(HandlerInterface):
             return False
 
     async def fetch_metadata(self) -> Dict[str, Any]:
-        """SDK interface: Fetch weather metadata (not applicable for weather app).
+        """
         
-        This method exists to satisfy the HandlerInterface but is not used
-        in the weather app context.
+        This method exists to satisfy the HandlerInterface
 
         Args:
             metadata_type (str): Type of metadata to fetch (ignored)
@@ -62,7 +61,7 @@ class HandlerClass(HandlerInterface):
         return {}
 
     async def preflight_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """SDK interface: Perform preflight checks for weather operations.
+        """SDK interface: Perform preflight checks for metadata operations.
 
         Args:
             payload (Dict[str, Any]): Request payload containing operation parameters
