@@ -1,0 +1,40 @@
+# anaplanapp.yaml
+table: AnaplanApp
+columns:
+  typeName:
+    source_query: "'AnaplanApp'"
+  status:
+    source_query: "'ACTIVE'"
+  attributes:
+    name:
+      source_query: name
+    qualifiedName:
+      source_query: concat(connection_qualified_name, '/', guid)
+      source_columns: [connection_qualified_name, guid]
+    anaplanSourceId:
+      source_query: guid
+    description:
+      source_query: |
+        CASE
+          WHEN description IS NOT NULL THEN
+            REGEXP_REPLACE(REGEXP_REPLACE(SUBSTRING(COALESCE(description, ''), 1, 100000), '<[^>]+>', ''), '\s+', ' ')
+          ELSE
+            NULL
+        END
+      source_columns: [description]
+
+    # common attributes for all entities
+    connectorName:
+      source_query: connector_name
+    connectionName:
+      source_query: connection_name
+    connectionQualifiedName:
+      source_query: connection_qualified_name
+    lastSyncRunAt:
+      source_query: last_sync_run_at
+    lastSyncWorkflowName:
+      source_query: last_sync_workflow_name
+    lastSyncRun:
+      source_query: last_sync_run
+    tenantId:
+      source_query: tenant_id

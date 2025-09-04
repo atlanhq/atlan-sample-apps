@@ -35,6 +35,7 @@ Each sample app is **self-contained** with its own dependencies and setup instru
 | 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [quickstart/hello_world](./quickstart/hello_world) |
 | 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [quickstart/giphy](./quickstart/giphy) |
 | 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [connectors/mysql](./connectors/mysql) |
+| 📈 Anaplan | An application that extracts metadata from an Anaplan instance and transforms it into a standardized format | [connectors/anaplan](./connectors/anaplan) |
 | 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [utilities/workflows_observability](./utilities/workflows_observability) |
 | 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [utilities/asset_descriptor_reminder](./utilities/asset_descriptor_reminder) |
 | ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [utilities/freshness_monitor](./utilities/freshness_monitor)                 |
