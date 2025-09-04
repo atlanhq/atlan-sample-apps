@@ -1,19 +1,19 @@
 from typing import Any, Dict
 
+from app.client.client import ClientClass
 from application_sdk.handlers import HandlerInterface
 from application_sdk.observability.logger_adaptor import get_logger
-from app.client.client import ClientClass
 
 logger = get_logger(__name__)
 
 
 class HandlerClass(HandlerInterface):
     """App handler for Atlan SDK interactions.
-    
+
     This handler provides the SDK interface for metadata operations,
     coordinating between the frontend, SDK, and the Client.
 
-    
+
     SDK BEHAVIOR: Base handler automatically calls load() with credentials before calling any method,
     then wraps responses in standard format ({"success": true/false, "data": ...})
     """
@@ -48,7 +48,7 @@ class HandlerClass(HandlerInterface):
 
     async def fetch_metadata(self) -> Dict[str, Any]:
         """
-        
+
         This method exists to satisfy the HandlerInterface
 
         Args:
@@ -71,16 +71,14 @@ class HandlerClass(HandlerInterface):
         """
         try:
             logger.info("Performing preflight check")
-            return {
-                "status": "passed",
-                "message": f"Preflight check passed"
-            }
-            
+            return {"status": "passed", "message": f"Preflight check passed"}
+
         except Exception as e:
-            logger.error(f"Preflight check failed with unexpected error: {e}", exc_info=True)
+            logger.error(
+                f"Preflight check failed with unexpected error: {e}", exc_info=True
+            )
             return {
                 "status": "failed",
                 "message": f"Preflight check failed: {e}",
-                "checks": {
-                }
+                "checks": {},
             }

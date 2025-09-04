@@ -34,7 +34,6 @@ class WorkflowClass(WorkflowInterface):
         # Call other activities here
         pass
 
-
     @staticmethod
     def get_activities(activities: ActivitiesInterface) -> Sequence[Callable[..., Any]]:
         """

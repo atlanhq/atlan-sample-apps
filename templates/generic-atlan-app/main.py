@@ -10,9 +10,7 @@ import asyncio
 from app.activities import ActivitiesClass
 from app.clients import ClientClass
 from app.workflows import WorkflowClass
-from application_sdk.application import (
-    BaseApplication,
-)
+from application_sdk.application import BaseApplication
 from application_sdk.common.error_codes import ApiError
 from application_sdk.constants import APPLICATION_NAME
 from application_sdk.observability.decorators.observability_decorator import (
@@ -31,21 +29,16 @@ traces = get_traces()
 async def main():
     try:
         # TODO: Replace AppActivities with your specific activities class
-        # TODO: Add your workflow classes to the list  
+        # TODO: Add your workflow classes to the list
         # TODO: Add any additional modules your workflows need
         # TODO: Register your workflow classes and endpoints
         # TODO: Add your custom initialization here
 
         # Initialize the application
-        application = BaseApplication(
-            name=APPLICATION_NAME,
-            client_class=ClientClass
-        )
+        application = BaseApplication(name=APPLICATION_NAME, client_class=ClientClass)
 
         await application.setup_workflow(
-            workflow_and_activities_classes=[
-                (WorkflowClass, ActivitiesClass)
-            ],
+            workflow_and_activities_classes=[(WorkflowClass, ActivitiesClass)],
         )
 
         # Start the worker

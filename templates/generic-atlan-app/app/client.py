@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional
+
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
