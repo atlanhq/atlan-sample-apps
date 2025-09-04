@@ -8,12 +8,11 @@ logger = get_logger(__name__)
 
 
 class HandlerClass(HandlerInterface):
-    """Weather app handler for Atlan SDK interactions.
+    """App handler for Atlan SDK interactions.
     
-    This handler provides the SDK interface for weather data operations,
-    coordinating between the frontend, SDK, and the WeatherApiClient.
-    
-    CALL CHAIN: Frontend --> SDK --> WeatherHandler --> WeatherApiClient --> Open-Meteo API
+    This handler provides the SDK interface for metadata operations,
+    coordinating between the frontend, SDK, and the Client.
+
     
     SDK BEHAVIOR: Base handler automatically calls load() with credentials before calling any method,
     then wraps responses in standard format ({"success": true/false, "data": ...})
