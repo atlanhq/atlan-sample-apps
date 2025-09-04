@@ -13,7 +13,6 @@ from application_sdk.activities.metadata_extraction.sql import (
     BaseSQLMetadataExtractionActivities,
     BaseSQLMetadataExtractionActivitiesState,
 )
-from application_sdk.services.secretstore import SecretStore
 from application_sdk.common.utils import prepare_query
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
@@ -21,6 +20,7 @@ from application_sdk.observability.decorators.observability_decorator import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
+from application_sdk.services.secretstore import SecretStore
 from temporalio import activity
 
 logger = get_logger(__name__)
