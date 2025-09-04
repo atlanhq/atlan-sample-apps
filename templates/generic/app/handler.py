@@ -71,7 +71,7 @@ class HandlerClass(HandlerInterface):
         """
         try:
             logger.info("Performing preflight check")
-            return {"status": "passed", "message": f"Preflight check passed"}
+            return {"status": "passed", "message": "Preflight check passed"}
 
         except Exception as e:
             logger.error(
