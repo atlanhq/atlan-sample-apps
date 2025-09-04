@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 import httpx
 from application_sdk.clients import ClientInterface
-from application_sdk.clients.async_atlan import get_client
+from application_sdk.clients.atlan import get_async_client
 from pyatlan.client.aio import AsyncAtlanClient
 from slack_sdk import WebClient
 
@@ -20,7 +20,7 @@ class AssetDescriptionClient(ClientInterface):
         if not self.credentials.get("atlan_token"):
             raise ValueError("Missing required Atlan credentials (atlan_token)")
 
-        self.atlan_client = await get_client(
+        self.atlan_client = await get_async_client(
             api_token_guid=self.credentials["atlan_token"]
         )
         if self.credentials.get("slack_bot_token"):
