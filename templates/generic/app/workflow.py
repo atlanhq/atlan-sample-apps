@@ -25,14 +25,11 @@ class WorkflowClass(WorkflowInterface):
         activities_instance = ActivitiesClass()
 
         # Merge any provided args (from frontend POST body or server config)
-        workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
+        _workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             workflow_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
-
-        # Log the workflow arguments for debugging
-        logger.info(f"Processing workflow with args: {workflow_args}")
 
         # Call other activities here
         pass
