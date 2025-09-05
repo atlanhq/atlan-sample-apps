@@ -45,7 +45,7 @@ class HelloWorldWorkflow(WorkflowInterface):
         name: str = workflow_args.get("name", "John Doe")
         logger.info("Starting hello world workflow")
 
-        activities: List[Coroutine[Any, Any, Any]] = [
+        activities: List[Any] = [
             workflow.execute_activity(  # pyright: ignore[reportUnknownMemberType]
                 activities_instance.say_hello,
                 name,
@@ -55,12 +55,6 @@ class HelloWorldWorkflow(WorkflowInterface):
 
         # Wait for all activities to complete
         await asyncio.gather(*activities)
-
-        await workflow.execute_activity(
-            activities_instance.say_hello_sync,
-            name,
-            start_to_close_timeout=timedelta(seconds=5),
-        )
 
         logger.info("Hello world workflow completed")
 
@@ -81,6 +75,5 @@ class HelloWorldWorkflow(WorkflowInterface):
 
         return [
             activities.say_hello,
-            activities.say_hello_sync,
             activities.get_workflow_args,
         ]
