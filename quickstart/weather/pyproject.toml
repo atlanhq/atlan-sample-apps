@@ -1,0 +1,70 @@
+[project]
+name = "weather-app"
+version = "0.1.0"
+description = "Weather sample app built using Atlan Application SDK (Open-Meteo)"
+authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
+requires-python = ">=3.11"
+license = "Apache-2.0"
+readme = "README.md"
+dependencies = [
+    "atlan-application-sdk[workflows,tests]==0.1.1rc34",
+    "poethepoet",
+    "requests"
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "coverage",
+]
+
+[tool.poe.tasks]
+start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components"
+start-temporal = "temporal server start-dev --db-filename ./temporal.db"
+start-deps.shell = "poe start-dapr & poe start-temporal &"
+stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || true"
+
+[tool.poe.tasks.download-components]
+interpreter = "python"
+env = { SDK_VERSION = "v0.1.1rc23" }
+shell = """
+import pathlib, requests, os
+
+components_dir = pathlib.Path("components")
+components_dir.mkdir(exist_ok=True)
+
+api_url = "https://api.github.com/repos/atlanhq/application-sdk/contents/components"
+
+response = requests.get(api_url, params={"ref": os.getenv("SDK_VERSION")})
+response.raise_for_status()
+
+for file_info in response.json():
+    if file_info["type"] == "file" and file_info["name"].endswith(".yaml"):
+        raw_url = file_info["download_url"]
+
+        file_response = requests.get(raw_url)
+        file_response.raise_for_status()
+
+        file_path = components_dir / file_info["name"]
+        file_path.write_text(file_response.text)
+        print(f"Downloaded: {file_info['name']}")
+"""
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["./**/*.py"]
+
+[tool.hatch.build.targets.wheel]
+include = ["./**/*.py"]
+packages = [
+    "app"
+]
+
+# for local development
+[tool.uv.sources]
+# atlan-application-sdk = { path = "../application-sdk", editable = true }
+# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" } 
