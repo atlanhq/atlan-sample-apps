@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 import requests
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.mcp import mcp_tool
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
@@ -21,6 +22,7 @@ SMTP_SENDER = os.getenv("SMTP_SENDER", "support@atlan.app")
 
 class GiphyActivities(ActivitiesInterface):
     @activity.defn
+    @mcp_tool(description="Fetch random GIF from Giphy API based on search term")
     async def fetch_gif(self, search_term: str) -> str:
         """
         Fetches a random GIF from Giphy API based on the search term.
@@ -53,6 +55,7 @@ class GiphyActivities(ActivitiesInterface):
             return "https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"  # Fallback GIF
 
     @activity.defn
+    @mcp_tool(description="Send HTML email containing a GIF to specified recipients")
     async def send_email(self, config: Dict[str, Any]) -> None:
         """
         Sends an HTML email containing a GIF to specified recipients using SMTP.
