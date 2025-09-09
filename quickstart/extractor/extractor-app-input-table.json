@@ -1,0 +1,14 @@
+[
+  {
+    "Type": "Table",
+    "Name": "CUSTOMER",
+    "Display_Name": "Customer",
+    "Description": "Staging table for invoice data.",
+    "User_Description": "",
+    "Owner_Users": "jsmith\njdoe",
+    "Owner_Groups": "",
+    "Certificate_Status": "VERIFIED",
+    "Schema_Name": "PEOPLE",
+    "Database_Name": "TEST_DB"
+  }
+]
