@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 import requests
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.mcp import mcp_tool
+from application_sdk.decorators.mcp_tool import mcp_tool
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
