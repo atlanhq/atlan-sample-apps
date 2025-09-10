@@ -1,8 +1,5 @@
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Dict
+from abc import ABC
 
-from application_sdk.handlers import HandlerInterface
 from application_sdk.observability.logger_adaptor import get_logger
 
 from .client import ClientClass
