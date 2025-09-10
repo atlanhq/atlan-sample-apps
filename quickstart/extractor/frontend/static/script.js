@@ -1,20 +1,20 @@
 // Extractor App JavaScript
 async function handleSubmit(event) {
     event.preventDefault();
-    
+
     const form = event.target;
     const formData = new FormData(form);
     const runButton = document.getElementById('runWorkflowButton');
-    
+
     // Disable button and show loading state
     runButton.disabled = true;
     runButton.textContent = 'Processing... ⏳';
-    
+
     try {
         // Get form values directly from the input elements
         const inputFile = document.getElementById('inputFile').value.trim();
         const outputFile = document.getElementById('outputFile').value.trim();
-        
+
         // Basic validation
         if (!inputFile) {
             alert('Please enter an input file path');
@@ -22,17 +22,17 @@ async function handleSubmit(event) {
             runButton.textContent = 'Extract & Transform 🚀';
             return;
         }
-        
+
         // Prepare the request payload
         const payload = {
             input_file: inputFile,
             output_file: outputFile
         };
-        
+
         console.log('Submitting extraction request:', payload);
         console.log('Input file path:', inputFile);
         console.log('Output file path:', outputFile);
-        
+
         // Make the API request
         const response = await fetch('/workflows/v1/start', {
             method: 'POST',
@@ -40,16 +40,16 @@ async function handleSubmit(event) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(payload)
-            
+
         });
-        
+
         if (response.ok) {
             runButton.textContent = "Submitted! 🎉";
             console.log('Extraction workflow started successfully');
-            
+
             // Show success modal
             showSuccessModal();
-            
+
             // Clear form after successful submission
             setTimeout(() => {
                 form.reset();
@@ -58,7 +58,7 @@ async function handleSubmit(event) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
     } catch (error) {
         console.error('Error starting workflow:', error);
         alert(`Failed to start extraction workflow: ${error.message}`);
@@ -76,14 +76,14 @@ async function handleSubmit(event) {
 function showSuccessModal() {
     const modal = document.getElementById('successModal');
     modal.style.display = 'block';
-    
+
     // Close modal when clicking outside
     modal.onclick = function(event) {
         if (event.target === modal) {
             modal.style.display = 'none';
         }
     };
-    
+
     // Close modal with Escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
@@ -96,7 +96,7 @@ function showSuccessModal() {
 document.addEventListener('DOMContentLoaded', function() {
     const inputFile = document.getElementById('inputFile');
     const outputFile = document.getElementById('outputFile');
-    
+
     // Auto-generate output filename when input changes
     inputFile.addEventListener('input', function() {
         if (this.value && !outputFile.value) {
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
             outputFile.value = `${baseName}_transformed.json`;
         }
     });
-    
+
     // Add file path validation
     inputFile.addEventListener('blur', function() {
         const value = this.value.trim();
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.title = '';
         }
     });
-    
+
     // Clear validation on focus
     inputFile.addEventListener('focus', function() {
         this.style.borderColor = '#e2e8f0';

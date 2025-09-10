@@ -46,7 +46,4 @@ class WorkflowClass(WorkflowInterface):
         if not isinstance(activities, ActivitiesClass):
             raise TypeError("Activities must be an instance of ActivitiesClass")
 
-        return [
-            activities.get_workflow_args,
-            activities.extract_and_transform_metadata
-        ]
+        return [activities.get_workflow_args, activities.extract_and_transform_metadata]

@@ -9,6 +9,7 @@ logger = get_logger(__name__)
 metrics = get_metrics()
 traces = get_traces()
 
+
 class ClientClass:
     """Client for handling JSON file operations and data transformation."""
 
@@ -20,33 +21,33 @@ class ClientClass:
     def create_read_handler(self, file_path: str) -> TextIO:
         """
         Create and return a file handler for the specified JSON file.
-        
+
         Args:
             file_path (str): Path to the JSON file to open
-            
+
         Returns:
             TextIO: File handler for the opened file
-            
+
         Raises:
             FileNotFoundError: If the file doesn't exist
             IOError: If there's an error opening the file
         """
         try:
             logger.info(f"Creating file handler for: {file_path}")
-            
+
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"File not found: {file_path}")
-            
+
             # Close existing handler if any
             if self.file_handler:
                 self.close_file_handler()
-            
+
             # Open new file handler
-            self.file_handler = open(file_path, 'r', encoding='utf-8')
-            
+            self.file_handler = open(file_path, "r", encoding="utf-8")
+
             logger.info(f"Successfully created file handler for: {file_path}")
             return self.file_handler
-            
+
         except Exception as e:
             logger.error(f"Error creating file handler for {file_path}: {e}")
             raise
@@ -54,7 +55,7 @@ class ClientClass:
     def close_file_handler(self) -> None:
         """
         Close the current file handler if it exists.
-        
+
         This method ensures proper cleanup of file resources and should be called
         when the file operations are complete.
         """

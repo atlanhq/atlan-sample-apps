@@ -9,8 +9,8 @@ import asyncio
 
 from app.activities import ActivitiesClass
 from app.client import ClientClass
-from app.workflow import WorkflowClass
 from app.handler import HandlerClass
+from app.workflow import WorkflowClass
 from application_sdk.application import BaseApplication
 from application_sdk.common.error_codes import ApiError
 from application_sdk.constants import APPLICATION_NAME
@@ -37,9 +37,9 @@ async def main():
 
         # Initialize the application
         application = BaseApplication(
-                     name=APPLICATION_NAME, 
-                     client_class=ClientClass,
-                     handler_class=HandlerClass,
+            name=APPLICATION_NAME,
+            client_class=ClientClass,
+            handler_class=HandlerClass,
         )
 
         await application.setup_workflow(
