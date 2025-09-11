@@ -47,6 +47,7 @@ async def main():
         # Setup the application server
         await application.setup_server(
             workflow_class=WorkflowClass,
+            has_configmap=True
         )
 
         # Start the application server
