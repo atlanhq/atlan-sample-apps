@@ -118,8 +118,3 @@ include = ["./**/*.py"]
 packages = [
     "app"
 ]
-
-# for local development
-[tool.uv.sources]
-# atlan-application-sdk = { path = "../application-sdk", editable = true }
-# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" }
