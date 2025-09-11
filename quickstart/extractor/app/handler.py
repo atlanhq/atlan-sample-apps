@@ -1,4 +1,7 @@
+import json
 from abc import ABC
+from pathlib import Path
+from typing import Any, Dict
 
 from application_sdk.observability.logger_adaptor import get_logger
 
@@ -23,3 +26,10 @@ class HandlerClass(ABC):
             client (Optional[ClientClass]): Optional ClientClass instance
         """
         self.client = client or ClientClass()
+
+    @staticmethod
+    async def get_configmap(config_map_id: str) -> Dict[str, Any]:
+        workflow_json_path = Path().cwd() / "app" / "templates" / "workflow.json"
+
+        with open(workflow_json_path) as f:
+            return json.load(f)
