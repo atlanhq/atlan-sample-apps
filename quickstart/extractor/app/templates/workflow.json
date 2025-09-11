@@ -9,7 +9,7 @@
           "type": "string",
           "required": true,
           "ui": {
-            "label": "Input JSON file path:",
+            "label": "Input JSON file path",
             "placeholder": "e.g., extractor-app-input-table.json",
             "grid": 8
           }

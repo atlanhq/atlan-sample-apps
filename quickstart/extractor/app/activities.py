@@ -29,8 +29,8 @@ class ActivitiesClass(ActivitiesInterface):
             if not self.handler or not self.handler.client:
                 raise ValueError("Handler or extractor client not initialized")
 
-            output_file = config.get("payload").get("output_file", "") 
-            input_file = config.get("payload").get("input_file", "")
+            output_file = config.get("payload").get("output_file", "transformed_tables.json") 
+            input_file = config.get("payload").get("input_file", "extractor-app-input-table.json")gs
             if not os.path.exists(input_file):
                 raise FileNotFoundError(f"File not found: {input_file}")
 
