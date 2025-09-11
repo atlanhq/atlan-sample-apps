@@ -60,6 +60,4 @@ class ExtractorWorkflow(WorkflowInterface):
         return [
             activities.get_workflow_args,
             activities.extract_table_metadata,
-            activities.test_extractor_connectivity,
-            activities.perform_preflight_check,
         ]
