@@ -29,7 +29,7 @@ class HandlerClass(ABC):
 
     @staticmethod
     async def get_configmap(config_map_id: str) -> Dict[str, Any]:
-        workflow_json_path = Path().cwd() / "app" / "templates" / "workflow.json"
+        workflow_json_path = Path().cwd() / "app" / "frontend" / "workflow.json"
 
         with open(workflow_json_path) as f:
             return json.load(f)

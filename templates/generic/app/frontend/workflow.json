@@ -1,0 +1,37 @@
+
+{
+    "id": "dummmy",
+    "name": "dummmy",
+    "logo": "",
+    "config": {
+      "properties": {
+        "dumm_input1": {
+          "type": "string",
+          "required": true,
+          "ui": {
+            "label": "",
+            "placeholder": "",
+            "grid": 8
+          }
+        },
+        "dumm_input2": {
+          "type": "string",
+          "required": true,
+          "ui": {
+            "label": "",
+            "placeholder": "",
+            "grid": 8
+          }
+        }
+      },
+      "steps": [
+        {
+          "id": "payload",
+          "properties": [
+
+          ]
+        }
+      ]
+    }
+  }
+  
