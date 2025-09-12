@@ -9,7 +9,7 @@ readme = "README.md"
 dependencies = [
     "atlan-application-sdk[daft,sqlalchemy,tests,workflows]==0.1.1rc38",
     "poethepoet",
-    "pymysql>=1.1.1",
+    "asyncmy>=0.2.10",
 ]
 
 [dependency-groups]
@@ -66,6 +66,6 @@ packages = [
 ]
 
 # for local development
-[tool.uv.sources]
+# [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
 # atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" }
