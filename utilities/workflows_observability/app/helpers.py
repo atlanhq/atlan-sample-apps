@@ -3,13 +3,14 @@ import os
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.services import ObjectStore
 from pyatlan.model.enums import AtlanWorkflowPhase
+from pyatlan.model.workflow import WorkflowSearchResult
 from temporalio import activity
 
 logger = get_logger(__name__)
 activity.logger = logger
 
 
-def save_result_locally(result, local_directory: str) -> None:
+def save_result_locally(raw_json, local_directory: str) -> None:
     """
     Save a workflow run result to a local directory, structured by date and status.
 
@@ -21,6 +22,7 @@ def save_result_locally(result, local_directory: str) -> None:
         OSError: If directories or file writing fails.
     """
     try:
+        result = WorkflowSearchResult.parse_raw(raw_json)
         date_str = result.source.status.startedAt[:10]
         subdirs = [date_str, f"{date_str}/SUCCESS", f"{date_str}/FAILED"]
 
