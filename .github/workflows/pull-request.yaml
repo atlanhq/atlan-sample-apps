@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0  # Needed for pre-commit to work correctly
 
       - name: Set up Python 3.11 🐍
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -32,7 +32,7 @@ jobs:
           pip install pre-commit
 
       - name: Cache pre-commit environments 💾
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -126,12 +126,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python 3.11 🐍
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install uv ⚡️
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
           cache-dependency-glob: "${{ matrix.app }}/uv.lock"

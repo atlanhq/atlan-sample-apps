@@ -7,9 +7,9 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,sqlalchemy,tests,daft]==0.1.1rc30",
+    "atlan-application-sdk[daft,sqlalchemy,tests,workflows]==0.1.1rc38",
     "poethepoet",
-    "pymysql>=1.1.1",
+    "asyncmy>=0.2.10",
 ]
 
 [dependency-groups]
@@ -28,7 +28,7 @@ stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || 
 
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v0.1.1rc23" }
+env = { SDK_VERSION = "v0.1.1rc38" }
 shell = """
 import pathlib, requests, os
 
@@ -66,6 +66,6 @@ packages = [
 ]
 
 # for local development
-[tool.uv.sources]
+# [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
 # atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" }

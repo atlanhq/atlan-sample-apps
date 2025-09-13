@@ -3,7 +3,7 @@ from datetime import datetime
 
 from app.helpers import save_result_locally, save_result_object_storage
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.clients.async_atlan import get_client
+from application_sdk.clients.atlan import get_async_client
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
@@ -46,7 +46,7 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             time_difference = current_datetime - input_date
             difference_in_hours = int(time_difference.total_seconds() / 3600)
 
-            client = await get_client()
+            client = await get_async_client()
             from pyatlan.model.enums import AtlanWorkflowPhase
 
             results = await client.workflow.find_runs_by_status_and_time_range(
