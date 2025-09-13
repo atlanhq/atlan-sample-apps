@@ -109,7 +109,7 @@ class AppMetadataExtractionWorkflow(MetadataExtractionWorkflow):
             for asset_type in asset_types:
                 logger.info(f"Transforming {asset_type}")
                 workflow_args["typename"] = asset_type
-                
+
                 await workflow.execute_activity_method(
                     activities_instance.transform_data,
                     args=[workflow_args],
@@ -141,4 +141,3 @@ class AppMetadataExtractionWorkflow(MetadataExtractionWorkflow):
             activities.extract_pages,
             activities.transform_data,
         ]
-

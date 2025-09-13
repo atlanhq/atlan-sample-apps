@@ -141,7 +141,6 @@ class TestPagesExtract:
             empty_response,
         ]
 
-
         # Act
         all_apps = {"app_guid_1"}
         result = await extract_pages_with_details(mock_client, all_apps)
@@ -194,7 +193,6 @@ class TestPagesExtract:
             empty_response,
         ]
 
-
         # Act
         all_apps = {"app_guid_1"}  # Only app_guid_1 is valid
         result = await extract_pages_with_details(mock_client, all_apps)
@@ -216,7 +214,6 @@ class TestPagesExtract:
         mock_response.is_success = True
         mock_response.json.return_value = empty_response
         mock_client.execute_http_get_request.return_value = mock_response
-
 
         # Act
         all_apps = {"app_guid_1"}
@@ -259,7 +256,6 @@ class TestPagesExtract:
         mock_response.json.return_value = incomplete_response
         mock_client.execute_http_get_request.return_value = mock_response
 
-
         # Act
         all_apps = {"app_guid_1"}
         result = await extract_pages_with_details(mock_client, all_apps)
@@ -297,7 +293,6 @@ class TestPagesExtract:
             first_response,
             empty_response,
         ]
-
 
         # Act
         all_apps = {"app_guid_1"}
@@ -344,7 +339,6 @@ class TestPagesExtract:
             first_response,
             empty_response,
         ]
-
 
         # Act
         all_apps = {"app_guid_1"}

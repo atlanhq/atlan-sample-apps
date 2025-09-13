@@ -306,7 +306,9 @@ class TestAppHandler:
 
         # Assert
         assert result["authenticationCheck"]["success"] is False
-        assert "Authentication failed" in result["authenticationCheck"]["failureMessage"]
+        assert (
+            "Authentication failed" in result["authenticationCheck"]["failureMessage"]
+        )
 
     @patch("app.handlers.extract_apps_data")
     @patch.object(AppClient, "_get_auth_token")
@@ -323,7 +325,10 @@ class TestAppHandler:
         # Assert
         assert "Exception" in result
         assert result["Exception"]["success"] is False
-        assert "Preflight check failed: Auth error" in result["Exception"]["failureMessage"]
+        assert (
+            "Preflight check failed: Auth error"
+            in result["Exception"]["failureMessage"]
+        )
 
     # ============================================================================
     # SECTION 6: INTEGRATION TESTS

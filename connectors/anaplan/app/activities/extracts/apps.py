@@ -61,11 +61,7 @@ async def extract_apps_data(client: AppClient) -> List[Dict[str, Any]]:
 
         # Filter out deleted apps during extraction
         # NOTE: can become a blocking code if the number of apps is very large and heartbeat is not sent during that time
-        active_app_data = [
-            app
-            for app in app_data
-            if app.get("deletedAt") is None
-        ]
+        active_app_data = [app for app in app_data if app.get("deletedAt") is None]
 
         logger.info(
             f"Successfully extracted {len(active_app_data)} active apps from {len(app_data)} total apps"

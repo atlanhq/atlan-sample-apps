@@ -127,8 +127,7 @@ class AppHandler(BaseHandler):
 
             # Get all pages for the active apps
             all_pages = await extract_pages_with_details(
-                self.client,
-                {app[0] for app in active_apps}
+                self.client, {app[0] for app in active_apps}
             )
 
             # Group pages by app GUID

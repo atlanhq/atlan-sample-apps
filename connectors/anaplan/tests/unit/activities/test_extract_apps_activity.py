@@ -83,9 +83,7 @@ class TestExtractAppsActivity:
             # Assert
             assert result == {"records": 2}
             mock_parquet_output.write_dataframe.assert_called_once()
-            mock_parquet_output.get_statistics.assert_called_once_with(
-                typename="app"
-            )
+            mock_parquet_output.get_statistics.assert_called_once_with(typename="app")
 
     async def test_extract_apps_no_client(self, mock_activities, workflow_args):
         """Test app extraction when client is not found in state."""
@@ -114,7 +112,11 @@ class TestExtractAppsActivity:
                 "app.activities.setup_parquet_output",
                 return_value=mock_parquet_output,
             ),
-            patch("app.activities.extract_apps_data", new_callable=AsyncMock, return_value=[]),
+            patch(
+                "app.activities.extract_apps_data",
+                new_callable=AsyncMock,
+                return_value=[],
+            ),
         ):
             # Act
             result = await mock_activities.extract_apps(workflow_args)
@@ -122,9 +124,7 @@ class TestExtractAppsActivity:
             # Assert
             assert result == {"records": 0}
             mock_parquet_output.write_dataframe.assert_not_called()
-            mock_parquet_output.get_statistics.assert_called_once_with(
-                typename="app"
-            )
+            mock_parquet_output.get_statistics.assert_called_once_with(typename="app")
 
     async def test_extract_apps_extraction_error(
         self, mock_activities, mock_state, workflow_args

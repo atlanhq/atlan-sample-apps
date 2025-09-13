@@ -42,7 +42,9 @@ class TestAppClient:
         assert isinstance(client, AppClient)
 
     @patch.object(AppClient, "execute_http_post_request")
-    async def test_load_with_valid_credentials(self, mock_execute_post, client, credentials):
+    async def test_load_with_valid_credentials(
+        self, mock_execute_post, client, credentials
+    ):
         """Test loading credentials into client."""
         # Arrange
         mock_response = MagicMock()
@@ -150,7 +152,9 @@ class TestAppClient:
         assert call_args[1]["auth"] == ("test_user", "test_password")
 
     @patch.object(AppClient, "execute_http_post_request")
-    async def test_get_auth_token_missing_token(self, mock_execute_post, client, credentials):
+    async def test_get_auth_token_missing_token(
+        self, mock_execute_post, client, credentials
+    ):
         """Test authentication when token is missing from response."""
         # Arrange
         client.username = "test_user"
@@ -167,11 +171,15 @@ class TestAppClient:
         mock_execute_post.return_value = mock_response
 
         # Act & Assert
-        with pytest.raises(Exception, match="Token not found in authentication response"):
+        with pytest.raises(
+            Exception, match="Token not found in authentication response"
+        ):
             await client._get_auth_token()
 
     @patch.object(AppClient, "execute_http_post_request")
-    async def test_get_auth_token_authentication_failure(self, mock_execute_post, client, credentials):
+    async def test_get_auth_token_authentication_failure(
+        self, mock_execute_post, client, credentials
+    ):
         """Test authentication failure."""
         # Arrange
         client.username = "test_user"
@@ -197,7 +205,10 @@ class TestAppClient:
         client.password = None
 
         # Act & Assert
-        with pytest.raises(Exception, match="Username and password are required for basic authentication"):
+        with pytest.raises(
+            Exception,
+            match="Username and password are required for basic authentication",
+        ):
             await client._get_auth_token()
 
     async def test_get_auth_token_unsupported_auth_type(self, client):
@@ -245,7 +256,9 @@ class TestAppClient:
             await client.load(credentials=credentials)
 
     @patch.object(AppClient, "execute_http_post_request")
-    async def test_load_invalid_response_format(self, mock_execute_post, client, credentials):
+    async def test_load_invalid_response_format(
+        self, mock_execute_post, client, credentials
+    ):
         """Test loading with invalid response format."""
         # Arrange
         mock_response = MagicMock()
@@ -257,5 +270,7 @@ class TestAppClient:
         mock_execute_post.return_value = mock_response
 
         # Act & Assert
-        with pytest.raises(Exception, match="Token not found in authentication response"):
+        with pytest.raises(
+            Exception, match="Token not found in authentication response"
+        ):
             await client.load(credentials=credentials)

@@ -5,6 +5,7 @@ from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
+
 class AppClient(BaseClient):
     """Client for App API interactions.
 
@@ -70,9 +71,7 @@ class AppClient(BaseClient):
                 if not self.auth_token:
                     raise Exception("Token not found in authentication response")
 
-                logger.info(
-                    "Successfully obtained Anaplan authentication token"
-                )
+                logger.info("Successfully obtained Anaplan authentication token")
                 return self.auth_token
             else:
                 error_msg = f"Authentication failed with status {response.status_code if response else 'No response'}: {response.text if response else 'No response'}"

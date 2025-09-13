@@ -5,7 +5,11 @@ from typing import Any, Dict, Type
 import pandas as pd
 from app.activities.extracts.apps import extract_apps_data
 from app.activities.extracts.pages import extract_pages_with_details
-from app.activities.utils import get_app_guids, setup_parquet_output, should_include_asset
+from app.activities.utils import (
+    get_app_guids,
+    setup_parquet_output,
+    should_include_asset,
+)
 from app.clients import AppClient
 from app.handlers import AppHandler
 from app.transformers import AppTransformer
@@ -175,9 +179,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
     @auto_heartbeater
     @activity.defn
-    async def extract_apps(
-        self, workflow_args: Dict[str, Any]
-    ) -> ActivityStatistics:
+    async def extract_apps(self, workflow_args: Dict[str, Any]) -> ActivityStatistics:
         """Extract app assets from Anaplan.
 
         Fetches all available apps from Anaplan API, applies metadata filtering,
@@ -204,7 +206,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
             # Extract all apps data (unfiltered)
             app_data = await extract_apps_data(state.client)
-            
+
             # Check for filters and apply them
             filtered_app_data = [
                 app
@@ -238,9 +240,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
     @auto_heartbeater
     @activity.defn
-    async def extract_pages(
-        self, workflow_args: Dict[str, Any]
-    ) -> ActivityStatistics:
+    async def extract_pages(self, workflow_args: Dict[str, Any]) -> ActivityStatistics:
         """Extract page assets from Anaplan.
 
         Fetches all available pages from Anaplan API with detailed information,
@@ -273,7 +273,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                 state.client,
                 all_apps,
             )
-            
+
             # Apply metadata filtering logic
             detailed_page_data = [
                 page

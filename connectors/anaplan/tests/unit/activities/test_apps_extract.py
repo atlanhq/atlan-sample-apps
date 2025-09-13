@@ -53,7 +53,6 @@ class TestAppsExtract:
         mock_response.json.return_value = sample_response
         mock_client.execute_http_get_request.return_value = mock_response
 
-
         # Act
         result = await extract_apps_data(mock_client)
 
@@ -115,7 +114,6 @@ class TestAppsExtract:
         mock_response.is_success = True
         mock_response.json.return_value = sample_response
         mock_client.execute_http_get_request.return_value = mock_response
-
 
         # Act
         result = await extract_apps_data(mock_client)
@@ -186,7 +184,6 @@ class TestAppsExtract:
             mock_response_2,
         ]
 
-
         # Act
         result = await extract_apps_data(mock_client)
 
@@ -217,7 +214,6 @@ class TestAppsExtract:
         mock_response.is_success = True
         mock_response.json.return_value = empty_response
         mock_client.execute_http_get_request.return_value = mock_response
-
 
         # Act
         result = await extract_apps_data(mock_client)
@@ -260,7 +256,6 @@ class TestAppsExtract:
         mock_response.json.return_value = incomplete_response
         mock_client.execute_http_get_request.return_value = mock_response
 
-
         # Act
         result = await extract_apps_data(mock_client)
 
@@ -285,7 +280,6 @@ class TestAppsExtract:
         mock_response.is_success = True
         mock_response.json.return_value = incomplete_response
         mock_client.execute_http_get_request.return_value = mock_response
-
 
         # Act
         result = await extract_apps_data(mock_client)
@@ -319,7 +313,6 @@ class TestAppsExtract:
         mock_response.is_success = True
         mock_response.json.return_value = all_deleted_response
         mock_client.execute_http_get_request.return_value = mock_response
-
 
         # Act
         result = await extract_apps_data(mock_client)

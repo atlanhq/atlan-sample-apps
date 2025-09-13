@@ -75,9 +75,7 @@ async def extract_pages_data(client: AppClient) -> List[Dict[str, Any]]:
         raise
 
 
-async def get_page_details(
-    client: AppClient, page: Dict[str, Any]
-) -> Dict[str, Any]:
+async def get_page_details(client: AppClient, page: Dict[str, Any]) -> Dict[str, Any]:
     """Get detailed information for a single page.
 
     Fetches additional details for a specific page from Anaplan's API

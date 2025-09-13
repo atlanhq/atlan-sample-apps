@@ -88,9 +88,7 @@ class TestExtractPagesActivity:
             # Assert
             assert result == {"records": 2}
             mock_parquet_output.write_dataframe.assert_called_once()
-            mock_parquet_output.get_statistics.assert_called_once_with(
-                typename="page"
-            )
+            mock_parquet_output.get_statistics.assert_called_once_with(typename="page")
 
     async def test_extract_pages_no_client(self, mock_activities, workflow_args):
         """Test page extraction when client is not found in state."""
@@ -138,9 +136,7 @@ class TestExtractPagesActivity:
             # Assert
             assert result == {"records": 0}
             mock_parquet_output.write_dataframe.assert_not_called()
-            mock_parquet_output.get_statistics.assert_called_once_with(
-                typename="page"
-            )
+            mock_parquet_output.get_statistics.assert_called_once_with(typename="page")
 
     async def test_extract_pages_extraction_error(
         self, mock_activities, mock_state, workflow_args
@@ -259,6 +255,4 @@ class TestExtractPagesActivity:
             # Assert
             assert result == {"records": 0}
             mock_parquet_output.write_dataframe.assert_not_called()
-            mock_parquet_output.get_statistics.assert_called_once_with(
-                typename="page"
-            )
+            mock_parquet_output.get_statistics.assert_called_once_with(typename="page")
