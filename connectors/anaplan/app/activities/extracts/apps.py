@@ -1,18 +1,13 @@
 from typing import Any, Dict, List
 
-from app.activities.utils import should_include_asset
 from app.clients import AppClient
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
 
-async def extract_apps_data(
-    client: AppClient,
-    metadata_filter_state: str,
-    metadata_filter: Dict[str, Any],
-) -> List[Dict[str, Any]]:
-    """Extract apps data from Anaplan.
+async def extract_apps_data(client: AppClient) -> List[Dict[str, Any]]:
+    """Extract all apps data from Anaplan.
 
     ------------------------------------------------------------
     URL: https://{host}/a/springboard-definition-service/apps
@@ -79,19 +74,16 @@ async def extract_apps_data(
 
         # Filter out deleted apps during extraction
         # NOTE: can become a blocking code if the number of apps is very large and heartbeat is not sent during that time
-        filtered_app_data = [
+        active_app_data = [
             app
             for app in app_data
             if app.get("deletedAt") is None
-            and should_include_asset(
-                app, "anaplanapp", metadata_filter_state, metadata_filter
-            )
         ]
 
         logger.info(
-            f"Successfully extracted {len(filtered_app_data)} non-deleted apps from {len(app_data)} total apps"
+            f"Successfully extracted {len(active_app_data)} active apps from {len(app_data)} total apps"
         )
-        return filtered_app_data
+        return active_app_data
 
     except Exception as e:
         logger.error(f"Error extracting apps data: {str(e)}")

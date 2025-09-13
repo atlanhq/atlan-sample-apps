@@ -5,7 +5,7 @@ from typing import Any, Dict, Type
 import pandas as pd
 from app.activities.extracts.apps import extract_apps_data
 from app.activities.extracts.pages import extract_pages_with_details
-from app.activities.utils import get_app_guids, setup_parquet_output
+from app.activities.utils import get_app_guids, setup_parquet_output, should_include_asset
 from app.clients import AppClient
 from app.handlers import AnaplanHandler
 from app.transformers import AnaplanTransformer
@@ -173,13 +173,20 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
             # Setup parquet output
             parquet_output = setup_parquet_output(workflow_args, "raw/anaplanapp")
 
-            # Extract apps data
-            app_data = await extract_apps_data(
-                state.client, state.metadata_filter_state, state.metadata_filter
-            )
+            # Extract all apps data (unfiltered)
+            app_data = await extract_apps_data(state.client)
+            
+            # Check for filters and apply them
+            filtered_app_data = [
+                app
+                for app in app_data
+                if should_include_asset(
+                    app, "anaplanapp", state.metadata_filter_state, state.metadata_filter
+                )
+            ]
 
             # Create DataFrame and write to parquet
-            if app_data:
+            if filtered_app_data:
                 # Use pandas instead of daft : avoid nested directory structure
                 pandas_df = pd.DataFrame(app_data)
                 await parquet_output.write_dataframe(pandas_df)
@@ -219,13 +226,20 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
             # Setup parquet output
             parquet_output = setup_parquet_output(workflow_args, "raw/anaplanpage")
 
-            # Extract pages data with details and filtering
-            detailed_page_data = await extract_pages_with_details(
+            # Extract pages data with details (unfiltered)
+            all_detailed_page_data = await extract_pages_with_details(
                 state.client,
                 all_apps,
-                state.metadata_filter_state,
-                state.metadata_filter,
             )
+            
+            # Apply metadata filtering logic
+            detailed_page_data = [
+                page
+                for page in all_detailed_page_data
+                if should_include_asset(
+                    page, "anaplanpage", state.metadata_filter_state, state.metadata_filter
+                )
+            ]
 
             # Create DataFrame and write to parquet
             if detailed_page_data:

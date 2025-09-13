@@ -1,7 +1,6 @@
 import asyncio
 from typing import Any, Dict, List, Set
 
-from app.activities.utils import should_include_asset
 from app.clients import AppClient
 from application_sdk.observability.logger_adaptor import get_logger
 
@@ -171,13 +170,19 @@ async def get_page_details(
 async def extract_pages_with_details(
     client: AppClient,
     valid_app_guids: Set[str],
-    metadata_filter_state: str,
-    metadata_filter: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
-    """Extract pages data with detailed information: controller function"""
+    """Extract pages data with detailed information: controller function
+    
+    Args:
+        client: AppClient instance for API operations
+        valid_app_guids: Set of valid app GUIDs to filter pages by
+        
+    Returns:
+        List[Dict[str, Any]]: Pages data with details (no metadata filtering applied)
+    """
 
     try:
-        logger.info("Starting pages extraction with details and filtering")
+        logger.info("Starting pages extraction with details")
 
         # Extract basic pages data
         page_data = await extract_pages_data(client)
@@ -189,9 +194,6 @@ async def extract_pages_with_details(
             if page.get("deletedAt") is None
             and not page.get("isArchived", False)
             and page.get("appGuid") in valid_app_guids
-            and should_include_asset(
-                page, "anaplanpage", metadata_filter_state, metadata_filter
-            )
         ]
 
         if not valid_pages:
