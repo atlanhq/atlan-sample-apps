@@ -96,7 +96,6 @@ class TestAnaplanWorkflow(unittest.TestCase, BaseTest):
         # Check that data contains the expected check fields
         data = response["data"]
         expected_checks = [
-            "inputValidation",
             "authenticationCheck",
             "appPermissions",
         ]

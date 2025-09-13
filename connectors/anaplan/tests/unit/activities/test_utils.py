@@ -75,7 +75,7 @@ class TestUtils:
         """Test should_include_asset with 'none' filter state."""
         # Arrange
         asset_data = {"guid": "test_guid"}
-        typename = "anaplanapp"
+        typename = "app"
         metadata_filter_state = "none"
         metadata_filter = {"app_1": []}
 
@@ -91,7 +91,7 @@ class TestUtils:
         """Test should_include_asset with empty filter."""
         # Arrange
         asset_data = {"guid": "test_guid"}
-        typename = "anaplanapp"
+        typename = "app"
         metadata_filter_state = "include"
         metadata_filter = {}
 
@@ -107,7 +107,7 @@ class TestUtils:
         """Test should_include_asset for app with include filter."""
         # Arrange
         asset_data = {"guid": "app_1"}
-        typename = "anaplanapp"
+        typename = "app"
         metadata_filter_state = "include"
         metadata_filter = {"app_1": [], "app_2": []}
 
@@ -123,7 +123,7 @@ class TestUtils:
         """Test should_include_asset for app with exclude filter."""
         # Arrange
         asset_data = {"guid": "app_1"}
-        typename = "anaplanapp"
+        typename = "app"
         metadata_filter_state = "exclude"
         metadata_filter = {"app_1": [], "app_2": []}
 
@@ -139,7 +139,7 @@ class TestUtils:
         """Test should_include_asset for page with include filter."""
         # Arrange
         asset_data = {"appGuid": "app_1", "guid": "page_1"}
-        typename = "anaplanpage"
+        typename = "page"
         metadata_filter_state = "include"
         metadata_filter = {"app_1": ["page_1"]}
 
@@ -155,7 +155,7 @@ class TestUtils:
         """Test should_include_asset for page with exclude filter."""
         # Arrange
         asset_data = {"appGuid": "app_1", "guid": "page_1"}
-        typename = "anaplanpage"
+        typename = "page"
         metadata_filter_state = "exclude"
         metadata_filter = {"app_1": ["page_1"]}
 
@@ -187,7 +187,7 @@ class TestUtils:
         """Test should_include_asset with missing app GUID."""
         # Arrange
         asset_data = {}  # Missing guid field
-        typename = "anaplanapp"
+        typename = "app"
         metadata_filter_state = "include"
         metadata_filter = {"app_1": []}
 
@@ -203,7 +203,7 @@ class TestUtils:
         """Test should_include_asset with missing page fields."""
         # Arrange
         asset_data = {"guid": "page_1"}  # Missing appGuid
-        typename = "anaplanpage"
+        typename = "page"
         metadata_filter_state = "include"
         metadata_filter = {"app_1": ["page_1"]}
 
@@ -219,7 +219,7 @@ class TestUtils:
         """Test should_include_asset with exception handling."""
         # Arrange
         asset_data = {"guid": "test_guid"}
-        typename = "anaplanapp"
+        typename = "app"
         metadata_filter_state = "include"
         metadata_filter = {"app_1": []}
 

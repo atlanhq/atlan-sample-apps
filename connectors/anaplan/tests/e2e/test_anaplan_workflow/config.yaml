@@ -23,19 +23,11 @@ expected_api_responses:
   preflight_check:
     success: true
     data:
-      inputValidation:
-        success: true
-        # Message can vary, so we don't specify exact text
-        failureMessage: ""
       authenticationCheck:
         success: true
         # Message can vary, so we don't specify exact text
         failureMessage: ""
-      hostCheck:
-        success: true
-        # Message can vary, so we don't specify exact text
-        failureMessage: ""
-      permissionsCheck:
+      appPermissions:
         success: true
         # Message can vary, so we don't specify exact text
         failureMessage: ""

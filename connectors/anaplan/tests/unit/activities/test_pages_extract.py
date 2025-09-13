@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from app.activities.extracts.pages import extract_pages_with_details
@@ -16,10 +16,7 @@ class TestPagesExtract:
         client.auth_token = "test_token"
         return client
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_with_details_success(
-        self, mock_should_include, mock_client
-    ):
+    async def test_extract_pages_with_details_success(self, mock_client):
         """Test successful pages extraction with specific scenario."""
         # Arrange - Minimal inline test data for specific scenario
         sample_response = {
@@ -61,12 +58,9 @@ class TestPagesExtract:
             empty_response,
         ]
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
-
         # Act
         all_apps = {"app_guid_1", "app_guid_2"}
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 1  # Only non-archived page should be returned
@@ -105,10 +99,7 @@ class TestPagesExtract:
             "includeReportPages": True,
         }
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_filters_deleted_pages(
-        self, mock_should_include, mock_client
-    ):
+    async def test_extract_pages_filters_deleted_pages(self, mock_client):
         """Test specific business logic: deleted pages should be filtered out."""
         # Arrange - Hardcoded scenario with deleted pages
         sample_response = {
@@ -150,12 +141,10 @@ class TestPagesExtract:
             empty_response,
         ]
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
 
         # Act
         all_apps = {"app_guid_1"}
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 1  # Only non-deleted page should be returned
@@ -167,10 +156,7 @@ class TestPagesExtract:
         deleted_page_guids = [page["guid"] for page in result]
         assert "page_guid_2" not in deleted_page_guids
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_filters_by_app_guids(
-        self, mock_should_include, mock_client
-    ):
+    async def test_extract_pages_filters_by_app_guids(self, mock_client):
         """Test specific business logic: pages should be filtered by valid app GUIDs."""
         # Arrange - Hardcoded scenario with pages from different apps
         sample_response = {
@@ -208,12 +194,10 @@ class TestPagesExtract:
             empty_response,
         ]
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
 
         # Act
         all_apps = {"app_guid_1"}  # Only app_guid_1 is valid
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 1  # Only page from valid app should be returned
@@ -224,8 +208,7 @@ class TestPagesExtract:
         page_guids = [page["guid"] for page in result]
         assert "page_guid_2" not in page_guids
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_empty_response(self, mock_should_include, mock_client):
+    async def test_extract_pages_empty_response(self, mock_client):
         """Test specific scenario: empty response."""
         # Arrange - Hardcoded empty response
         empty_response = {"items": []}
@@ -234,12 +217,10 @@ class TestPagesExtract:
         mock_response.json.return_value = empty_response
         mock_client.execute_http_get_request.return_value = mock_response
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
 
         # Act
         all_apps = {"app_guid_1"}
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 0
@@ -255,7 +236,7 @@ class TestPagesExtract:
         # Act & Assert
         all_apps = {"app_guid_1"}
         with pytest.raises(ValueError, match="Failed to fetch pages: 500"):
-            await extract_pages_with_details(mock_client, all_apps, "none", {})
+            await extract_pages_with_details(mock_client, all_apps)
 
     async def test_extract_pages_no_response(self, mock_client):
         """Test specific error scenario: no response received."""
@@ -267,12 +248,9 @@ class TestPagesExtract:
         with pytest.raises(
             ValueError, match="Failed to extract pages data: No response received"
         ):
-            await extract_pages_with_details(mock_client, all_apps, "none", {})
+            await extract_pages_with_details(mock_client, all_apps)
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_missing_items_field(
-        self, mock_should_include, mock_client
-    ):
+    async def test_extract_pages_missing_items_field(self, mock_client):
         """Test specific edge case: missing items field."""
         # Arrange - Hardcoded incomplete response
         incomplete_response = {}
@@ -281,20 +259,15 @@ class TestPagesExtract:
         mock_response.json.return_value = incomplete_response
         mock_client.execute_http_get_request.return_value = mock_response
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
 
         # Act
         all_apps = {"app_guid_1"}
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 0
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_missing_paging_field(
-        self, mock_should_include, mock_client
-    ):
+    async def test_extract_pages_missing_paging_field(self, mock_client):
         """Test specific edge case: missing paging field."""
         # Arrange - Hardcoded incomplete response
         incomplete_response = {
@@ -325,21 +298,16 @@ class TestPagesExtract:
             empty_response,
         ]
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
 
         # Act
         all_apps = {"app_guid_1"}
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 1
         assert result[0]["guid"] == "page_guid_1"
 
-    @patch("app.activities.extracts.pages.should_include_asset")
-    async def test_extract_pages_all_pages_deleted(
-        self, mock_should_include, mock_client
-    ):
+    async def test_extract_pages_all_pages_deleted(self, mock_client):
         """Test specific scenario: all pages are deleted."""
         # Arrange - Hardcoded scenario with all deleted pages
         all_deleted_response = {
@@ -377,12 +345,10 @@ class TestPagesExtract:
             empty_response,
         ]
 
-        # Mock should_include_asset to return True for all pages
-        mock_should_include.return_value = True
 
         # Act
         all_apps = {"app_guid_1"}
-        result = await extract_pages_with_details(mock_client, all_apps, "none", {})
+        result = await extract_pages_with_details(mock_client, all_apps)
 
         # Assert
         assert len(result) == 0  # All pages filtered out as deleted
@@ -395,4 +361,4 @@ class TestPagesExtract:
         # Act & Assert
         all_apps = {"app_guid_1"}
         with pytest.raises(Exception, match="Network error"):
-            await extract_pages_with_details(mock_client, all_apps, "none", {})
+            await extract_pages_with_details(mock_client, all_apps)
