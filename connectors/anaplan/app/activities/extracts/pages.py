@@ -2,13 +2,13 @@ import asyncio
 from typing import Any, Dict, List, Set
 
 from app.activities.utils import should_include_asset
-from app.clients import AnaplanApiClient
+from app.clients import AppClient
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
 
-async def extract_pages_data(client: AnaplanApiClient) -> List[Dict[str, Any]]:
+async def extract_pages_data(client: AppClient) -> List[Dict[str, Any]]:
     """Extract basic pages data from Anaplan.
 
     ------------------------------------------------------------
@@ -96,7 +96,7 @@ async def extract_pages_data(client: AnaplanApiClient) -> List[Dict[str, Any]]:
 
 
 async def get_page_details(
-    client: AnaplanApiClient, page: Dict[str, Any]
+    client: AppClient, page: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Get detailed information for a single page.
 
@@ -169,7 +169,7 @@ async def get_page_details(
 
 
 async def extract_pages_with_details(
-    client: AnaplanApiClient,
+    client: AppClient,
     valid_app_guids: Set[str],
     metadata_filter_state: str,
     metadata_filter: Dict[str, Any],

@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Set
 
-from app.clients import AnaplanApiClient
+from app.clients import AppClient
 from application_sdk.handlers.base import BaseHandler
 from application_sdk.observability.logger_adaptor import get_logger
 
@@ -27,11 +27,11 @@ class AnaplanHandler(BaseHandler):
     NOTE: For more details on the FastAPI endpoints and their expected requests and responses, check application_sdk/server/fastapi/__init__.py
     """
 
-    def __init__(self, client: AnaplanApiClient | None = None):
+    def __init__(self, client: AppClient | None = None):
         """Initialize Anaplan handler with optional client instance."""
 
         super().__init__(client=client)
-        self.client: AnaplanApiClient | None = client
+        self.client: AppClient | None = client
 
     # ============================================================================
     # SECTION 1: SDK INTERFACE METHODS (Called by FastAPI endpoints)
@@ -315,7 +315,7 @@ class AnaplanHandler(BaseHandler):
 
     @staticmethod
     async def _validate_authentication(
-        anaplan_client: AnaplanApiClient | None,
+        anaplan_client: AppClient | None,
     ) -> Dict[str, Any]:
         """Validate authentication credentials"""
         try:
@@ -360,7 +360,7 @@ class AnaplanHandler(BaseHandler):
 
     @staticmethod
     async def _validate_app_permissions(
-        anaplan_client: AnaplanApiClient | None,
+        anaplan_client: AppClient | None,
     ) -> Dict[str, Any]:
         """Validate app permissions"""
         try:

@@ -6,7 +6,7 @@ import pandas as pd
 from app.activities.extracts.apps import extract_apps_data
 from app.activities.extracts.pages import extract_pages_with_details
 from app.activities.utils import get_app_guids, setup_parquet_output
-from app.clients import AnaplanApiClient
+from app.clients import AppClient
 from app.handlers import AnaplanHandler
 from app.transformers import AnaplanTransformer
 from application_sdk.activities.common.models import ActivityStatistics
@@ -35,7 +35,7 @@ class AnaplanMetadataExtractionActivitiesState(BaseMetadataExtractionActivitiesS
     ------------------------------------------------------------
 
     STATE COMPONENTS:
-    - client: AnaplanApiClient instance for API operations (inherited from BaseMetadataExtractionActivitiesState)
+    - client: AppClient instance for API operations (inherited from BaseMetadataExtractionActivitiesState)
     - handler: AnaplanHandler instance (inherited from BaseMetadataExtractionActivitiesState)
     - transformer: Transformer instance for converting raw data to Atlas format (inherited from BaseMetadataExtractionActivitiesState)
     - metadata_filter_state: Current filter state ("include", "exclude", or "none")
@@ -52,14 +52,14 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
     def __init__(
         self,
-        client_class: Type[AnaplanApiClient] | None = None,
+        client_class: Type[AppClient] | None = None,
         handler_class: Type[AnaplanHandler] | None = None,
         transformer_class: Type[TransformerInterface] | None = None,
     ):
         """Initialize Anaplan metadata extraction activities with optional client, handler, and transformer classes"""
 
         super().__init__(
-            client_class=client_class or AnaplanApiClient,
+            client_class=client_class or AppClient,
             handler_class=handler_class or AnaplanHandler,
             transformer_class=transformer_class or AnaplanTransformer,
         )
@@ -76,7 +76,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
         SDK BEHAVIOR:
         - Parent calls this before first activity execution
         - Extracts credentials from SecretStoreInput using credential_guid
-        - Initializes AnaplanApiClient with credentials
+        - Initializes AppClient with credentials
         - Initializes AnaplanHandler with client
         - Initializes transformer for Atlas format conversion
         - Stores client, handler, and transformer in workflow state for activities to use

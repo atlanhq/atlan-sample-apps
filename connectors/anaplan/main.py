@@ -1,7 +1,7 @@
 import asyncio
 
 from app.activities import AnaplanMetadataExtractionActivities
-from app.clients import AnaplanApiClient
+from app.clients import AppClient
 from app.handlers import AnaplanHandler
 from app.workflows import AnaplanMetadataExtractionWorkflow
 from application_sdk.application import BaseApplication
@@ -32,7 +32,7 @@ async def main():
     # Initialize the application with Anaplan-specific components
     application = BaseApplication(
         name=APPLICATION_NAME,
-        client_class=AnaplanApiClient,
+        client_class=AppClient,
         handler_class=AnaplanHandler,
     )
 

@@ -1,14 +1,14 @@
 from typing import Any, Dict, List
 
 from app.activities.utils import should_include_asset
-from app.clients import AnaplanApiClient
+from app.clients import AppClient
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
 
 async def extract_apps_data(
-    client: AnaplanApiClient,
+    client: AppClient,
     metadata_filter_state: str,
     metadata_filter: Dict[str, Any],
 ) -> List[Dict[str, Any]]:

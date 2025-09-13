@@ -13,7 +13,6 @@ dependencies = [
     "poethepoet>=0.34.0",
     "httpx>=0.27.0",
     "pandas>=2.0.0",
-    "httpx-retries>=0.1.0",
 ]
 
 # If you have development dependencies, you can add them like this:
@@ -109,6 +108,6 @@ exclude_lines = [
 ]
 fail_under = 60
 
-[tool.uv.sources]
+# [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
 # atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "8875152c1977ec65834c06ab1b07bf3003e9dc8c" }

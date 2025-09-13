@@ -127,7 +127,6 @@ source = { editable = "." }
 dependencies = [
     { name = "atlan-application-sdk", extra = ["daft", "iam-auth", "pandas", "sqlalchemy", "tests", "workflows"] },
     { name = "httpx" },
-    { name = "httpx-retries" },
     { name = "jinja2" },
     { name = "pandas" },
     { name = "poethepoet" },
@@ -155,7 +154,6 @@ test = [
 requires-dist = [
     { name = "atlan-application-sdk", extras = ["daft", "iam-auth", "pandas", "sqlalchemy", "tests", "workflows"], specifier = "==0.1.1rc34" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "httpx-retries", specifier = ">=0.1.0" },
     { name = "jinja2", specifier = ">=3.1.2" },
     { name = "pandas", specifier = ">=2.0.0" },
     { name = "poethepoet", specifier = ">=0.34.0" },
