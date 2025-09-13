@@ -23,8 +23,8 @@ These contracts are used by the transformer (`transformer.py`) to map raw data i
 ## Implementation
 
 The transformer (`transformer.py`) implements these contracts through classes like:
-- `AnaplanApp`
-- `AnaplanPage`
+- `App`
+- `Page`
 
 Each class maps raw data to the corresponding Atlan entity type defined in these contracts.
 
