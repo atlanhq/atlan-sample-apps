@@ -140,8 +140,7 @@ async def extract_pages_with_details(
     """Extract pages data with detailed information.
 
     Orchestrates the extraction of basic page data and enhances each page
-    with detailed information from Anaplan's API. Processes pages in chunks
-    to prevent event loop overload and enable heartbeats.
+    with detailed information from Anaplan's API using simple concurrent processing.
 
     Args:
         client: AppClient instance for API operations.
@@ -155,7 +154,7 @@ async def extract_pages_with_details(
 
     Note:
         Filters out deleted, archived pages, and pages with invalid app GUIDs.
-        Processes pages in chunks of 100 to prevent blocking operations.
+        Uses asyncio.gather for simple concurrent processing of all pages.
     """
 
     try:
@@ -178,59 +177,31 @@ async def extract_pages_with_details(
                 "No valid pages found after filtering deleted, archived pages, and pages with invalid app GUIDs"
             )
             return []
-        else:
-            logger.info(
-                f"Processing {len(valid_pages)} valid pages (after filtering deleted, archived, and invalid app GUID pages) for detailed information"
-            )
-
-        # Process all extracted pages [in chunks to prevent blocking calls and enable heartbeats]
-        all_detailed_pages = []
-        chunk_size = 100
-        total_chunks = (len(valid_pages) + chunk_size - 1) // chunk_size
 
         logger.info(
-            f"Starting chunked page detail extraction: {len(valid_pages)} pages in {total_chunks} chunks of {chunk_size} size"
+            f"Processing {len(valid_pages)} valid pages for detailed information"
         )
 
-        # Process in chunks to prevent event loop overload and enable heartbeats
-        for chunk_index in range(0, len(valid_pages), chunk_size):
-            chunk = valid_pages[chunk_index : chunk_index + chunk_size]
-            current_chunk = (chunk_index // chunk_size) + 1
+        # Create tasks for all pages
+        tasks = [get_page_details(client, page) for page in valid_pages]
 
-            logger.info(
-                f"Processing chunk {current_chunk}/{total_chunks}: {len(chunk)} pages"
-            )
+        # Execute all tasks concurrently
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            # Create tasks for this chunk
-            chunk_tasks = []
-            for page in chunk:
-                task = get_page_details(client, page)
-                chunk_tasks.append(task)
-
-            # Execute chunk concurrently
-            chunk_results = await asyncio.gather(*chunk_tasks, return_exceptions=True)
-
-            # Process chunk results and handle exceptions
-            chunk_pages = 0
-            for i, result in enumerate(chunk_results):
-                page_guid = chunk[i].get("guid", "unknown")
-                if isinstance(result, Exception):
-                    logger.error(
-                        f"Exception processing page {page_guid}: {str(result)}"
-                    )
-                    all_detailed_pages.append(chunk[i])  # Use basic page data
-                elif isinstance(result, dict):
-                    all_detailed_pages.append(result)
-                    chunk_pages += 1
-                else:
-                    logger.warning(
-                        f"Unexpected result type for page {page_guid}: {type(result)}"
-                    )
-                    all_detailed_pages.append(chunk[i])  # Use basic page data
-
-            logger.info(
-                f"Chunk {current_chunk}/{total_chunks} completed: {chunk_pages} pages processed"
-            )
+        # Process results and handle exceptions
+        all_detailed_pages = []
+        for i, result in enumerate(results):
+            page_guid = valid_pages[i].get("guid", "unknown")
+            if isinstance(result, Exception):
+                logger.error(f"Exception processing page {page_guid}: {str(result)}")
+                all_detailed_pages.append(valid_pages[i])  # Use basic page data
+            elif isinstance(result, dict):
+                all_detailed_pages.append(result)
+            else:
+                logger.warning(
+                    f"Unexpected result type for page {page_guid}: {type(result)}"
+                )
+                all_detailed_pages.append(valid_pages[i])  # Use basic page data
 
         logger.info(
             f"Successfully processed {len(all_detailed_pages)} pages with detailed information"
