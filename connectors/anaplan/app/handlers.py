@@ -10,42 +10,47 @@ logger = get_logger(__name__)
 
 
 class AnaplanHandler(BaseHandler):
-    """Anaplan App fastAPI handler for UI interactions.
+    """FastAPI handler for UI interactions.
 
-    ------------------------------------------------------------
-    CALL CHAIN: Frontend --> SDK --> AnaplanHandler --> Anaplan API --> Response back to frontend
-    ENDPOINTS: /workflows/v1/auth, /workflows/v1/metadata, /workflows/v1/check
+    Handles authentication, metadata fetching, and preflight checks for the Anaplan
+    connector. Provides endpoints for the 3-page wizard interface.
 
-    SDK BEHAVIOR: Base handler automatically calls load() with credentials before calling any method,
-    then wraps responses in standard format ({"success": true/false, "data": ...})
+    Endpoints:
+        /workflows/v1/auth: Test authentication credentials
+        /workflows/v1/metadata: Fetch available apps and pages
+        /workflows/v1/check: Run preflight validation checks
 
-    FUNCTION SIGNATURES:
-    - load(credentials: Dict[str, Any]) - SDK passes credentials dict to the parent BaseHandler.load() method which then calls the client.load() method with the credentials
-    - test_auth() - No parameters passed after calling load(), uses credentials from load()
-    - fetch_metadata(**kwargs) - SDK passes metadata_type and database to the method from the complete payload after calling load(), but ignored for Anaplan
-    - preflight_check(payload: Dict[str, Any]) - SDK passes full payload sent to the endpoint to this method after calling load()
-
-    NOTE: For more details on the FastAPI endpoints and their expected requests and responses, check application_sdk/server/fastapi/__init__.py
+    Note:
+        The SDK automatically calls load() with credentials before calling any method
+        and wraps responses in standard format ({"success": true/false, "data": ...}).
     """
 
     def __init__(self, client: AppClient | None = None):
-        """Initialize Anaplan handler with optional client instance."""
+        """Initialize Anaplan handler with optional client instance.
+
+        Args:
+            client: Optional AppClient instance for API operations.
+        """
 
         super().__init__(client=client)
         self.client: AppClient | None = client
 
     # ============================================================================
-    # SECTION 1: SDK INTERFACE METHODS (Called by FastAPI endpoints)
+    # SECTION 1: SDK HANDLER METHODS (Called by FastAPI endpoints)
     # ============================================================================
 
     async def test_auth(self) -> bool:
-        """UI interaction: Test Anaplan authentication credentials.
+        """Test App authentication credentials.
 
-        ------------------------------------------------------------
-        ENDPOINT: POST /workflows/v1/auth (triggered by UI "Test Connection" button)
-        SDK BEHAVIOR:
-        - Before: Calls load() with credentials from request payload and then calls this method
-        - After: Wraps boolean response in {"success": true/false, "message": "..."}
+        Validates the provided credentials by attempting to obtain an authentication
+        token from App's authentication service.
+
+        Returns:
+            bool: True if authentication is successful, False otherwise.
+
+        Note:
+            Endpoint: POST /workflows/v1/auth (triggered by UI "Test Connection" button)
+            The SDK wraps the boolean response in {"success": true/false, "message": "..."}.
         """
         try:
             if not self.client:
@@ -65,27 +70,24 @@ class AnaplanHandler(BaseHandler):
             return False
 
     async def fetch_metadata(self, **kwargs: Any) -> List[Dict[str, Any]]:
-        """UI interaction: Fetch Anaplan metadata (apps, pages) for UI filter display.
+        """Fetch App metadata (apps, pages) for UI filter display.
 
-        ------------------------------------------------------------
-        ENDPOINT: POST /workflows/v1/metadata (triggered by UI when user reaches page 3)
-        SDK BEHAVIOR:
-        - Before: Calls load() with credentials from request payload and then calls this method with metadata_type and database attributes from the request payload if passed, but ignored for Anaplan
-        - After: Wraps boolean response in {"success": true/false, "data": "..."} where data is the response from this method
+        Retrieves all available apps and their associated pages from Anaplan
+        and formats them in a hierarchical structure for the UI dropdowns.
 
-        SAMPLE RESPONSE: [
-            {
-                "value": "app1",
-                "title": "App 1",
-                "children": [
-                    {
-                        "value": "page1",
-                        "title": "Page 1",
-                        "children": []
-                    }
-                ]
-            }
-        ]
+        Args:
+            **kwargs: Additional keyword arguments (metadata_type and database
+                are ignored for App).
+
+        Returns:
+            List[Dict[str, Any]]: Hierarchical metadata structure with apps and pages.
+
+        Raises:
+            Exception: If client is not initialized or metadata fetching fails.
+
+        Note:
+            Endpoint: POST /workflows/v1/metadata (triggered by UI when user reaches page 3)
+            The SDK wraps the response in {"success": true/false, "data": "..."}.
         """
         try:
             if not self.client:
@@ -163,33 +165,20 @@ class AnaplanHandler(BaseHandler):
             raise Exception(f"Failed to fetch metadata: {str(e)}")
 
     async def preflight_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """UI interaction: Validate Anaplan configuration before workflow execution.
+        """Validate App configuration before workflow execution.
 
-        ------------------------------------------------------------
-        ENDPOINT: POST /workflows/v1/check (triggered by UI when user clicks the "Run Preflight Checks" button or clicks the "Start Workflow" button)
-        SDK BEHAVIOR:
-        - Before: Calls load() with credentials from request payload and then calls this method with the entire payload
-        - After: Wraps boolean response in {"success": true/false, "data": "..."} where data is the response from this method
+        Performs authentication and permissions checks to ensure the configuration
+        is valid before starting the workflow.
 
-        SAMPLE RESPONSE: {
-            "inputValidation": {"success": true, "successMessage": "Input validation passed", "failureMessage": ""},
-            "authenticationCheck": {"success": true, "successMessage": "Validated", "failureMessage": ""},
-            "appPermissions": {"success": true, "successMessage": "Connected", "failureMessage": ""}
-        }
+        Args:
+            payload: Dictionary containing credentials and metadata configuration.
 
-        EXPECTED PAYLOAD STRUCTURE:
-        {
-          "credentials": {
-            "host": "<host>",
-            "authType": "basic",
-            "username": "<username>",
-            "password": "<password>"
-          },
-          "metadata": {
-            "include-metadata": "{\"app1\":{\"page1\":{}}}",
-            "exclude-metadata": "{}"
-          }
-        }
+        Returns:
+            Dict[str, Any]: Dictionary with check results for each validation step.
+
+        Note:
+            Endpoint: POST /workflows/v1/check (triggered by UI preflight or start workflow)
+            The SDK wraps the response in {"success": true/false, "data": "..."}.
         """
         try:
             # Initialize results dictionary

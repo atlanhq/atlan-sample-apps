@@ -9,34 +9,21 @@ logger = get_logger(__name__)
 async def extract_apps_data(client: AppClient) -> List[Dict[str, Any]]:
     """Extract all apps data from Anaplan.
 
-    ------------------------------------------------------------
-    URL: https://{host}/a/springboard-definition-service/apps
-    RESPONSE: {
-        "items": [
-            {
-                "guid": "<app_guid>",
-                "name": "<app_name>",
-                "description": "<app_description>",
-                "pages": [],
-                "categories": [],
-                "landingPages": [],
-                "recents": [],
-                "customerId": "<customer_id>",
-                "deletedAt": <null or timestamp>,
-                "mpCount": <number>,
-                "isFavorite": <boolean>,
-                "isAllArchivedPages": <boolean>,
-                "ordering": <null or number>,
-                "applicationContainerId": <null or number>
-            },....
-        ],
-        "paging": {
-            "offset": <number>,
-            "limit": <number>,
-            "totalItemCount": <number>
-        },
-        "customerId": "<customer_id>"
-    }
+    Fetches all available apps from Anaplan's springboard definition service
+    with pagination support and filters out deleted apps.
+
+    Args:
+        client: AppClient instance for API operations.
+
+    Returns:
+        List[Dict[str, Any]]: List of active app data dictionaries.
+
+    Raises:
+        ValueError: If API request fails or no response is received.
+
+    Note:
+        URL: https://{host}/a/springboard-definition-service/apps
+        Automatically filters out apps with deletedAt timestamp.
     """
     try:
         logger.info("Starting apps data extraction from Anaplan API")

@@ -32,14 +32,12 @@ activity.logger = logger
 class AnaplanMetadataExtractionActivitiesState(BaseMetadataExtractionActivitiesState):
     """State class for Anaplan metadata extraction activities.
 
-    ------------------------------------------------------------
+    Extends the base state with App-specific state attributes.
+    Manages the current filter state and configuration for include/exclude operations.
 
-    STATE COMPONENTS:
-    - client: AppClient instance for API operations (inherited from BaseMetadataExtractionActivitiesState)
-    - handler: AnaplanHandler instance (inherited from BaseMetadataExtractionActivitiesState)
-    - transformer: Transformer instance for converting raw data to Atlas format (inherited from BaseMetadataExtractionActivitiesState)
-    - metadata_filter_state: Current filter state ("include", "exclude", or "none")
-    - metadata_filter: Current metadata filter configuration
+    Attributes:
+        metadata_filter_state: Current filter state ("include", "exclude", or "none").
+        metadata_filter: Current metadata filter configuration.
     """
 
     # Anaplan-specific workflow parameters
@@ -48,7 +46,11 @@ class AnaplanMetadataExtractionActivitiesState(BaseMetadataExtractionActivitiesS
 
 
 class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
-    """Anaplan metadata extraction activities for Temporal workflow execution"""
+    """App metadata extraction activities for Temporal workflow execution.
+
+    Provides activities for extracting and transforming App metadata including
+    assets like apps and pages with support for metadata filtering.
+    """
 
     def __init__(
         self,
@@ -56,7 +58,13 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
         handler_class: Type[AnaplanHandler] | None = None,
         transformer_class: Type[TransformerInterface] | None = None,
     ):
-        """Initialize Anaplan metadata extraction activities with optional client, handler, and transformer classes"""
+        """Initialize App metadata extraction activities.
+
+        Args:
+            client_class: Optional AppClient class for API operations.
+            handler_class: Optional AnaplanHandler class for business logic.
+            transformer_class: Optional TransformerInterface class for data transformation.
+        """
 
         super().__init__(
             client_class=client_class or AppClient,
@@ -69,19 +77,17 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
     # ============================================================================
 
     async def _set_state(self, workflow_args: Dict[str, Any]):
-        """Initialize workflow state with Anaplan client, credentials, and transformer.
+        """Initialize workflow state with App client, credentials, and transformer.
 
-        ------------------------------------------------------------
+        Called by the SDK before first activity execution. Extracts credentials from
+        SecretStoreInput using credential_guid and initializes all required components.
 
-        SDK BEHAVIOR:
-        - Parent calls this before first activity execution
-        - Extracts credentials from SecretStoreInput using credential_guid
-        - Initializes AppClient with credentials
-        - Initializes AnaplanHandler with client
-        - Initializes transformer for Atlas format conversion
-        - Stores client, handler, and transformer in workflow state for activities to use
+        Args:
+            workflow_args: Dictionary containing workflow configuration and credentials.
 
-        NOTE: Explicitly defined to set the client with credentials one time only that allows single credentialStore lookup.
+        Note:
+            Explicitly defined to set the client with credentials one time only,
+            allowing single credentialStore lookup.
         """
         workflow_id = get_workflow_id()
         if not self._state.get(workflow_id):
@@ -109,9 +115,19 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
     async def set_metadata_filter_state(
         self, workflow_args: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """
-        Set metadata filter as include / exclude / none in workflow state for filter selection,
-        along with the metadata filter to be used in the workflow
+        """Set metadata filter state for workflow execution.
+
+        Evaluates the precedence of metadata filters and maintains state variables
+        for use in subsequent activities without re-evaluating filter precedence.
+
+        Args:
+            workflow_args: Dictionary containing metadata filter configuration.
+
+        Returns:
+            Dictionary containing the metadata filter and filter state.
+
+        Raises:
+            ValueError: If invalid JSON is found in include-metadata or exclude-metadata.
         """
         try:
             # Get state to verify it's working
@@ -162,7 +178,20 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
     async def extract_anaplanapp(
         self, workflow_args: Dict[str, Any]
     ) -> ActivityStatistics:
-        """Extract app assets from Anaplan."""
+        """Extract app assets from Anaplan.
+
+        Fetches all available apps from Anaplan API, applies metadata filtering,
+        and writes the results to parquet files.
+
+        Args:
+            workflow_args: Dictionary containing workflow configuration.
+
+        Returns:
+            ActivityStatistics: Statistics about the extraction operation.
+
+        Raises:
+            ValueError: If Anaplan client is not found in state.
+        """
         try:
             # Get state to access shared client instance
             state = await self._get_state(workflow_args)
@@ -212,7 +241,20 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
     async def extract_anaplanpage(
         self, workflow_args: Dict[str, Any]
     ) -> ActivityStatistics:
-        """Extract page assets from Anaplan"""
+        """Extract page assets from Anaplan.
+
+        Fetches all available pages from Anaplan API with detailed information,
+        applies metadata filtering, and writes the results to parquet files.
+
+        Args:
+            workflow_args: Dictionary containing workflow configuration.
+
+        Returns:
+            ActivityStatistics: Statistics about the extraction operation.
+
+        Raises:
+            ValueError: If Anaplan client is not found in state.
+        """
         try:
             # Get state to access shared client instance
             state = await self._get_state(workflow_args)
@@ -266,7 +308,20 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
     @auto_heartbeater
     @activity.defn
     async def transform_data(self, workflow_args: Dict[str, Any]) -> ActivityStatistics:
-        """Transform raw Anaplan metadata into Atlas format."""
+        """Transform raw Anaplan metadata into Atlas format.
+
+        Reads raw parquet files and transforms them into Atlas-compatible JSON format
+        using the configured transformer.
+
+        Args:
+            workflow_args: Dictionary containing workflow configuration including typename.
+
+        Returns:
+            ActivityStatistics: Statistics about the transformation operation.
+
+        Raises:
+            ValueError: If transformer is not found in state or required parameters are missing.
+        """
         try:
             # Get state to access transformer
             state = await self._get_state(workflow_args)

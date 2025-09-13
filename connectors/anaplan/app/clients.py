@@ -6,10 +6,18 @@ from application_sdk.observability.logger_adaptor import get_logger
 logger = get_logger(__name__)
 
 class AppClient(BaseClient):
-    """Client for Anaplan API interactions."""
+    """Client for App API interactions.
+
+    Handles authentication and HTTP requests to App (Anaplan) APIs.
+    Supports basic authentication with token-based authorization.
+    """
 
     async def load(self, **kwargs: Any) -> None:
-        """Initialize the client with credentials and necessary attributes."""
+        """Initialize the client with credentials and necessary attributes.
+
+        Args:
+            **kwargs: Keyword arguments containing credentials and configuration.
+        """
 
         credentials = kwargs.get("credentials", {})
         self.credentials = credentials
@@ -27,28 +35,20 @@ class AppClient(BaseClient):
         await self._update_client_headers()
 
     async def _get_auth_token(self) -> str:
-        """
-        Get authentication token from Anaplan API using basic auth.
-        Thread-safe with async lock to prevent concurrent token operations.
+        """Get authentication token from Anaplan API using basic auth.
 
-        ------------------------------------------------------------
-        Endpoint: POST https://auth.anaplan.com/token/authenticate
-        Auth: Basic (username, password) via auth parameter
-        Body: None
-        Expected Response: 201 Created
-        Response Body: {
-            "meta": {
-                "validationUrl": "https://auth.anaplan.com/token/validate"
-            },
-            "status": "SUCCESS",
-            "statusMessage": "Login successful",
-            "tokenInfo": {
-                "expiresAt": <timestamp>,
-                "tokenId": "<token_id>",
-                "tokenValue": "<token_value>",
-                "refreshTokenId": "<refresh_token_id>"
-            }
-        }
+        Makes a POST request to Anaplan's authentication endpoint to obtain
+        an authentication token for subsequent API calls.
+
+        Returns:
+            str: The authentication token value.
+
+        Raises:
+            Exception: If authentication fails or token is not found in response.
+
+        Note:
+            Endpoint: POST https://auth.anaplan.com/token/authenticate
+            Expected Response: 201 Created with token information.
         """
 
         if self.auth_type == "basic":
@@ -82,7 +82,11 @@ class AppClient(BaseClient):
             raise Exception(f"Unsupported authentication type: {self.auth_type}")
 
     async def _update_client_headers(self) -> None:
-        """Update client headers with current authentication token and content type."""
+        """Update client headers with current authentication token and content type.
+
+        Sets the Authorization header with the Anaplan auth token and Content-Type
+        header for JSON requests.
+        """
 
         if self.auth_token:
             self.http_headers = {

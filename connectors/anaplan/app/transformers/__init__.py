@@ -11,27 +11,24 @@ logger = get_logger(__name__)
 
 
 class AnaplanTransformer(QueryBasedTransformer):
-    """Anaplan transformer for converting raw metadata to Atlas format.
+    """App transformer for converting raw metadata to Atlas format.
 
-    ------------------------------------------------------------
-    CALL CHAIN: Activities (transform_data) --> Transformer.transform_metadata() --> Atlas JSON Output
-
-    TRANSFORMATION FLOW:
-    1. Raw parquet files read from "raw" directory
-    2. YAML templates define mapping rules for each asset type
-    3. Transformer converts raw data to Atlas entity format
-    4. Transformed data written as JSON to "transformed" directory
+    Transforms raw App metadata from parquet files into Atlas-compatible
+    JSON format using YAML template definitions.
     """
 
     def __init__(
         self, connector_name: str = "anaplan", tenant_id: str = "default", **kwargs: Any
     ):
-        """Initialize Anaplan transformer with entity class definitions.
+        """Initialize App transformer with entity class definitions.
 
-        ------------------------------------------------------------
-        ENTITY CLASS SETUP:
-        - Maps asset types to their YAML template files
-        - Base class automatically loads and applies YAML rules
+        Sets up the transformer with YAML template mappings for App asset types.
+        The base class automatically loads and applies YAML transformation rules.
+
+        Args:
+            connector_name: Name of the connector (default: "anaplan").
+            tenant_id: Tenant identifier (default: "default").
+            **kwargs: Additional keyword arguments passed to parent class.
         """
         super().__init__(connector_name=connector_name, tenant_id=tenant_id, **kwargs)
 

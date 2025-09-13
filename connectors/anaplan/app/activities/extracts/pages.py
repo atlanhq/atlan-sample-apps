@@ -10,40 +10,21 @@ logger = get_logger(__name__)
 async def extract_pages_data(client: AppClient) -> List[Dict[str, Any]]:
     """Extract basic pages data from Anaplan.
 
-    ------------------------------------------------------------
-    URL: https://{host}/a/springboard-definition-service/pages
-    RESPONSE: {
-        "items": [
-            {
-                "pageType": "<page_type>",
-                "name": "<page_name>",
-                "guid": "<page_guid>",
-                "identifier": "<page_identifier>",
-                "appGuid": "<app_guid>",
-                "categoryGuid": "<category_guid>",
-                "lastAccessed": <last_accessed_timestamp>,
-                "isMyPage": <is_my_page_boolean>,
-                "layout": {
-                    "id": "<layout_id>",
-                    "type": "<layout_type>",
-                    ...... (more layout properties)
-                },
-                "isFavorite": <is_favorite_boolean>,
-                "categoryName": "<category_name>",
-                "appName": "<app_name>",
-                "customerId": "<customer_id>",
-                "roleIds": [],
-                "hasPublishedVersion": <has_published_version_boolean>,
-                "updatedAt": <updated_at_timestamp>,
-                "createdAt": <created_at_timestamp>,
-                "deletedAt": <deleted_at_timestamp>,
-                "publishedAt": <published_at_timestamp>,
-                "isArchived": <is_archived_boolean>,
-                "restrictions": []
-            },
-            ......
-        ]
-    }
+    Fetches all available pages from Anaplan's springboard definition service
+    with pagination support, sorted by last accessed date.
+
+    Args:
+        client: AppClient instance for API operations.
+
+    Returns:
+        List[Dict[str, Any]]: List of page data dictionaries.
+
+    Raises:
+        ValueError: If API request fails or no response is received.
+
+    Note:
+        URL: https://{host}/a/springboard-definition-service/pages
+        Results are sorted by lastAccessed in descending order.
     """
     try:
         logger.info("Starting pages data extraction from Anaplan API")
@@ -99,32 +80,19 @@ async def get_page_details(
 ) -> Dict[str, Any]:
     """Get detailed information for a single page.
 
-    ------------------------------------------------------------
-    URL: https://{host}/a/springboard-definition-service/{str(page['pageType']).lower()}s/{page['guid']}
-    RESPONSE: {
-        "pageGuid": "<page_guid>",
-        "identifier": "<page_identifier>",
-        "name": "<page_name>",
-        "appGuid": "<app_guid>",
-        "workspaceId": "<workspace_id>",
-        "categoryGuid": "<category_guid>",
-        "modelId": "<model_id>",
-        ...... (more page properties)
-        "publishedAt": <published_at_timestamp>,
-        "updatedAt": <updated_at_timestamp>,
-        "modelInfos": [
-            {
-                "workspaceId": "<workspace_id>",
-                "workspaceName": "<workspace_name>",
-                "modelId": "<model_id>",
-                "modelName": "<model_name>",
-                "isMyPagesAllowed": <is_my_pages_allowed_boolean>,
-                "modelStatus": "<model_status>"
-            }
-        ],
-        "modelCount": 1,
-        ...... (more page properties)
-    }
+    Fetches additional details for a specific page from Anaplan's API
+    and merges them with the basic page information.
+
+    Args:
+        client: AppClient instance for API operations.
+        page: Dictionary containing basic page information.
+
+    Returns:
+        Dict[str, Any]: Enhanced page data with detailed information.
+
+    Note:
+        URL: https://{host}/a/springboard-definition-service/{pageType}s/{pageGuid}
+        Returns original page data if detailed fetch fails.
     """
     page_type = str(page.get("pageType", "")).lower()
     page_guid = page.get("guid")
@@ -171,14 +139,25 @@ async def extract_pages_with_details(
     client: AppClient,
     valid_app_guids: Set[str],
 ) -> List[Dict[str, Any]]:
-    """Extract pages data with detailed information: controller function
-    
+    """Extract pages data with detailed information.
+
+    Orchestrates the extraction of basic page data and enhances each page
+    with detailed information from Anaplan's API. Processes pages in chunks
+    to prevent event loop overload and enable heartbeats.
+
     Args:
-        client: AppClient instance for API operations
-        valid_app_guids: Set of valid app GUIDs to filter pages by
-        
+        client: AppClient instance for API operations.
+        valid_app_guids: Set of valid app GUIDs to filter pages by.
+
     Returns:
-        List[Dict[str, Any]]: Pages data with details (no metadata filtering applied)
+        List[Dict[str, Any]]: Pages data with details (no metadata filtering applied).
+
+    Raises:
+        Exception: If page extraction or detail fetching fails.
+
+    Note:
+        Filters out deleted, archived pages, and pages with invalid app GUIDs.
+        Processes pages in chunks of 100 to prevent blocking operations.
     """
 
     try:
@@ -254,9 +233,6 @@ async def extract_pages_with_details(
             logger.info(
                 f"Chunk {current_chunk}/{total_chunks} completed: {chunk_pages} pages processed"
             )
-
-            # Yield control back to event loop after each chunk
-            await asyncio.sleep(0)
 
         logger.info(
             f"Successfully processed {len(all_detailed_pages)} pages with detailed information"

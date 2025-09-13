@@ -11,7 +11,18 @@ logger = get_logger(__name__)
 def setup_parquet_output(
     workflow_args: Dict[str, Any], output_suffix: str
 ) -> ParquetOutput:
-    """Setup parquet output for extract activities."""
+    """Setup parquet output for extract activities.
+
+    Args:
+        workflow_args: Dictionary containing output configuration.
+        output_suffix: Suffix for the output path (e.g., "raw/app").
+
+    Returns:
+        ParquetOutput: Configured parquet output instance.
+
+    Raises:
+        ValueError: If output prefix or path is not provided in workflow_args.
+    """
 
     output_prefix = workflow_args.get("output_prefix")
     output_path = workflow_args.get("output_path")
@@ -31,7 +42,20 @@ def setup_parquet_output(
 
 
 async def get_app_guids(workflow_args: Dict[str, Any]) -> Set[str]:
-    """Get valid app GUIDs from app parquet files."""
+    """Get valid app GUIDs from app parquet files.
+
+    Reads the previously extracted app parquet files to extract all valid
+    app GUIDs for filtering pages.
+
+    Args:
+        workflow_args: Dictionary containing output configuration.
+
+    Returns:
+        Set[str]: Set of valid app GUIDs.
+
+    Raises:
+        ValueError: If output prefix or path is not provided in workflow_args.
+    """
 
     output_prefix = workflow_args.get("output_prefix")
     output_path = workflow_args.get("output_path")
@@ -66,7 +90,25 @@ def should_include_asset(
     metadata_filter_state: str,
     metadata_filter: Dict[str, Any],
 ) -> bool:
-    """Determine if an asset should be included based on metadata filter state and filter configuration"""
+    """Determine if an asset should be included based on metadata filter state.
+
+    Applies include/exclude filtering logic based on the current filter state
+    and configuration for different asset types.
+
+    Args:
+        asset_data: Dictionary containing asset information.
+        typename: Type of asset (e.g., "app", "page").
+        metadata_filter_state: Current filter state ("include", "exclude", or "none").
+        metadata_filter: Dictionary containing filter configuration.
+
+    Returns:
+        bool: True if asset should be included, False otherwise.
+
+    Note:
+        For apps: Uses "guid" field as identifier.
+        For pages: Uses "appGuid" and "guid" fields as identifiers.
+        Returns True in case of errors to avoid data loss.
+    """
 
     try:
         # If filter state is "none", include all assets
