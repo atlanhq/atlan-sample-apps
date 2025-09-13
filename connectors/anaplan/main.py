@@ -1,9 +1,9 @@
 import asyncio
 
-from app.activities import AnaplanMetadataExtractionActivities
+from app.activities import AppMetadataExtractionActivities
 from app.clients import AppClient
-from app.handlers import AnaplanHandler
-from app.workflows import AnaplanMetadataExtractionWorkflow
+from app.handlers import AppHandler
+from app.workflows import AppMetadataExtractionWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.constants import APPLICATION_NAME
 from application_sdk.observability.decorators.observability_decorator import (
@@ -21,7 +21,7 @@ traces = get_traces()
 @observability(logger=logger, metrics=metrics, traces=traces)
 async def main():
     """
-    Main function for the Anaplan application.
+    Main function for the App application.
 
     This sets up:
     1. Workflow client and worker (Temporal)
@@ -33,13 +33,13 @@ async def main():
     application = BaseApplication(
         name=APPLICATION_NAME,
         client_class=AppClient,
-        handler_class=AnaplanHandler,
+        handler_class=AppHandler,
     )
 
     # Setup the workflow (loads workflow client, creates activities, sets up worker)
     await application.setup_workflow(
         workflow_and_activities_classes=[
-            (AnaplanMetadataExtractionWorkflow, AnaplanMetadataExtractionActivities)
+            (AppMetadataExtractionWorkflow, AppMetadataExtractionActivities)
         ]
     )
 
@@ -47,7 +47,7 @@ async def main():
     await application.start_worker()
 
     # Setup the application server (creates FastAPI server with handlers)
-    await application.setup_server(AnaplanMetadataExtractionWorkflow)
+    await application.setup_server(AppMetadataExtractionWorkflow)
 
     # Start the application server
     await application.start_server()

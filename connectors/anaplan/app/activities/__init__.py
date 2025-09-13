@@ -7,8 +7,8 @@ from app.activities.extracts.apps import extract_apps_data
 from app.activities.extracts.pages import extract_pages_with_details
 from app.activities.utils import get_app_guids, setup_parquet_output, should_include_asset
 from app.clients import AppClient
-from app.handlers import AnaplanHandler
-from app.transformers import AnaplanTransformer
+from app.handlers import AppHandler
+from app.transformers import AppTransformer
 from application_sdk.activities.common.models import ActivityStatistics
 from application_sdk.activities.common.utils import auto_heartbeater, get_workflow_id
 from application_sdk.activities.metadata_extraction.base import (
@@ -29,8 +29,8 @@ traces = get_traces()
 activity.logger = logger
 
 
-class AnaplanMetadataExtractionActivitiesState(BaseMetadataExtractionActivitiesState):
-    """State class for Anaplan metadata extraction activities.
+class AppMetadataExtractionActivitiesState(BaseMetadataExtractionActivitiesState):
+    """State class for App metadata extraction activities.
 
     Extends the base state with App-specific state attributes.
     Manages the current filter state and configuration for include/exclude operations.
@@ -40,12 +40,12 @@ class AnaplanMetadataExtractionActivitiesState(BaseMetadataExtractionActivitiesS
         metadata_filter: Current metadata filter configuration.
     """
 
-    # Anaplan-specific workflow parameters
+    # App-specific workflow parameters
     metadata_filter_state: str = "none"
     metadata_filter: Dict[str, Any] = {}
 
 
-class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
+class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
     """App metadata extraction activities for Temporal workflow execution.
 
     Provides activities for extracting and transforming App metadata including
@@ -55,21 +55,21 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
     def __init__(
         self,
         client_class: Type[AppClient] | None = None,
-        handler_class: Type[AnaplanHandler] | None = None,
+        handler_class: Type[AppHandler] | None = None,
         transformer_class: Type[TransformerInterface] | None = None,
     ):
         """Initialize App metadata extraction activities.
 
         Args:
             client_class: Optional AppClient class for API operations.
-            handler_class: Optional AnaplanHandler class for business logic.
+            handler_class: Optional AppHandler class for business logic.
             transformer_class: Optional TransformerInterface class for data transformation.
         """
 
         super().__init__(
             client_class=client_class or AppClient,
-            handler_class=handler_class or AnaplanHandler,
-            transformer_class=transformer_class or AnaplanTransformer,
+            handler_class=handler_class or AppHandler,
+            transformer_class=transformer_class or AppTransformer,
         )
 
     # ============================================================================
@@ -91,14 +91,14 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
         """
         workflow_id = get_workflow_id()
         if not self._state.get(workflow_id):
-            self._state[workflow_id] = AnaplanMetadataExtractionActivitiesState()
+            self._state[workflow_id] = AppMetadataExtractionActivitiesState()
 
         # Call parent class _set_state to set up client, handler, and transformer
         await super()._set_state(workflow_args)
 
         # Set metadata filter state to none
         state = self._state[workflow_id]
-        if isinstance(state, AnaplanMetadataExtractionActivitiesState):
+        if isinstance(state, AppMetadataExtractionActivitiesState):
             state.metadata_filter_state = "none"
             state.metadata_filter = {}
 
@@ -175,7 +175,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
     @auto_heartbeater
     @activity.defn
-    async def extract_anaplanapp(
+    async def extract_apps(
         self, workflow_args: Dict[str, Any]
     ) -> ActivityStatistics:
         """Extract app assets from Anaplan.
@@ -200,7 +200,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
                 raise ValueError("Anaplan client not found in state")
 
             # Setup parquet output
-            parquet_output = setup_parquet_output(workflow_args, "raw/anaplanapp")
+            parquet_output = setup_parquet_output(workflow_args, "raw/app")
 
             # Extract all apps data (unfiltered)
             app_data = await extract_apps_data(state.client)
@@ -210,7 +210,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
                 app
                 for app in app_data
                 if should_include_asset(
-                    app, "anaplanapp", state.metadata_filter_state, state.metadata_filter
+                    app, "app", state.metadata_filter_state, state.metadata_filter
                 )
             ]
 
@@ -229,7 +229,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     f"No apps found, skipping write: {parquet_output.get_full_path()}"
                 )
 
-            statistics = await parquet_output.get_statistics(typename="anaplanapp")
+            statistics = await parquet_output.get_statistics(typename="app")
             return statistics
 
         except Exception as e:
@@ -238,7 +238,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
     @auto_heartbeater
     @activity.defn
-    async def extract_anaplanpage(
+    async def extract_pages(
         self, workflow_args: Dict[str, Any]
     ) -> ActivityStatistics:
         """Extract page assets from Anaplan.
@@ -266,7 +266,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
             all_apps = await get_app_guids(workflow_args)
 
             # Setup parquet output
-            parquet_output = setup_parquet_output(workflow_args, "raw/anaplanpage")
+            parquet_output = setup_parquet_output(workflow_args, "raw/page")
 
             # Extract pages data with details (unfiltered)
             all_detailed_page_data = await extract_pages_with_details(
@@ -279,7 +279,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
                 page
                 for page in all_detailed_page_data
                 if should_include_asset(
-                    page, "anaplanpage", state.metadata_filter_state, state.metadata_filter
+                    page, "page", state.metadata_filter_state, state.metadata_filter
                 )
             ]
 
@@ -298,7 +298,7 @@ class AnaplanMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     f"No pages found, skipping write: {parquet_output.get_full_path()}"
                 )
 
-            statistics = await parquet_output.get_statistics(typename="anaplanpage")
+            statistics = await parquet_output.get_statistics(typename="page")
             return statistics
 
         except Exception as e:

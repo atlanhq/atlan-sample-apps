@@ -10,8 +10,8 @@ from application_sdk.transformers.query import QueryBasedTransformer
 logger = get_logger(__name__)
 
 
-class AnaplanTransformer(QueryBasedTransformer):
-    """App transformer for converting raw metadata to Atlas format.
+class AppTransformer(QueryBasedTransformer):
+    """Transformer for converting raw metadata to Atlas format.
 
     Transforms raw App metadata from parquet files into Atlas-compatible
     JSON format using YAML template definitions.
@@ -20,7 +20,7 @@ class AnaplanTransformer(QueryBasedTransformer):
     def __init__(
         self, connector_name: str = "anaplan", tenant_id: str = "default", **kwargs: Any
     ):
-        """Initialize App transformer with entity class definitions.
+        """Initialize transformer with entity class definitions.
 
         Sets up the transformer with YAML template mappings for App asset types.
         The base class automatically loads and applies YAML transformation rules.
@@ -40,12 +40,12 @@ class AnaplanTransformer(QueryBasedTransformer):
         self.entity_class_definitions = get_yaml_query_template_path_mappings(
             transformer_dir,
             [
-                "ANAPLANAPP",
-                "ANAPLANPAGE",
+                "APP",
+                "PAGE",
             ],
         )
 
-        logger.info("Anaplan transformer initialized with entity class definitions")
+        logger.info("App transformer initialized with entity class definitions")
         logger.info(
             f"Supported asset types: {list(self.entity_class_definitions.keys())}"
         )

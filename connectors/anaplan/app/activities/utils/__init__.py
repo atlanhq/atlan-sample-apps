@@ -65,7 +65,7 @@ async def get_app_guids(workflow_args: Dict[str, Any]) -> Set[str]:
 
     # Read app parquet files to get valid app GUIDs
     app_parquet_input = ParquetInput(
-        path=os.path.join(output_path, "raw", "anaplanapp"),
+        path=os.path.join(output_path, "raw", "app"),
         input_prefix=output_prefix,
         file_names=None,
         chunk_size=None,
@@ -120,7 +120,7 @@ def should_include_asset(
             return True
 
         # Handle different asset types
-        if typename == "anaplanapp":
+        if typename == "app":
             # For apps, use the "guid" field as the asset identifier
             app_id = asset_data.get("guid")
             if not app_id:
@@ -139,7 +139,7 @@ def should_include_asset(
                 )
                 return True
 
-        elif typename == "anaplanpage":
+        elif typename == "page":
             # For pages, use the "appGuid" and "guid" field as the asset identifier
             app_id = asset_data.get("appGuid")
             page_id = asset_data.get("guid")

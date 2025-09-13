@@ -1,6 +1,6 @@
 from typing import Any, Dict, Type
 
-from app.activities import AnaplanMetadataExtractionActivities
+from app.activities import AppMetadataExtractionActivities
 from application_sdk.constants import APPLICATION_NAME
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows.metadata_extraction import MetadataExtractionWorkflow
@@ -16,27 +16,19 @@ workflow.logger = logger
 
 
 @workflow.defn
-class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
-    """Anaplan metadata extraction workflow orchestrator"""
+class AppMetadataExtractionWorkflow(MetadataExtractionWorkflow):
+    """App metadata extraction workflow orchestrator"""
 
-    activities_cls: Type[AnaplanMetadataExtractionActivities] = (
-        AnaplanMetadataExtractionActivities
+    activities_cls: Type[AppMetadataExtractionActivities] = (
+        AppMetadataExtractionActivities
     )
     application_name: str = APPLICATION_NAME
 
     @workflow.run
     async def run(self, workflow_config: Dict[str, Any]) -> None:
-        """Simplified Anaplan metadata extraction workflow.
-        
-        Steps:
-        1. Get workflow configuration
-        2. Run preflight checks
-        3. Set metadata filter state
-        4. Extract Anaplan apps
-        5. Extract Anaplan pages  
-        6. Transform both asset types
-        """
-        logger.info("Starting Anaplan metadata extraction workflow")
+        """Simplified App metadata extraction workflow."""
+
+        logger.info("Starting App metadata extraction workflow")
 
         try:
             workflow_run_id = workflow.info().run_id
@@ -89,31 +81,31 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
             )
 
             # STEP 4: Extract apps
-            logger.info("Extracting Anaplan apps")
+            logger.info("Extracting Apps")
             app_statistics = await workflow.execute_activity_method(
-                activities_instance.extract_anaplanapp,
+                activities_instance.extract_apps,
                 args=[workflow_args],
                 retry_policy=retry_policy,
                 start_to_close_timeout=self.default_start_to_close_timeout,
                 heartbeat_timeout=self.default_heartbeat_timeout,
-                summary="Extract Anaplan apps",
+                summary="Extract Apps",
             )
             logger.info(f"App extraction completed: {app_statistics}")
 
             # STEP 5: Extract pages
-            logger.info("Extracting Anaplan pages")
+            logger.info("Extracting Pages")
             page_statistics = await workflow.execute_activity_method(
-                activities_instance.extract_anaplanpage,
+                activities_instance.extract_pages,
                 args=[workflow_args],
                 retry_policy=retry_policy,
                 start_to_close_timeout=self.default_start_to_close_timeout,
                 heartbeat_timeout=self.default_heartbeat_timeout,
-                summary="Extract Anaplan pages",
+                summary="Extract Pages",
             )
             logger.info(f"Page extraction completed: {page_statistics}")
 
             # STEP 6: Transform extracted data
-            asset_types = ["anaplanapp", "anaplanpage"]
+            asset_types = ["app", "page"]
             for asset_type in asset_types:
                 logger.info(f"Transforming {asset_type}")
                 workflow_args["typename"] = asset_type
@@ -134,7 +126,7 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
 
     @staticmethod
     def get_activities(
-        activities: AnaplanMetadataExtractionActivities,
+        activities: AppMetadataExtractionActivities,
     ) -> list:
         """Register the activities to be executed by the workflow.
 
@@ -145,8 +137,8 @@ class AnaplanMetadataExtractionWorkflow(MetadataExtractionWorkflow):
             activities.get_workflow_args,  # NOTE: Present in ActicityInterface
             activities.preflight_check,  # NOTE: Present in ActicityInterface
             activities.set_metadata_filter_state,
-            activities.extract_anaplanapp,
-            activities.extract_anaplanpage,
+            activities.extract_apps,
+            activities.extract_pages,
             activities.transform_data,
         ]
 

@@ -9,10 +9,10 @@ from application_sdk.observability.logger_adaptor import get_logger
 logger = get_logger(__name__)
 
 
-class AnaplanHandler(BaseHandler):
+class AppHandler(BaseHandler):
     """FastAPI handler for UI interactions.
 
-    Handles authentication, metadata fetching, and preflight checks for the Anaplan
+    Handles authentication, metadata fetching, and preflight checks for the App
     connector. Provides endpoints for the 3-page wizard interface.
 
     Endpoints:
@@ -26,7 +26,7 @@ class AnaplanHandler(BaseHandler):
     """
 
     def __init__(self, client: AppClient | None = None):
-        """Initialize Anaplan handler with optional client instance.
+        """Initialize App handler with optional client instance.
 
         Args:
             client: Optional AppClient instance for API operations.
@@ -54,7 +54,7 @@ class AnaplanHandler(BaseHandler):
         """
         try:
             if not self.client:
-                logger.error("Anaplan client not initialized")
+                logger.error("App client not initialized")
                 return False
 
             result = await self.client._get_auth_token()
@@ -91,7 +91,7 @@ class AnaplanHandler(BaseHandler):
         """
         try:
             if not self.client:
-                raise Exception("Anaplan client not initialized")
+                raise Exception("App client not initialized")
 
             # Step 1: Ensure we have a valid authentication token
             logger.info("Ensuring authentication token is valid...")
