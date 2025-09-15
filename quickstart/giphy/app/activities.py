@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from typing import Any, Dict
 
 import requests
+from pydantic import BaseModel, Field
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.decorators.mcp_tool import mcp_tool
 from application_sdk.observability.logger_adaptor import get_logger
@@ -18,6 +19,13 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "apikey")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_SENDER = os.getenv("SMTP_SENDER", "support@atlan.app")
+
+
+class EmailConfig(BaseModel):
+    """Configuration for sending email with GIF."""
+    recipients: str = Field(description="Comma-separated email addresses (e.g., user1@example.com, user2@example.com)")
+    gif_url: str = Field(description="URL of the GIF to include in the email")
+    subject: str = Field(default="GIF from Atlan", description="Email subject line")
 
 
 class GiphyActivities(ActivitiesInterface):
@@ -56,17 +64,15 @@ class GiphyActivities(ActivitiesInterface):
 
     @activity.defn
     @mcp_tool(description="Send HTML email containing a GIF to specified recipients")
-    async def send_email(self, config: Dict[str, Any]) -> None:
+    async def send_email(self, config: EmailConfig) -> str:
         """
         Sends an HTML email containing a GIF to specified recipients using SMTP.
 
         Args:
-            config (Dict[str, Any]): Configuration dictionary containing:
-                - gif_url (str): URL of the GIF to be sent
-                - recipients (str): Comma-separated string of email addresses
+            config (EmailConfig): Configuration containing recipients, gif_url, and subject
 
         Returns:
-            str: Error message if no valid recipients, None otherwise
+            str: Success message with details of email sent
 
         Raises:
             smtplib.SMTPException: If email sending fails
@@ -81,10 +87,10 @@ class GiphyActivities(ActivitiesInterface):
                 "SMTP_PASSWORD is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
             )
 
-        gif_url = config.get("gif_url")
+        gif_url = config.gif_url
         recipients = [
             email.strip()
-            for email in config.get("recipients", "").split(",")
+            for email in config.recipients.split(",")
             if email.strip()
         ]
 
@@ -92,13 +98,14 @@ class GiphyActivities(ActivitiesInterface):
             logger.error("No valid recipients provided")
             raise ValueError("No valid recipients provided")
 
-        sender = "support@atlan.app"
-        subject = "Your Surprise GIF!"
+        sender = SMTP_SENDER
+        subject = config.subject
         body = f"""
         <html>
             <body>
                 <p>Here's a fun GIF for you!</p>
                 <img src="{gif_url}" alt="Random GIF" style="max-width: 500px;">
+                <p>GIF URL: {gif_url}</p>
                 <p>Enjoy!</p>
             </body>
         </html>
@@ -123,5 +130,8 @@ class GiphyActivities(ActivitiesInterface):
                 server.send_message(msg)
 
             logger.info(f"Email successfully sent to {', '.join(recipients)}")
+            return f"Email successfully sent to {', '.join(recipients)} with subject '{subject}'"
         except Exception as e:
-            logger.error(f"Email failed to send to {', '.join(recipients)}: {e}")
+            error_msg = f"Email failed to send to {', '.join(recipients)}: {e}"
+            logger.error(error_msg)
+            return error_msg
