@@ -1,12 +1,7 @@
 from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
-from app.activities import (
-    FetchWorkflowsRunInput,
-    SaveResultsLocallyInput,
-    SaveResultsObjectInput,
-    WorkflowsObservabilityActivities,
-)
+from app.activities import WorkflowsObservabilityActivities
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
@@ -40,7 +35,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
 
         # Get the workflow configuration from the state store
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
-            WorkflowsObservabilityActivities.get_workflow_args,
+            "get_workflow_args",
             workflow_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
@@ -52,49 +47,12 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
         output_prefix: str = workflow_args.get("outputPrefix", "")
         workflow.logger.info("Starting workflows observability workflow")
 
-        run_input = FetchWorkflowsRunInput(
-            selected_date, output_type, output_prefix, None, size=10
+        # Process workflow runs
+        await workflow.execute_activity(
+            "fetch_workflows_run",
+            (selected_date, output_type, output_prefix),
+            start_to_close_timeout=timedelta(seconds=3600),
         )
-        workflow.logger.info("Creating local directory")
-        local_info = await workflow.execute_activity(
-            WorkflowsObservabilityActivities.create_local_directory,
-            run_input.output_type,
-            start_to_close_timeout=timedelta(seconds=10),
-        )
-        run_input.local_directory = local_info.local_directory
-        while True:
-            workflow.logger.info(f"run_input: {run_input}")
-            results = await workflow.execute_activity(
-                WorkflowsObservabilityActivities.fetch_workflows_run,
-                run_input,
-                start_to_close_timeout=timedelta(seconds=60),
-            )
-            if len(results) == 0:
-                workflow.logger.info(f"no more runs found for {run_input}")
-                break
-            run_input.start += len(results)
-            # This activity needs access to the local directory, previously created
-            # so it's run on the same task_queue so it will run on the same machine
-            await workflow.execute_activity(
-                WorkflowsObservabilityActivities.save_results_locally,
-                SaveResultsLocallyInput(
-                    local_directory=run_input.local_directory, result=results
-                ),
-                start_to_close_timeout=timedelta(seconds=3600),
-                task_queue=local_info.task_queue,
-            )
-        if output_type == "Object Storage":
-            # This activity needs access to the local directory, previously created
-            # so it's run on the same task_queue so it will run on the same machine
-            await workflow.execute_activity(
-                WorkflowsObservabilityActivities.save_result_object,
-                SaveResultsObjectInput(
-                    output_prefix=run_input.output_prefix,
-                    local_directory=run_input.local_directory,
-                ),
-                start_to_close_timeout=timedelta(seconds=3600),
-                task_queue=local_info.task_queue,
-            )
 
         workflow.logger.info("Workflows observability workflow completed")
 
@@ -116,7 +74,4 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
         return [
             activities.fetch_workflows_run,
             activities.get_workflow_args,
-            activities.create_local_directory,
-            activities.save_result_object,
-            activities.save_results_locally,
         ]
