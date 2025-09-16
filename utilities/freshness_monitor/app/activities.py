@@ -22,6 +22,7 @@ class FetchTablesMetadataInput:
 
     Contains pagination information for retrieving table metadata in batches.
     """
+
     start: int
     page_size: int
 
@@ -39,6 +40,7 @@ class TagStaleTablesOutput:
 
     Tracks the number of tables successfully tagged and the number of failures.
     """
+
     tagged_count: int = 0
     failed_count: int = 0
 
