@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
@@ -15,8 +16,36 @@ from temporalio import activity
 logger = get_logger(__name__)
 
 
+@dataclass
+class FetchTablesMetadataInput:
+    """Input data for fetching tables metadata.
+
+    Contains pagination information for retrieving table metadata in batches.
+    """
+    start: int
+    page_size: int
+
+    def increment_start(self):
+        """Increment the start index by the page size.
+
+        Updates the start attribute to point to the next page of results.
+        """
+        self.start += self.page_size
+
+
+@dataclass
+class TagStaleTablesOutput:
+    """Represents the output of tagging stale tables.
+
+    Tracks the number of tables successfully tagged and the number of failures.
+    """
+    tagged_count: int = 0
+    failed_count: int = 0
+
+
 class FreshnessMonitorActivities(ActivitiesInterface):
     def __init__(self):
+        super().__init__()
         self.atlan_client = None
 
     async def _get_atlan_client(self) -> AsyncAtlanClient:
@@ -27,14 +56,13 @@ class FreshnessMonitorActivities(ActivitiesInterface):
 
     @activity.defn
     async def fetch_tables_metadata(
-        self, workflow_args: Dict[str, Any]
+        self, input: FetchTablesMetadataInput
     ) -> List[Dict[str, Any]]:
         """Activity 1: Fetch table metadata from Atlan"""
         client = await self._get_atlan_client()
-
         # Build search request for tables
         logger.info("Fetching tables metadata...")
-        search_results = await (
+        search_request = (
             FluentSearch()
             .select()
             .where(Asset.TYPE_NAME.eq("Table"))
@@ -42,16 +70,16 @@ class FreshnessMonitorActivities(ActivitiesInterface):
             .include_on_results(Asset.NAME)
             .include_on_results(Asset.UPDATE_TIME)
             .include_on_results(Asset.CREATE_TIME)
-            .page_size(30)
-            .execute_async(client=client)
+            .page_size(input.page_size)
+            .to_request()
         )
-
+        # Start retrieving results at the given start
+        search_request.dsl.from_ = input.start
+        search_results = await client.asset.search(search_request)
         tables_data = []
-        max_tables = 30  # Limit the number of tables to process
         count = 0
-
-        # Iterate directly over search results with limit
-        async for asset in search_results:
+        # Iterate over one page of search results
+        for asset in search_results.current_page():
             if isinstance(asset, Table):
                 table_info = {
                     "qualified_name": asset.attributes.qualified_name,
@@ -62,18 +90,11 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                 }
                 tables_data.append(table_info)
                 count += 1
-                logger.info(
-                    f"Processed table {count}: {table_info['name']} {table_info}"
+                logger.debug(
+                    f"Processed table {input.start + count}: {table_info['name']} {table_info}"
                 )
 
-                # Break after processing the desired number of tables
-                if count >= max_tables:
-                    logger.info(
-                        f"Reached maximum limit of {max_tables} tables. Stopping."
-                    )
-                    break
-
-        logger.info(f"Total tables processed: {count}")
+        logger.info(f"Total additional tables processed: {count}")
         return tables_data
 
     @activity.defn
@@ -103,19 +124,16 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     stale_tables.append(table)
             else:
                 logger.info(f"Table {table['name']} has no update_time")
-        logger.info(f"Found {len(stale_tables)} stale tables.")
+        logger.info(f"Found {len(stale_tables)} additional stale tables.")
 
         return stale_tables
 
     @activity.defn
-    async def tag_stale_tables(self, args: Dict[str, Any]) -> Dict[str, Any]:
+    async def tag_stale_tables(self, args: Dict[str, Any]) -> TagStaleTablesOutput:
         """Activity 3: Add an announcement to mark stale tables"""
         stale_tables = args["stale_tables"]
-
+        output = TagStaleTablesOutput()
         client = await self._get_atlan_client()
-
-        tagged_count = 0
-        failed_count = 0
 
         for table_info in stale_tables:
             try:
@@ -137,7 +155,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     announcement=announcement,
                 )
 
-                tagged_count += 1
+                output.tagged_count += 1
                 logger.info(
                     f"✓ Stale data announcement added for {table_info['qualified_name']}"
                 )
@@ -146,11 +164,6 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                 logger.info(
                     f"Failed to add announcement to table {table_info['qualified_name']}: {str(e)}"
                 )
-                failed_count += 1
+                output.failed_count += 1
 
-        return {
-            "tagged_count": tagged_count,
-            "failed_count": failed_count,
-            "total_stale_tables": len(stale_tables),
-            "approach_used": "announcement_only",
-        }
+        return output
