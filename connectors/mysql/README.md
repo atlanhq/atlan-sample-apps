@@ -38,6 +38,9 @@ A powerful application that extracts metadata from MySQL databases and transform
 - **Web Interface**: http://localhost:8000
 - **Temporal UI**: http://localhost:8233
 
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the root README for unified build and run instructions.
+
 ## Features
 
 - Automated metadata extraction from MySQL databases

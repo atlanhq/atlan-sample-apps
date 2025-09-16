@@ -39,6 +39,44 @@ Each sample app is **self-contained** with its own dependencies and setup instru
 | 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [utilities/asset_descriptor_reminder](./utilities/asset_descriptor_reminder) |
 | ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [utilities/freshness_monitor](./utilities/freshness_monitor)                 |
 
+## Build Docker images
+
+You can build Docker images for any app in this repo using the provided `Dockerfile`.
+
+### Setup the App Directory
+
+Copy the `Dockerfile` from the root directory to the app directory (example: `connectors/mysql`, `quickstart/ai_giphy`, etc.):
+
+```bash
+cp Dockerfile ./connectors/mysql/
+```
+
+Navigate to the app directory (for example `connectors/mysql`, `quickstart/ai_giphy`, etc.):
+
+```bash
+cd connectors/mysql
+```
+
+### Build the Docker image
+From the app directory (for example `connectors/mysql`, `quickstart/ai_giphy`, etc.):
+
+```bash
+docker build --no-cache -f ./Dockerfile -t app-name:latest .
+```
+
+### Run the Docker container:
+
+**If your Temporal service is running on the host machine:**
+```bash
+docker run -p 8000:8000 --add-host=host.docker.internal:host-gateway -e ATLAN_WORKFLOW_HOST=host.docker.internal -e ATLAN_WORKFLOW_PORT=7233 --user 1000:1000 app-name
+```
+
+**If your Temporal service is running elsewhere (remote server/container):**
+```bash
+docker run -p 8000:8000 -e ATLAN_WORKFLOW_HOST=<your-temporal-host> -e ATLAN_WORKFLOW_PORT=<your-temporal-port> --user 1000:1000 app-name
+```
+*Replace `<your-temporal-host>` and `<your-temporal-port>` with your actual Temporal service hostname/IP and port.*
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for guidelines.
