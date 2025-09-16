@@ -70,6 +70,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
 
             # Step 4: Tag stale tables
             if stale_tables:
+                total.stale_tables += len(stale_tables)
                 tag_output = await workflow.execute_activity_method(
                     activities_instance.tag_stale_tables,
                     {"stale_tables": stale_tables},
