@@ -9,7 +9,7 @@ readme = "README.md"
 dependencies = [
     "atlan-application-sdk[daft,sqlalchemy,tests,workflows]==0.1.1rc38",
     "poethepoet",
-    "asyncmy>=0.2.10",
+    "aiomysql==0.2.0",
 ]
 
 [dependency-groups]

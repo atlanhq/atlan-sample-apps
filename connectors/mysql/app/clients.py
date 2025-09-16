@@ -15,6 +15,6 @@ class SQLClient(AsyncBaseSQLClient):
     """
 
     DB_CONFIG = {
-        "template": "mysql+asyncmy://{user}:{password}@{host}:{port}/{database}",
+        "template": "mysql+aiomysql://{user}:{password}@{host}:{port}/{database}",
         "required": ["user", "password", "host", "port", "database"],
     }
