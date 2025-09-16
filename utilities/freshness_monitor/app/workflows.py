@@ -22,6 +22,13 @@ class Total:
     tagged_count: int = 0
 
     def add_tagged_counts(self, tagged_counts: TagStaleTablesOutput) -> None:
+        """Update the tagged and failed counts with values from the provided output.
+
+        Increments the current object's tagged and failed counts by the values in the given TagStaleTablesOutput.
+
+        Args:
+            tagged_counts: The output containing counts to add.
+        """
         self.tagged_count += tagged_counts.tagged_count
         self.failed_count += tagged_counts.failed_count
 
