@@ -32,13 +32,6 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
     async def run(self, workflow_args: Dict[str, Any]):
         """Main workflow execution"""
         total = Total()
-        logger.info("-" * 80)
-        logger.info(f"Starting workflow {total}")
-        logger.info(f"Total tables_read: {total.tables_read}")
-        logger.info(f"Total stale_tables: {total.stale_tables}")
-        logger.info(f"Total tagged_count: {total.tagged_count}")
-        logger.info(f"Total failed_count: {total.failed_count}")
-        logger.info("-" * 80)
         activities_instance = FreshnessMonitorActivities()
 
         workflow_args = await workflow.execute_activity_method(
@@ -49,8 +42,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
 
         # Extract configuration from workflow args
         threshold_days = workflow_args.get("threshold_days", 30)
-        start = 0
-        metadata_input = FetchTablesMetadataInput(start=start, page_size=300)
+        metadata_input = FetchTablesMetadataInput()
         while True:
             # Step 1: Fetch a page of table metadata
             tables_data = await workflow.execute_activity_method(

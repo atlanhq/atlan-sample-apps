@@ -23,8 +23,8 @@ class FetchTablesMetadataInput:
     Contains pagination information for retrieving table metadata in batches.
     """
 
-    start: int
-    page_size: int
+    start: int = 0
+    page_size: int = 300
 
     def increment_start(self):
         """Increment the start index by the page size.
