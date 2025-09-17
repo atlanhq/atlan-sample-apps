@@ -130,3 +130,6 @@ workflows_observability/
 ## Contributing
 
 We welcome contributions! Please feel free to submit a Pull Request.
+
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the repository root README for unified build and run instructions.
