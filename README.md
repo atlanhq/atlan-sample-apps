@@ -2,6 +2,16 @@
 
 Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/application-sdk)
 
+
+- [Quick Start](#quick-start)
+- [Debugging](#debugging)
+- [Build Docker images](#build-docker-images)
+- [Contributing](#contributing)
+- [Need Help?](#need-help)
+- [Security](#security)
+- [License](#license)
+
+
 ## Quick Start
 
 Each sample app is **self-contained** with its own dependencies and setup instructions. This makes it easy to run individual apps without installing unnecessary dependencies.
@@ -19,6 +29,16 @@ Each sample app is **self-contained** with its own dependencies and setup instru
 
 3. **Follow the app's README for specific setup:**
    Each app has its own `README.md` with complete setup instructions
+
+OR
+
+4. Using **[Cursor IDE](https://cursor.com/) (v1.6+)**, you can use slash commands to quickly set up and run sample apps, example:
+
+```
+help me /setup and run the mysql /app
+```
+
+This will automatically handle the environment setup and app initialization for you!
 
 
 > [!NOTE]
@@ -38,6 +58,13 @@ Each sample app is **self-contained** with its own dependencies and setup instru
 | 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [utilities/workflows_observability](./utilities/workflows_observability) |
 | 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [utilities/asset_descriptor_reminder](./utilities/asset_descriptor_reminder) |
 | ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [utilities/freshness_monitor](./utilities/freshness_monitor)                 |
+
+
+## Debugging
+
+- If you use [Cursor](https://cursor.com/) or [VSCode](https://code.visualstudio.com/) IDE, the repository has a launch configuration setup; just update the app directory and run the launch configuration.
+- For example, the configuration is defaulted to run the MySQL app, you can click on the "Run App + Deps" launch configuration to run the app along with the dependent services.
+
 
 ## Build Docker images
 

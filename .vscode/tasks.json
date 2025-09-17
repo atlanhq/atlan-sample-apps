@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mysql: download-components",
+      "type": "shell",
+      "command": "uv run poe download-components",
+      "options": {
+        "cwd": "${workspaceFolder}/connectors/mysql"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "mysql: uv-sync-all",
+      "type": "shell",
+      "command": "uv sync --all-extras",
+      "options": {
+        "cwd": "${workspaceFolder}/connectors/mysql"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "mysql: setup-deps",
+      "type": "shell",
+      "command": "uv run poe stop-deps",
+      "options": {
+        "cwd": "${workspaceFolder}/connectors/mysql"
+      },
+      "dependsOn": [
+        "mysql: download-components",
+        "mysql: uv-sync-all"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "mysql: start-deps",
+      "type": "shell",
+      "command": "uv run poe start-deps",
+      "options": {
+        "cwd": "${workspaceFolder}/connectors/mysql"
+      },
+      "dependsOn": [
+        "mysql: setup-deps"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    }
+  ]
+}

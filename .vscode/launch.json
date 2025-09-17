@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run App (uv run)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "uv run main.py",
+      "cwd": "${workspaceFolder}/connectors/mysql",
+      "preLaunchTask": "mysql: start-deps"
+    },
+    {
+      "name": "Start deps (terminal)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "uv run poe start-deps",
+      "cwd": "${workspaceFolder}/connectors/mysql",
+      "preLaunchTask": "mysql: setup-deps"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run App + Deps",
+      "configurations": [
+        "Start deps (terminal)",
+        "Run App (uv run)"
+      ],
+      "stopAll": true
+    }
+  ]
+}
