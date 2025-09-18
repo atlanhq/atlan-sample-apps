@@ -3,19 +3,22 @@
   "configurations": [
     {
       "name": "Run App (uv run)",
-      "type": "node-terminal",
+      "type": "debugpy",
       "request": "launch",
-      "command": "uv run main.py",
-      "cwd": "${workspaceFolder}/connectors/mysql",
-      "preLaunchTask": "mysql: start-deps"
+      "program": "${workspaceFolder}/utilities/workflows_observability/main.py",
+      "python": "${workspaceFolder}/utilities/workflows_observability/.venv/bin/python",
+      "justMyCode": false,
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/utilities/workflows_observability",
+      "preLaunchTask": "workflows_observability: start-deps"
     },
     {
       "name": "Start deps (terminal)",
       "type": "node-terminal",
       "request": "launch",
       "command": "uv run poe start-deps",
-      "cwd": "${workspaceFolder}/connectors/mysql",
-      "preLaunchTask": "mysql: setup-deps"
+      "cwd": "${workspaceFolder}/utilities/workflows_observability",
+      "preLaunchTask": "workflows_observability: setup-deps"
     }
   ],
   "compounds": [

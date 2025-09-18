@@ -2,11 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "mysql: download-components",
+      "label": "workflows_observability: download-components",
       "type": "shell",
       "command": "uv run poe download-components",
       "options": {
-        "cwd": "${workspaceFolder}/connectors/mysql"
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
       },
       "problemMatcher": [],
       "presentation": {
@@ -15,11 +15,11 @@
       }
     },
     {
-      "label": "mysql: uv-sync-all",
+      "label": "workflows_observability: uv-sync-all",
       "type": "shell",
-      "command": "uv sync --all-extras",
+      "command": "uv sync --all-extras --all-groups",
       "options": {
-        "cwd": "${workspaceFolder}/connectors/mysql"
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
       },
       "problemMatcher": [],
       "presentation": {
@@ -28,15 +28,15 @@
       }
     },
     {
-      "label": "mysql: setup-deps",
+      "label": "workflows_observability: setup-deps",
       "type": "shell",
       "command": "uv run poe stop-deps",
       "options": {
-        "cwd": "${workspaceFolder}/connectors/mysql"
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
       },
       "dependsOn": [
-        "mysql: download-components",
-        "mysql: uv-sync-all"
+        "workflows_observability: download-components",
+        "workflows_observability: uv-sync-all"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": [],
@@ -46,14 +46,14 @@
       }
     },
     {
-      "label": "mysql: start-deps",
+      "label": "workflows_observability: start-deps",
       "type": "shell",
       "command": "uv run poe start-deps",
       "options": {
-        "cwd": "${workspaceFolder}/connectors/mysql"
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
       },
       "dependsOn": [
-        "mysql: setup-deps"
+        "workflows_observability: setup-deps"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": [],
