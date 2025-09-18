@@ -1,0 +1,24 @@
+schema_type: dataframe
+version: 1.0
+columns:
+  pageType:
+    type: string
+    nullable: true
+  name:
+    type: string
+    nullable: false
+  guid:
+    type: string
+    nullable: false
+  appGuid:
+    type: string
+    nullable: false
+  categoryName:
+    type: string
+    nullable: true
+  createdAt:
+    type: string
+    nullable: true
+  updatedAt:
+    type: string
+    nullable: true
