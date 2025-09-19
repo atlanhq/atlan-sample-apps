@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Any, Callable, Dict, Sequence
 
 from app.activities import FetchWorkflowsRunInput, WorkflowsObservabilityActivities
@@ -31,8 +31,9 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
         )
         workflow.logger.info(f"Workflow args: {workflow_args}")
         selected_date: str = workflow_args.get(
-            "selectedDate", "atlan-snowflake-miner-1743729606"
+            "selectedDate", date.today().strftime("%Y-%m-%d")
         )
+        workflow.logger.info(f"Selected date: {selected_date}")
         output_prefix: str = workflow_args.get("outputPrefix", "")
         workflow.logger.info(f"Output prefix: {output_prefix}")
         workflow.logger.info("Starting workflows observability workflow")

@@ -70,7 +70,9 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             client = await get_async_client()
             from pyatlan.model.enums import AtlanWorkflowPhase
 
-            logger.info(f"Fetching workflows started at: {difference_in_hours}")
+            logger.info(
+                f"Fetching workflows started in the last {difference_in_hours} hours."
+            )
             results = await client.workflow.find_runs_by_status_and_time_range(
                 status=[AtlanWorkflowPhase.SUCCESS, AtlanWorkflowPhase.FAILED],
                 started_at=f"now-{difference_in_hours}h",
