@@ -33,14 +33,12 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
         selected_date: str = workflow_args.get(
             "selectedDate", "atlan-snowflake-miner-1743729606"
         )
-        output_type: str = workflow_args.get("outputType", "Local")
         output_prefix: str = workflow_args.get("outputPrefix", "")
         workflow.logger.info(f"Output prefix: {output_prefix}")
         workflow.logger.info("Starting workflows observability workflow")
 
         run_input = FetchWorkflowsRunInput(
             selected_date=selected_date,
-            output_type=output_type,
             output_prefix=output_prefix,
             size=10,
         )

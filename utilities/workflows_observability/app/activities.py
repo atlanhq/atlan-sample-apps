@@ -24,14 +24,12 @@ class FetchWorkflowsRunInput:
 
     Attributes:
         selected_date (str): The date from which to fetch workflow runs.
-        output_type (str): The type of output storage.
         output_prefix (str): The prefix or path for output storage.
         start (int): The starting index for pagination.
         size (int): The number of results to fetch per page.
     """
 
     selected_date: str
-    output_type: str
     output_prefix: str
     start: int = 0
     size: int = 1
