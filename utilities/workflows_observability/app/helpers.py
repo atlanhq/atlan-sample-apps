@@ -1,5 +1,6 @@
 import os
 
+from application_sdk.constants import TEMPORARY_PATH
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.services import ObjectStore
 from pyatlan.model.enums import AtlanWorkflowPhase
@@ -10,7 +11,7 @@ logger = get_logger(__name__)
 activity.logger = logger
 
 
-def save_result_locally(raw_json, local_directory: str) -> None:
+def save_result_locally(result: WorkflowSearchResult, local_directory: str) -> None:
     """
     Save a workflow run result to a local directory, structured by date and status.
 
@@ -22,7 +23,6 @@ def save_result_locally(raw_json, local_directory: str) -> None:
         OSError: If directories or file writing fails.
     """
     try:
-        result = WorkflowSearchResult.parse_raw(raw_json)
         date_str = result.source.status.startedAt[:10]
         subdirs = [date_str, f"{date_str}/SUCCESS", f"{date_str}/FAILED"]
 
@@ -64,7 +64,7 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
     """
     try:
         await ObjectStore.upload_prefix(
-            destination=output_prefix, source=local_directory
+            destination=output_prefix, source=local_directory, retain_local_copy=False
         )
         logger.info(f"{local_directory} pushed to object storage.")
 
@@ -73,3 +73,28 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
             f"Error saving workflow result on object storage: {str(e)}", exc_info=e
         )
         raise e
+
+
+def create_local_directory(output_prefix: str) -> str:
+    """
+    Creates a local directory for storing workflow results, using the given output prefix.
+
+    This function ensures the directory exists, creating it if necessary, and logs its status.
+
+    Args:
+        output_prefix (str): The prefix to append to the base temporary path for the directory.
+
+    Returns:
+        str: The full path to the created or existing local directory.
+    """
+    if output_prefix:
+        local_directory = f"{TEMPORARY_PATH}/{output_prefix}"
+    else:
+        local_directory = TEMPORARY_PATH
+    if os.path.exists(local_directory):
+        logger.info(f"Local directory {local_directory} already exists.")
+    else:
+        logger.info(f"Local directory {local_directory} does not exist.")
+    os.makedirs(local_directory, exist_ok=True)
+    logger.info(f"local directory created: {local_directory}")
+    return local_directory
