@@ -16,22 +16,6 @@ activity.logger = logger
 
 
 @dataclass
-class LocalInfo:
-    """
-    Stores information about a local directory and associated task queue.
-
-    This dataclass is the output of the create_local_directory function.
-
-    Attributes:
-        local_directory (str): The path to the local directory.
-        task_queue (str): The name of the task queue associated with the activity.
-    """
-
-    local_directory: str
-    task_queue: str
-
-
-@dataclass
 class FetchWorkflowsRunInput:
     """
     Represents the input parameters for fetching workflow runs from Atlan.
