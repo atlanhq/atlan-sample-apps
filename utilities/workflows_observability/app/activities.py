@@ -62,7 +62,11 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
             current_datetime = datetime.now()
             time_difference = current_datetime - input_date
             difference_in_hours = int(time_difference.total_seconds() / 3600)
-
+            if difference_in_hours < 0:
+                logger.warning(
+                    f"Can't fetch workflow runs since the given date, {input_date}, is in the future."
+                )
+                return 0
             client = await get_async_client()
             from pyatlan.model.enums import AtlanWorkflowPhase
 
@@ -73,20 +77,17 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
                 size=input.size,
                 from_=input.start,
             )
-            logger.info(f"the results: {results}")
+            logger.debug(f"the results: {results}")
+            count = 0
             if results.hits and results.hits.hits:
-                count = 0
                 for result in results.current_page():
                     count += 1
-                    logger.info(f"count: {count}")
                     save_result_locally(result=result, local_directory=local_directory)
                 await save_result_object_storage(
                     output_prefix=input.output_prefix, local_directory=local_directory
                 )
-                logger.info(f"Total processed results: {count}")
-                return count
-            else:
-                return 0
+            logger.info(f"Total processed results: {count}")
+            return 0
         except Exception as e:
             logger.error(
                 f"Failed to retrieve workflow information: {str(e)}", exc_info=e
