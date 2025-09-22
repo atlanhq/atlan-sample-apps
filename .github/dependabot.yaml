@@ -1,7 +1,8 @@
 version: 2
 updates:
-  - package-ecosystem: pip
-    directory: "/"
+  - package-ecosystem: uv
+    directories:
+      - "*/**"
     schedule:
       interval: daily
     open-pull-requests-limit: 100
