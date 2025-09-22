@@ -94,6 +94,9 @@ giphy/
 > [!NOTE]
 > Make sure you have a `.env` file that matches the [.env.example](.env.example) file in this directory.
 
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the repository root README for unified build and run instructions.
+
 
 ## Learning Resources
 

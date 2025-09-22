@@ -1,7 +1,7 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Any, Callable, Dict, Sequence
 
-from app.activities import WorkflowsObservabilityActivities
+from app.activities import FetchWorkflowsRunInput, WorkflowsObservabilityActivities
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
@@ -12,48 +12,52 @@ workflow.logger = get_logger(__name__)
 @workflow.defn
 class WorkflowsObservabilityWorkflow(WorkflowInterface):
     @workflow.run
-    async def run(self, workflow_config: Dict[str, Any]) -> None:
+    async def run(self, workflow_config: Dict[str, Any]):
         """
-        Entry point for the Workflows Observability Workflow.
+        Runs the workflows observability workflow to process and store workflow runs.
 
-        This method orchestrates the observability logic by:
-        1. Extracting the workflow configuration from the state store using `get_workflow_args`.
-        2. Using the extracted parameters (e.g., date and output type) to query Atlan for
-           recent workflow runs via the `fetch_workflows_run` activity.
-        3. Logging the start and completion of the workflow execution.
+        This method retrieves workflow configuration, fetches workflow runs in batches,
+        and logs the total number of runs processed.
 
         Args:
-            workflow_config (Dict[str, Any]): Dictionary containing metadata and configuration
-                used to initialize the workflow. Expected keys include:
-                - "selectedDate" (str): The reference date (in 'YYYY-MM-DD') for retrieving workflow runs.
-                - "outputType" (str): The target destination for output data (e.g., "Local").
-                - "outputPrefix" (str): The directory path or prefix under which extracted data will be stored in the object storage.
+            workflow_config (Dict[str, Any]): The configuration dictionary for the workflow.
 
-        Returns:
-            None
         """
-
         # Get the workflow configuration from the state store
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
-            "get_workflow_args",
+            WorkflowsObservabilityActivities.get_workflow_args,
             workflow_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
-
+        workflow.logger.info(f"Workflow args: {workflow_args}")
         selected_date: str = workflow_args.get(
-            "selectedDate", "atlan-snowflake-miner-1743729606"
+            "selectedDate", date.today().strftime("%Y-%m-%d")
         )
-        output_type: str = workflow_args.get("outputType", "Local")
+        workflow.logger.info(f"Selected date: {selected_date}")
         output_prefix: str = workflow_args.get("outputPrefix", "")
+        workflow.logger.info(f"Output prefix: {output_prefix}")
         workflow.logger.info("Starting workflows observability workflow")
 
-        # Process workflow runs
-        await workflow.execute_activity(
-            "fetch_workflows_run",
-            (selected_date, output_type, output_prefix),
-            start_to_close_timeout=timedelta(seconds=3600),
+        run_input = FetchWorkflowsRunInput(
+            selected_date=selected_date,
+            output_prefix=output_prefix,
+            size=10,
         )
-
+        total = 0
+        while True:
+            workflow.logger.info(f"run_input: {run_input}")
+            count = await workflow.execute_activity(
+                WorkflowsObservabilityActivities.fetch_and_store_workflows_run_by_page,
+                run_input,
+                start_to_close_timeout=timedelta(seconds=60),
+            )
+            workflow.logger.info(f"results: {count}")
+            if count == 0:
+                workflow.logger.info(f"no more runs found for {run_input}")
+                break
+            run_input.start += count
+            total += count
+        workflow.logger.info(f"total runs: {total}")
         workflow.logger.info("Workflows observability workflow completed")
 
     @staticmethod
@@ -72,6 +76,6 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
         """
 
         return [
-            activities.fetch_workflows_run,
+            activities.fetch_and_store_workflows_run_by_page,
             activities.get_workflow_args,
         ]
