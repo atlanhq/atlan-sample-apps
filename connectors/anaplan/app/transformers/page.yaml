@@ -1,0 +1,70 @@
+# anaplanpage.yaml
+table: AnaplanPage
+columns:
+  typeName:
+    source_query: "'AnaplanPage'"
+  status:
+    source_query: "'ACTIVE'"
+  attributes:
+    name:
+      source_query: name
+    qualifiedName:
+      source_query: concat(connection_qualified_name, '/', appGuid, '/', guid)
+      source_columns: [connection_qualified_name, appGuid, guid]
+    anaplanAppQualifiedName:
+      source_query: concat(connection_qualified_name, '/', appGuid)
+      source_columns: [connection_qualified_name, appGuid]
+    anaplanApp:
+      typeName:
+        source_query: "'AnaplanApp'"
+      uniqueAttributes:
+        qualifiedName:
+          source_query: concat(connection_qualified_name, '/', appGuid)
+          source_columns: [connection_qualified_name, appGuid]
+    anaplanSourceId:
+      source_query: guid
+    anaplanPageCategoryName:
+      source_query: |
+        CASE
+          WHEN categoryName IS NOT NULL THEN
+            categoryName
+          ELSE
+            NULL
+        END
+      source_columns: [categoryName]
+    anaplanPageType:
+      source_query: pageType
+    sourceCreatedAt:
+      source_query: |
+        CASE
+          WHEN createdAt IS NOT NULL THEN
+            createdAt
+          ELSE
+            NULL
+        END
+      source_columns: [createdAt]
+    sourceUpdatedAt:
+      source_query: |
+        CASE
+          WHEN updatedAt IS NOT NULL THEN
+            updatedAt
+          ELSE
+            NULL
+        END
+      source_columns: [updatedAt]
+
+    # common attributes for all entities
+    connectorName:
+      source_query: connector_name
+    connectionName:
+      source_query: connection_name
+    connectionQualifiedName:
+      source_query: connection_qualified_name
+    lastSyncRunAt:
+      source_query: last_sync_run_at
+    lastSyncWorkflowName:
+      source_query: last_sync_workflow_name
+    lastSyncRun:
+      source_query: last_sync_run
+    tenantId:
+      source_query: tenant_id
