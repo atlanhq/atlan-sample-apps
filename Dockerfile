@@ -39,6 +39,12 @@ USER root
 # Install Dapr CLI
 RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.14.1
 
+# Initialize Dapr runtime as root and make it accessible to appuser
+RUN dapr init --slim --runtime-version=1.14.4 && \
+    mkdir -p /home/appuser/.dapr/bin && \
+    cp -r /root/.dapr/* /home/appuser/.dapr/ && \
+    chown -R appuser:appuser /home/appuser/.dapr
+
 # Remove curl and bash
 RUN apk del curl bash
 
@@ -57,7 +63,5 @@ ENV UV_CACHE_DIR=/home/appuser/.cache/uv \
 
 # Download DAPR components and set up entrypoint
 RUN uv run poe download-components
-
-RUN dapr init --slim --runtime-version=1.14.4
 
 ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --app-port $ATLAN_APP_HTTP_PORT --dapr-http-max-request-size 1024 --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]
