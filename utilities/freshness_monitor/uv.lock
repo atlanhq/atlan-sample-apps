@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -1666,7 +1666,7 @@ wheels = [
 
 [[package]]
 name = "pyatlan"
-version = "8.0.2"
+version = "8.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -1681,9 +1681,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "tenacity" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/d1/bfdb1e4b6ba5df2b329e6f21f81d06ac6587f127b2abd8cdfcd55e7f86f1/pyatlan-8.0.2.tar.gz", hash = "sha256:48a0927ae5e58a1ddb32df94f39b6a0e2cfe8ac4100175cfa0dc775dd9e6d98d", size = 758440, upload-time = "2025-09-01T06:17:31.027Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2b/bb/0f11cad3b05eef53931e7256bdfb03ae077dd07cf18f57986c0adc691fe0/pyatlan-8.1.1.tar.gz", hash = "sha256:e069672f70d556c26a5f88ef1afbafbf6eb16496d608ae4069c3e44de64c625e", size = 765306, upload-time = "2025-09-23T08:03:42.235Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/bb/4a96eefbef9b623021a8cff2dfd06d6e91beffa8b9426beec358cf9bf467/pyatlan-8.0.2-py3-none-any.whl", hash = "sha256:5b5a51b57a4754445e1054a55943608491277aa61d4b5369a6ded3ed06ebf0ad", size = 1332559, upload-time = "2025-09-01T06:17:29.384Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/43/19640344a2f58286576b1d993b92c28105a2c2b830b02a4cdd8cf01074f6/pyatlan-8.1.1-py3-none-any.whl", hash = "sha256:de28c592caf3c84316c7a469013f6b93d12831dfc63279832e8aedae05e1749c", size = 1339795, upload-time = "2025-09-23T08:03:40.412Z" },
 ]
 
 [[package]]
