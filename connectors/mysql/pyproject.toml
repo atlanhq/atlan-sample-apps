@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[daft,sqlalchemy,tests,workflows]==0.1.1rc38",
+    "atlan-application-sdk[daft,sqlalchemy,tests,workflows,iam-auth]==0.1.1rc47",
     "poethepoet",
     "aiomysql==0.2.0",
 ]
