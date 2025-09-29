@@ -37,13 +37,7 @@ COPY --chown=appuser:appuser . .
 USER root
 
 # Install Dapr CLI
-RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.14.1
-
-# Initialize Dapr runtime as root and make it accessible to appuser
-RUN dapr init --slim --runtime-version=1.14.4 && \
-    mkdir -p /home/appuser/.dapr/bin && \
-    cp -r /root/.dapr/* /home/appuser/.dapr/ && \
-    chown -R appuser:appuser /home/appuser/.dapr
+RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.16.0
 
 # Remove curl and bash
 RUN apk del curl bash
@@ -64,4 +58,9 @@ ENV UV_CACHE_DIR=/home/appuser/.cache/uv \
 # Download DAPR components and set up entrypoint
 RUN uv run poe download-components
 
-ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --app-port $ATLAN_APP_HTTP_PORT --dapr-http-max-request-size 1024 --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]
+RUN dapr init --slim --runtime-version=1.16.0
+
+# Remove dashboard, placement, and scheduler from Dapr - not needed and have vulnerabilities
+RUN rm /home/appuser/.dapr/bin/dashboard /home/appuser/.dapr/bin/placement /home/appuser/.dapr/bin/scheduler
+
+ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --placement-host-address '' --max-body-size 1024Mi --app-port $ATLAN_APP_HTTP_PORT --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]

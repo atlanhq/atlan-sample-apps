@@ -122,7 +122,7 @@ wheels = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc38"
+version = "0.1.1rc50"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -137,9 +137,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/2b/c093ed3ce6de25d06617470bc0f29f342ed27b6ddf1f5fb5420eebb2b0cd/atlan_application_sdk-0.1.1rc38.tar.gz", hash = "sha256:e2ff32e31d3f7d4acf085fe244d94f794fce2ca4b2654208bb19aee1d2c63c1e", size = 953191, upload-time = "2025-09-03T19:31:16.891Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/33/d645d4a404e7ebf40615303d1b88e34fcb154be08952c90d75f969b6cfd8/atlan_application_sdk-0.1.1rc50.tar.gz", hash = "sha256:1232c98445a2b2aa3600cc6aca61034f1279805ef6747f6141c2d1e2a0a2d956", size = 1054154, upload-time = "2025-09-29T19:09:33.097Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/19/48e271cbd0c6456ad14e7d75c53450fb914875b2b5eb25d3a3baa75c1433/atlan_application_sdk-0.1.1rc38-py3-none-any.whl", hash = "sha256:4e7fea865a5b7077585bb545deed30a27988e3d2abdf4d4c99bd6e62a28a604c", size = 223991, upload-time = "2025-09-03T19:31:15.376Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/86/a954194fbc21092064b3eb4c5f3becdb5d519d6702b92d8386fc0fc16a74/atlan_application_sdk-0.1.1rc50-py3-none-any.whl", hash = "sha256:af5b7787a37360994f014d8588156062ae3f9ffc80611b50884596d81306365b", size = 280694, upload-time = "2025-09-29T19:09:30.006Z" },
 ]
 
 [package.optional-dependencies]
@@ -364,7 +364,7 @@ wheels = [
 
 [[package]]
 name = "dapr"
-version = "1.15.0"
+version = "1.16.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -374,9 +374,9 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/55/ce908bb140a7ec3f32d2194b6a50b9f7a7fd88fca8c78701d60d3f7c16e3/dapr-1.15.0.tar.gz", hash = "sha256:6b2373084143f164cb00702758b17a14fc4442314a1f3e2be36ee008d486c47a", size = 99424, upload-time = "2025-02-27T18:53:55.782Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/b1/d39ba15d453b67b93d53ec56de7eb9324cb8bbf0599afcb2c0ade990b7ae/dapr-1.16.0.tar.gz", hash = "sha256:c7e3d005552a598d07608d0d502b2bc432e86678f94b2beccc13a096b9198684", size = 122467, upload-time = "2025-09-17T10:59:57.138Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/97/ad/6923177cfcd2a98f08dbd1c4a580e9fbac93b05798ded77314e848d6eef2/dapr-1.15.0-py3-none-any.whl", hash = "sha256:0093bf6df5eb9a14fbab60191a619438e0b6b336f60a7994e184276bcc35d5fb", size = 141392, upload-time = "2025-02-27T18:53:53.805Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/3e/de39e18e14d07882fcff028227c2dbe7fa202f09413127d4de32b03e0884/dapr-1.16.0-py3-none-any.whl", hash = "sha256:076dd559a0b450eae24b1c2ae779c9299ed3e06a05c1f72719a6613af8d19ced", size = 166710, upload-time = "2025-09-17T10:59:55.473Z" },
 ]
 
 [[package]]
@@ -762,7 +762,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc38" },
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc50" },
     { name = "poethepoet" },
 ]
 
