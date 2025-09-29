@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[daft,sqlalchemy,tests,workflows,iam-auth]==0.1.1rc47",
+    "atlan-application-sdk[daft,sqlalchemy,tests,workflows,iam-auth]==0.1.1rc50",
     "poethepoet",
     "aiomysql==0.2.0",
 ]
@@ -21,14 +21,14 @@ dev = [
 ]
 
 [tool.poe.tasks]
-start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components"
+start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --scheduler-host-address '' --placement-host-address '' --max-body-size 1024Mi --dapr-http-port 3500 --dapr-grpc-port 50001 --resources-path components"
 start-temporal = "temporal server start-dev --db-filename ./temporal.db"
 start-deps.shell = "poe start-dapr & poe start-temporal &"
 stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || true"
 
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v0.1.1rc38" }
+env = { SDK_VERSION = "v0.1.1rc50" }
 shell = """
 import pathlib, requests, os
 
