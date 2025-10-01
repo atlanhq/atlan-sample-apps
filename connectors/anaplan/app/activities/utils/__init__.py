@@ -21,19 +21,17 @@ def setup_parquet_output(
         ParquetOutput: Configured parquet output instance.
 
     Raises:
-        ValueError: If output prefix or path is not provided in workflow_args.
+        ValueError: If output path is not provided in workflow_args.
     """
 
-    output_prefix = workflow_args.get("output_prefix")
     output_path = workflow_args.get("output_path")
 
-    if not output_prefix or not output_path:
-        logger.error("Output prefix or path not provided in workflow_args.")
-        raise ValueError("Output prefix and path must be specified in workflow_args.")
+    if not output_path:
+        logger.error("Output path not provided in workflow_args.")
+        raise ValueError("Output path must be specified in workflow_args.")
 
     # Create parquet output object
     parquet_output = ParquetOutput(
-        output_prefix=output_prefix,
         output_path=output_path,
         output_suffix=output_suffix,
     )
@@ -54,21 +52,17 @@ async def get_app_guids(workflow_args: Dict[str, Any]) -> Set[str]:
         Set[str]: Set of valid app GUIDs.
 
     Raises:
-        ValueError: If output prefix or path is not provided in workflow_args.
+        ValueError: If output path is not provided in workflow_args.
     """
 
-    output_prefix = workflow_args.get("output_prefix")
     output_path = workflow_args.get("output_path")
 
-    if not output_prefix or not output_path:
-        raise ValueError("Output prefix and path must be specified in workflow_args")
+    if not output_path:
+        raise ValueError("Output path must be specified in workflow_args")
 
     # Read app parquet files to get valid app GUIDs
     app_parquet_input = ParquetInput(
         path=os.path.join(output_path, "raw", "app"),
-        input_prefix=output_prefix,
-        file_names=None,
-        chunk_size=None,
     )
     app_parquet_input = app_parquet_input.get_batched_daft_dataframe()
 

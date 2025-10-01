@@ -12,7 +12,6 @@ class TestUtils:
         """Test successful parquet output setup."""
         # Arrange
         workflow_args = {
-            "output_prefix": "test_prefix",
             "output_path": "/test/path",
         }
         output_suffix = "test_suffix"
@@ -26,36 +25,19 @@ class TestUtils:
         # Assert
         assert result == mock_output_instance
         mock_parquet_output.assert_called_once_with(
-            output_prefix="test_prefix",
             output_path="/test/path",
             output_suffix="test_suffix",
         )
 
-    def test_setup_parquet_output_missing_prefix(self):
-        """Test parquet output setup with missing output_prefix."""
-        # Arrange
-        workflow_args = {
-            "output_path": "/test/path",
-        }
-        output_suffix = "test_suffix"
-
-        # Act & Assert
-        with pytest.raises(
-            ValueError, match="Output prefix and path must be specified"
-        ):
-            setup_parquet_output(workflow_args, output_suffix)
-
     def test_setup_parquet_output_missing_path(self):
         """Test parquet output setup with missing output_path."""
         # Arrange
-        workflow_args = {
-            "output_prefix": "test_prefix",
-        }
+        workflow_args = {}
         output_suffix = "test_suffix"
 
         # Act & Assert
         with pytest.raises(
-            ValueError, match="Output prefix and path must be specified"
+            ValueError, match="Output path must be specified in workflow_args"
         ):
             setup_parquet_output(workflow_args, output_suffix)
 
@@ -67,7 +49,7 @@ class TestUtils:
 
         # Act & Assert
         with pytest.raises(
-            ValueError, match="Output prefix and path must be specified"
+            ValueError, match="Output path must be specified in workflow_args"
         ):
             setup_parquet_output(workflow_args, output_suffix)
 

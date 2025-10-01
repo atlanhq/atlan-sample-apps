@@ -219,7 +219,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             # Create DataFrame and write to parquet
             if filtered_app_data:
                 # Use pandas instead of daft : avoid nested directory structure
-                pandas_df = pd.DataFrame(app_data)
+                pandas_df = pd.DataFrame(filtered_app_data)
                 await parquet_output.write_dataframe(pandas_df)
 
                 logger.info(
@@ -330,13 +330,12 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                 raise ValueError("Transformer not found in state")
 
             # Extract required parameters from workflow_args
-            output_prefix = workflow_args.get("output_prefix")
             output_path = workflow_args.get("output_path")
             typename = workflow_args.get("typename")
 
-            if not output_prefix or not output_path:
+            if not output_path:
                 raise ValueError(
-                    "Output prefix and path must be specified in workflow_args"
+                    "Output path must be specified in workflow_args"
                 )
             if not typename:
                 raise ValueError("Typename not found in workflow_args")
@@ -345,15 +344,11 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             # Use the typename to construct the correct path
             raw_input = ParquetInput(
                 path=os.path.join(output_path, "raw", typename),
-                input_prefix=output_prefix,
-                file_names=None,
-                chunk_size=None,
             )
             raw_input = raw_input.get_batched_daft_dataframe()
 
             # Setup output for writing transformed JSON files
             transformed_output = JsonOutput(
-                output_prefix=output_prefix,
                 output_path=output_path,
                 output_suffix="transformed",
                 typename=typename,
