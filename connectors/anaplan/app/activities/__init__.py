@@ -334,9 +334,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             typename = workflow_args.get("typename")
 
             if not output_path:
-                raise ValueError(
-                    "Output path must be specified in workflow_args"
-                )
+                raise ValueError("Output path must be specified in workflow_args")
             if not typename:
                 raise ValueError("Typename not found in workflow_args")
 
