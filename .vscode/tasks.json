@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "workflows_observability: download-components",
+      "type": "shell",
+      "command": "uv run poe download-components",
+      "options": {
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "workflows_observability: uv-sync-all",
+      "type": "shell",
+      "command": "uv sync --all-extras --all-groups",
+      "options": {
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "workflows_observability: setup-deps",
+      "type": "shell",
+      "command": "uv run poe stop-deps",
+      "options": {
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
+      },
+      "dependsOn": [
+        "workflows_observability: download-components",
+        "workflows_observability: uv-sync-all"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "workflows_observability: start-deps",
+      "type": "shell",
+      "command": "uv run poe start-deps",
+      "options": {
+        "cwd": "${workspaceFolder}/utilities/workflows_observability"
+      },
+      "dependsOn": [
+        "workflows_observability: setup-deps"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    }
+  ]
+}

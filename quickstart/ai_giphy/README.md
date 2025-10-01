@@ -43,6 +43,9 @@ https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 - **Web Interface**: http://localhost:8000
 - **Temporal UI**: http://localhost:8233
 
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the repository root README for unified build and run instructions.
+
 ## Features
 
 - **AI-Powered GIF Selection**: Describe the GIF you want (e.g., "a happy cat dancing") and the AI agent will find a suitable one.

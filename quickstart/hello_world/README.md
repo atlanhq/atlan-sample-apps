@@ -2,7 +2,7 @@
 
 A simple starter application demonstrating how to build apps with Application SDK.
 
-![Screenshot](https://github.com/user-attachments/assets/416be4d4-e137-42c4-9537-869df2c8f87e)
+![Demo GIF](../assets/hello_world_demo.gif)
 
 ## Prerequisites
 
@@ -76,6 +76,9 @@ hello_world/
 - [Temporal Documentation](https://docs.temporal.io/)
 - [Atlan Application SDK Documentation](https://github.com/atlanhq/application-sdk/tree/main/docs)
 - [Python FastAPI Documentation](https://fastapi.tiangolo.com/)
+
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the repository root README for unified build and run instructions.
 
 ## Contributing
 We welcome contributions! Please feel free to submit a Pull Request.
