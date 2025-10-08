@@ -1,33 +1,37 @@
+
 {
-  "id": "Extractor",
-  "name": "Extractor",
-  "logo": "",
-  "config": {
-    "properties": {
-      "input_file": {
-        "type": "string",
-        "required": true,
-        "ui": {
-          "label": "Input JSON file path",
-          "placeholder": "e.g., extractor-app-input-table.json",
-          "grid": 8
+    "id": "Extractor",
+    "name": "Extractor",
+    "logo": "",
+    "config": {
+      "properties": {
+        "input_file": {
+          "type": "string",
+          "required": true,
+          "ui": {
+            "label": "Input JSON file path",
+            "placeholder": "e.g., extractor-app-input-table.json",
+            "grid": 8
+          }
+        },
+        "output_file": {
+          "type": "string",
+          "required": true,
+          "ui": {
+            "label": "Output file path",
+            "placeholder": "e.g., transformed_tables.json",
+            "grid": 8
+          }
         }
       },
-      "output_file": {
-        "type": "string",
-        "required": true,
-        "ui": {
-          "label": "Output file path",
-          "placeholder": "e.g., transformed_tables.json",
-          "grid": 8
+      "steps": [
+        {
+          "id": "payload",
+          "properties": [
+            "input_file",
+            "output_file"
+          ]
         }
-      }
-    },
-    "steps": [
-      {
-        "id": "payload",
-        "properties": ["input_file", "output_file"]
-      }
-    ]
+      ]
+    }
   }
-}
