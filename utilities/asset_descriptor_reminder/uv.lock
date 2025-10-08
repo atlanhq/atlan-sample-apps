@@ -141,7 +141,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc46" },
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==0.1.1rc52" },
     { name = "httpx", specifier = "~=0.28.1" },
     { name = "poethepoet" },
     { name = "slack-sdk" },
@@ -157,7 +157,7 @@ dev = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc46"
+version = "0.1.1rc52"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -172,9 +172,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/17/fe/4a6236b39c5603f8976a01dd4622943281f143498429acf6e489d95d75cc/atlan_application_sdk-0.1.1rc46.tar.gz", hash = "sha256:3844757dbf512f3b6e878c53d66314e6685116b18f6ea756d2c009a8826e168b", size = 1053940, upload-time = "2025-09-19T17:11:39.319Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/95/61479fbc427e3439592fad5e278f3cf1cffcf744c8b6c963f3e187bcb90f/atlan_application_sdk-0.1.1rc52.tar.gz", hash = "sha256:59df087e8552076f4d4d7253fc2a6020c26d04d153176a62d144febe3d3ac2a7", size = 1054841, upload-time = "2025-10-03T19:56:37.897Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c6/f4/d316bfd8ee28349d518c09fd0f4eaf13b3fcde9caa700d409216c893d49e/atlan_application_sdk-0.1.1rc46-py3-none-any.whl", hash = "sha256:925b09a2eab2ed11c75ad91d21cc9ba796f41f8fa67ad85897652925f21cec27", size = 280724, upload-time = "2025-09-19T17:11:37.721Z" },
+    { url = "https://files.pythonhosted.org/packages/db/6c/c1e0cc4ceb96e0aba79c47cc5e3112ff6f6b8b122124e5947b0e33cfc164/atlan_application_sdk-0.1.1rc52-py3-none-any.whl", hash = "sha256:f714a16ebeb076b666663191382697e427d222022e9a9d26a87b03c90aa94dd8", size = 280899, upload-time = "2025-10-03T19:56:36.716Z" },
 ]
 
 [package.optional-dependencies]
