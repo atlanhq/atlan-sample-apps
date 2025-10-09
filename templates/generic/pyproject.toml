@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[workflows,tests]==0.1.1rc41",
+    "atlan-application-sdk[workflows,tests]==0.1.1rc50",
     "poethepoet",
 ]
 
@@ -19,14 +19,14 @@ dev = [
 ]
 
 [tool.poe.tasks]
-start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --dapr-http-port 3500 --dapr-grpc-port 50001 --dapr-http-max-request-size 1024 --resources-path components"
+start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --scheduler-host-address '' --placement-host-address '' --max-body-size 1024Mi --dapr-http-port 3500 --dapr-grpc-port 50001 --resources-path components"
 start-temporal = "temporal server start-dev --db-filename ./temporal.db"
 start-deps.shell = "poe start-dapr & poe start-temporal &"
 stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || true"
 
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v0.1.1rc23" }
+env = { SDK_VERSION = "v0.1.1rc50" }
 shell = """
 import pathlib, requests, os, shutil, tarfile, tempfile
 
@@ -50,60 +50,7 @@ for file_info in response.json():
         file_path.write_text(file_response.text)
         print(f"Downloaded: {file_info['name']}")
 
-# Download frontend assets
-print("Downloading frontend assets...")
-package_name = "@atlanhq/app-playground"
 
-# Get package information from npm registry
-registry_url = f"https://registry.npmjs.org/{package_name}"
-response = requests.get(registry_url)
-response.raise_for_status()
-
-package_info = response.json()
-latest_version = package_info["dist-tags"]["latest"]
-tarball_url = package_info["versions"][latest_version]["dist"]["tarball"]
-
-print(f"Downloading {package_name}@{latest_version}...")
-
-# Create static directory
-static_dir = pathlib.Path("frontend/static")
-static_dir.mkdir(exist_ok=True)
-
-# Download and extract the package
-with tempfile.TemporaryDirectory() as temp_dir:
-    temp_path = pathlib.Path(temp_dir)
-
-    # Download tarball
-    tarball_response = requests.get(tarball_url)
-    tarball_response.raise_for_status()
-
-    tarball_path = temp_path / "package.tgz"
-    tarball_path.write_bytes(tarball_response.content)
-
-    # Extract tarball
-    with tarfile.open(tarball_path, "r:gz") as tar:
-        tar.extractall(temp_path)
-
-    # Look for .output/public directory in the extracted package
-    package_dir = temp_path / "package"
-    output_public_dir = package_dir / ".output" / "public"
-
-    if not output_public_dir.exists():
-        raise FileNotFoundError(f".output/public directory not found in {package_name}")
-
-    # Copy files from .output/public to static directory
-    for item in output_public_dir.iterdir():
-        dest_path = static_dir / item.name
-        if item.is_file():
-            shutil.copy2(item, dest_path)
-            print(f"Copied: {item.name}")
-        elif item.is_dir():
-            if dest_path.exists():
-                shutil.rmtree(dest_path)
-            shutil.copytree(item, dest_path)
-            print(f"Copied directory: {item.name}")
-
-print(f"Frontend files downloaded to {static_dir}")
 """
 
 [build-system]

@@ -2,7 +2,7 @@
 
 A simple starter application demonstrating how to build apps with Application SDK.
 
-![Screenshot](https://github.com/user-attachments/assets/416be4d4-e137-42c4-9537-869df2c8f87e)
+![Demo GIF](../assets/hello_world_demo.gif)
 
 ## Prerequisites
 
