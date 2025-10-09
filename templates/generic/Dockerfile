@@ -3,12 +3,15 @@ FROM cgr.dev/chainguard/wolfi-base
 
 # Switch back to root for system installations
 USER root
+
 # Install system dependencies
 RUN apk add --no-cache \
     curl \
     bash \
     libstdc++ \
     git \
+    gcc \
+    python3-dev \
     && rm -rf /var/cache/apk/*
 
 # Copy uv
@@ -37,7 +40,10 @@ COPY --chown=appuser:appuser . .
 USER root
 
 # Install Dapr CLI
-RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.16.0
+RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.14.1
+
+# Download DAPR components and set up entrypoint
+RUN uv run poe download-components
 
 # Remove curl and bash
 RUN apk del curl bash
@@ -55,12 +61,7 @@ ENV ATLAN_DAPR_HTTP_PORT=3500 \
 ENV UV_CACHE_DIR=/home/appuser/.cache/uv \
     XDG_CACHE_HOME=/home/appuser/.cache
 
-# Download DAPR components and set up entrypoint
-RUN uv run poe download-components
 
-RUN dapr init --slim --runtime-version=1.16.0
+RUN dapr init --slim --runtime-version=1.14.4
 
-# Remove dashboard, placement, and scheduler from Dapr - not needed and have vulnerabilities
-RUN rm /home/appuser/.dapr/bin/dashboard /home/appuser/.dapr/bin/placement /home/appuser/.dapr/bin/scheduler
-
-ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --placement-host-address '' --max-body-size 1024Mi --app-port $ATLAN_APP_HTTP_PORT --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]
+ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --app-port $ATLAN_APP_HTTP_PORT --dapr-http-max-request-size 1024 --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]
