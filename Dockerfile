@@ -1,6 +1,10 @@
 # Wolfi base image with Python
 FROM cgr.dev/chainguard/wolfi-base
 
+# Build-time argument to select which app (directory with its own pyproject.toml)
+# Example usage: --build-arg APP_PATH=quickstart/hello_world
+ARG APP_PATH="."
+
 # Switch back to root for system installations
 USER root
 
@@ -28,13 +32,13 @@ WORKDIR /app
 USER appuser
 
 # Install dependencies first (better caching)
-COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
+COPY --chown=appuser:appuser ${APP_PATH}/pyproject.toml ${APP_PATH}/uv.lock ./
 RUN --mount=type=cache,target=/home/appuser/.cache/uv,uid=1000,gid=1000 \
     uv venv .venv && \
     uv sync --locked --no-install-project
 
-# Copy application code
-COPY --chown=appuser:appuser . .
+# Copy application code for the selected app
+COPY --chown=appuser:appuser ${APP_PATH}/ .
 
 # Switch back to root for system installations
 USER root
