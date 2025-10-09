@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - sample-app
+      - sample-apps
     paths:
       - '**'
       - '!kurl-installer.yaml'
