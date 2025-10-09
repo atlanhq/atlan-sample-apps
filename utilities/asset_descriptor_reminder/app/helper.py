@@ -89,7 +89,7 @@ async def save_result_object_storage(source_file: str) -> None:
         raise e
 
 
-async def download_and_concatenate_files(workflow_id: str, local_directory: str):
+async def download_files(workflow_id: str, local_directory: str):
     """
     Downloads all files for a workflow from object storage to a local directory.
 
@@ -108,6 +108,29 @@ async def download_and_concatenate_files(workflow_id: str, local_directory: str)
     except Exception as e:
         logger.error(
             f"Error downloading workflow result from object storage: {str(e)}",
+            exc_info=e,
+        )
+        raise e
+
+
+async def purge_files(workflow_id: str):
+    """
+    Deletes all files for a workflow from object storage.
+
+    Removes all files associated with the given workflow ID from the object store.
+
+    Args:
+        workflow_id: The unique identifier for the workflow whose files should be deleted.
+
+    Returns:
+        None.
+    """
+    try:
+        await ObjectStore.delete_prefix(workflow_id)
+        logger.info(f"Prefix {workflow_id} deleted from object storage.")
+    except Exception as e:
+        logger.error(
+            f"Error purge workflow result from object storage: {str(e)}",
             exc_info=e,
         )
         raise e

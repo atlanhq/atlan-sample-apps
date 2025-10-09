@@ -30,8 +30,12 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             asset_limit=workflow_args["asset_limit"],
         )
         count_of_assets_without_descriptions = 0
+        # Since retrieving and processing all the assets at one time could take some time, we want
+        # break the process down into smaller steps. We will retrieve and process one page of assets
+        # at a time. Once all assets have been processed, if we have assets that are missing descriptions,
+        # we will send a message to slack and upload the assets as a file.
         while True:
-            # Step 1: Fetch 1 paste of assets owned by the selected user (up to the specified limit)
+            # Step 1: Fetch 1 page of assets owned by the selected user
             assets_data = await workflow.execute_activity_method(
                 activities_instance.fetch_user_assets,
                 fetch_user_assets_input,
@@ -40,7 +44,7 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             # When no more assets are found exit the while loop
             if not assets_data:
                 break
-            # Step 2: Check if description of any asset is empty, get the first one
+            # Step 2: Check if description of any asset is empty
             assets_without_descriptions = await workflow.execute_activity_method(
                 activities_instance.find_asset_without_description,
                 assets_data,
@@ -54,6 +58,9 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
                     offset=fetch_user_assets_input.start,
                 )
                 # Step 3: Upload the assets without a description to object store
+                # Since each activity could theoretically run on a different machine, we need
+                # to save each set of data to the object store. We do this by saving the assets
+                # locally to a json file, and uploading the file to object storage.
                 await workflow.execute_activity_method(
                     activities_instance.upload_data,
                     upload_data,
@@ -67,6 +74,9 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
 
         if count_of_assets_without_descriptions:
             # Step 4: Send Slack message to the person about missing description
+            # Now that all the data has been processed, we will download all this files
+            # from object storage, concatenate them in one file and upload that file to slack
+            # along with an appropriate message.
             await workflow.execute_activity_method(
                 activities_instance.send_slack_reminder,
                 SendSlackReminderInput(
@@ -75,6 +85,14 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
                     count_of_assets_without_description=count_of_assets_without_descriptions,
                 ),
                 start_to_close_timeout=timedelta(minutes=1),
+            )
+            # Step 5: Purge intermediate files from object storage
+            (
+                await workflow.execute_activity_method(
+                    activities_instance.purge_files,
+                    workflow_id,
+                    start_to_close_timeout=timedelta(minutes=1),
+                ),
             )
         else:
             workflow.logger.info("No assets without descriptions")
@@ -88,6 +106,7 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             activities.get_workflow_args,
             activities.fetch_user_assets,
             activities.find_asset_without_description,
+            activities.purge_files,
             activities.upload_data,
             activities.send_slack_reminder,
         ]

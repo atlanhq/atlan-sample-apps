@@ -4,8 +4,9 @@ from app.client import AssetDescriptionClient
 from app.helper import (
     concatenate_files,
     create_local_directory,
-    download_and_concatenate_files,
+    download_files,
     post_to_slack,
+    purge_files,
     save_result_locally,
     save_result_object_storage,
 )
@@ -152,7 +153,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         """
         try:
             local_directory = create_local_directory(input.workflow_id)
-            await download_and_concatenate_files(
+            await download_files(
                 workflow_id=input.workflow_id, local_directory=local_directory
             )
             output_files = concatenate_files(local_directory=local_directory)
@@ -167,3 +168,18 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         except Exception as e:
             logger.error(f"❌ Error sending Slack message: {e}")
             return {"success": False, "error": str(e)}
+
+    @activity.defn
+    async def purge_files(self, workflow_id: str):
+        """
+        Deletes all files for a workflow from object storage.
+
+        Removes all files associated with the given workflow ID from the object store.
+
+        Args:
+            workflow_id: The unique identifier for the workflow whose files should be deleted.
+
+        Returns:
+            None.
+        """
+        await purge_files(workflow_id=workflow_id)
