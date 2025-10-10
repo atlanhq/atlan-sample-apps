@@ -1,8 +1,13 @@
 # Wolfi base image with Python
 FROM cgr.dev/chainguard/wolfi-base
 
+# Build-time argument to select which app (directory with its own pyproject.toml)
+# Example usage: --build-arg APP_PATH=quickstart/hello_world
+ARG APP_PATH="."
+
 # Switch back to root for system installations
 USER root
+
 # Install system dependencies
 RUN apk add --no-cache \
     curl \
@@ -27,19 +32,22 @@ WORKDIR /app
 USER appuser
 
 # Install dependencies first (better caching)
-COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
+COPY --chown=appuser:appuser ${APP_PATH}/pyproject.toml ${APP_PATH}/uv.lock ./
 RUN --mount=type=cache,target=/home/appuser/.cache/uv,uid=1000,gid=1000 \
     uv venv .venv && \
     uv sync --locked --no-install-project
 
-# Copy application code
-COPY --chown=appuser:appuser . .
+# Copy application code for the selected app
+COPY --chown=appuser:appuser ${APP_PATH}/ .
 
 # Switch back to root for system installations
 USER root
 
 # Install Dapr CLI
-RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.16.0
+RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.14.1
+
+# Download DAPR components and set up entrypoint
+RUN uv run poe download-components
 
 # Remove curl and bash
 RUN apk del curl bash
@@ -57,12 +65,7 @@ ENV ATLAN_DAPR_HTTP_PORT=3500 \
 ENV UV_CACHE_DIR=/home/appuser/.cache/uv \
     XDG_CACHE_HOME=/home/appuser/.cache
 
-# Download DAPR components and set up entrypoint
-RUN uv run poe download-components
 
-RUN dapr init --slim --runtime-version=1.16.0
+RUN dapr init --slim --runtime-version=1.14.4
 
-# Remove dashboard, placement, and scheduler from Dapr - not needed and have vulnerabilities
-RUN rm /home/appuser/.dapr/bin/dashboard /home/appuser/.dapr/bin/placement /home/appuser/.dapr/bin/scheduler
-
-ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --placement-host-address '' --max-body-size 1024Mi --app-port $ATLAN_APP_HTTP_PORT --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]
+ENTRYPOINT ["sh", "-c", "dapr run --log-level info --app-id app --scheduler-host-address '' --app-port $ATLAN_APP_HTTP_PORT --dapr-http-max-request-size 1024 --dapr-http-port $ATLAN_DAPR_HTTP_PORT --dapr-grpc-port $ATLAN_DAPR_GRPC_PORT --metrics-port $ATLAN_DAPR_METRICS_PORT --resources-path /app/components uv run main.py"]
