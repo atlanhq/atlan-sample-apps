@@ -8,8 +8,8 @@ setting up the workflow, worker, and server components.
 import asyncio
 
 from app.activities import ActivitiesClass
-from app.handler import HandlerClass
 from app.client import ClientClass
+from app.handler import HandlerClass
 from app.workflow import WorkflowClass
 from application_sdk.application import BaseApplication
 from application_sdk.common.error_codes import ApiError
