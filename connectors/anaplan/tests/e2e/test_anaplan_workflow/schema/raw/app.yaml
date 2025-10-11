@@ -1,0 +1,12 @@
+schema_type: dataframe
+version: 1.0
+columns:
+  guid:
+    type: string
+    nullable: false
+  name:
+    type: string
+    nullable: false
+  description:
+    type: string
+    nullable: true
