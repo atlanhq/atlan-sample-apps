@@ -1,13 +1,13 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from app.activities.utils import setup_parquet_output, should_include_asset
+from app.utils import setup_parquet_output, should_include_asset
 
 
 class TestUtils:
     """Test cases for utils functions."""
 
-    @patch("app.activities.utils.ParquetOutput")
+    @patch("app.utils.ParquetOutput")
     def test_setup_parquet_output_success(self, mock_parquet_output):
         """Test successful parquet output setup."""
         # Arrange
@@ -206,7 +206,7 @@ class TestUtils:
         metadata_filter = {"app_1": []}
 
         # Mock logger to avoid actual logging during test
-        with patch("app.activities.utils.logger"):
+        with patch("app.utils.logger"):
             # Act
             result = should_include_asset(
                 asset_data, typename, metadata_filter_state, metadata_filter

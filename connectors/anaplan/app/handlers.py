@@ -1,10 +1,11 @@
 from typing import Any, Dict, List
 
-from app.activities.extracts.apps import extract_apps_data
-from app.activities.extracts.pages import extract_pages_with_details
+from app.extracts.apps import extract_apps_data
+from app.extracts.pages import extract_pages_with_details
 from app.clients import AppClient
 from application_sdk.handlers.base import BaseHandler
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.common.error_codes import ClientError
 
 logger = get_logger(__name__)
 
@@ -91,7 +92,7 @@ class AppHandler(BaseHandler):
         """
         try:
             if not self.client:
-                raise Exception("App client not initialized")
+                raise ClientError("App client not initialized")
 
             # Step 1: Ensure we have a valid authentication token
             logger.info("Ensuring authentication token is valid...")
@@ -161,7 +162,7 @@ class AppHandler(BaseHandler):
             logger.error(f"Failed to fetch metadata: {str(e)}")
             # For errors, we should raise an exception rather than return a list
             # The SDK will handle the exception and return appropriate error response
-            raise Exception(f"Failed to fetch metadata: {str(e)}")
+            raise ClientError(f"Failed to fetch metadata: {str(e)}")
 
     async def preflight_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Validate App configuration before workflow execution.

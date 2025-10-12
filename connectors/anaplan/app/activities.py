@@ -3,9 +3,9 @@ import os
 from typing import Any, Dict, Type
 
 import pandas as pd
-from app.activities.extracts.apps import extract_apps_data
-from app.activities.extracts.pages import extract_pages_with_details
-from app.activities.utils import (
+from app.extracts.apps import extract_apps_data
+from app.extracts.pages import extract_pages_with_details
+from app.utils import (
     get_app_guids,
     setup_parquet_output,
     should_include_asset,
@@ -165,8 +165,10 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     raise ValueError(
                         "Invalid JSON in include-metadata or exclude-metadata"
                     )
-            except json.JSONDecodeError:
-                raise ValueError("Invalid JSON in include-metadata or exclude-metadata")
+            except Exception as e:
+                raise ValueError(
+                    f"Invalid JSON in include-metadata or exclude-metadata: {str(e)}"
+                )
 
             return {
                 "metadata_filter": state.metadata_filter,
@@ -231,8 +233,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     f"No apps found, skipping write: {parquet_output.get_full_path()}"
                 )
 
-            statistics = await parquet_output.get_statistics(typename="app")
-            return statistics
+            return await parquet_output.get_statistics(typename="app")
 
         except Exception as e:
             logger.error(f"Failed to extract apps: {str(e)}")
@@ -298,8 +299,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     f"No pages found, skipping write: {parquet_output.get_full_path()}"
                 )
 
-            statistics = await parquet_output.get_statistics(typename="page")
-            return statistics
+            return await parquet_output.get_statistics(typename="page")
 
         except Exception as e:
             logger.error(f"Failed to extract pages: {str(e)}")

@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 from app.clients import AppClient
 from app.handlers import AppHandler
+from application_sdk.common.error_codes import ClientError
 
 
 class TestAppHandler:
@@ -253,13 +254,13 @@ class TestAppHandler:
         mock_get_apps.side_effect = Exception("API Error")
 
         # Act & Assert
-        with pytest.raises(Exception, match="Failed to fetch metadata: API Error"):
+        with pytest.raises(ClientError, match="Failed to fetch metadata: API Error"):
             await handler.fetch_metadata()
 
     async def test_fetch_metadata_no_client(self, handler_without_client):
         """Test metadata fetching without client."""
         # Act & Assert
-        with pytest.raises(Exception, match="App client not initialized"):
+        with pytest.raises(ClientError, match="App client not initialized"):
             await handler_without_client.fetch_metadata()
 
     # ============================================================================

@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from app.clients import AppClient
+from application_sdk.common.error_codes import ClientError
 
 
 class TestAppClient:
@@ -172,7 +173,7 @@ class TestAppClient:
 
         # Act & Assert
         with pytest.raises(
-            Exception, match="Token not found in authentication response"
+            ClientError, match="Token not found in authentication response"
         ):
             await client._get_auth_token()
 
@@ -193,7 +194,7 @@ class TestAppClient:
         mock_execute_post.return_value = mock_response
 
         # Act & Assert
-        with pytest.raises(Exception, match="Authentication failed with status 401"):
+        with pytest.raises(ClientError, match="Authentication failed with status 401"):
             await client._get_auth_token()
 
     async def test_get_auth_token_missing_credentials(self):
@@ -206,7 +207,7 @@ class TestAppClient:
 
         # Act & Assert
         with pytest.raises(
-            Exception,
+            ClientError,
             match="Username and password are required for basic authentication",
         ):
             await client._get_auth_token()
@@ -217,7 +218,7 @@ class TestAppClient:
         client.auth_type = "oauth"
 
         # Act & Assert
-        with pytest.raises(Exception, match="Unsupported authentication type: oauth"):
+        with pytest.raises(ClientError, match="Unsupported authentication type: oauth"):
             await client._get_auth_token()
 
     async def test_update_client_headers_with_token(self, client):
@@ -271,6 +272,6 @@ class TestAppClient:
 
         # Act & Assert
         with pytest.raises(
-            Exception, match="Token not found in authentication response"
+            ClientError, match="Token not found in authentication response"
         ):
             await client.load(credentials=credentials)

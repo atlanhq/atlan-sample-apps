@@ -69,9 +69,8 @@ anaplan/
 │   ├── handlers/       # FastAPI response handlers
 │   ├── transformers/   # Metadata transformation logic
 │   └── workflows/      # Workflow definitions and orchestration
-├── components/         # Dapr components (auto-downloaded)
+├── components/         # Dapr components
 ├── frontend/           # Web interface assets
-├── deploy/            # Installation and deployment files
 ├── local/              # Local data storage
 ├── tests/              # Unit and end-to-end tests
 ├── main.py             # Application entry point and initialization

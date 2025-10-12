@@ -113,14 +113,13 @@ async def get_page_details(client: AppClient, page: Dict[str, Any]) -> Dict[str,
             detail_data = detail_response.json()
 
             # Merge basic page info with detailed info
-            detailed_page = {
+            return {
                 **page,  # Include all original page data
                 "createdAt": detail_data.get("publishedAt"),
                 "updatedAt": detail_data.get("updatedAt"),
                 "modelInfos": detail_data.get("modelInfos", []),
                 "modelCount": detail_data.get("modelCount"),
             }
-            return detailed_page
         else:
             logger.warning(
                 f"Failed to get detailed info for page {page_guid}: {detail_response.status_code}"

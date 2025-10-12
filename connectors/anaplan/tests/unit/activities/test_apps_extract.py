@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from app.activities.extracts.apps import extract_apps_data
+from app.extracts.apps import extract_apps_data
 
 
 class TestAppsExtract:

@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from app.activities.extracts.pages import extract_pages_with_details
+from app.extracts.pages import extract_pages_with_details
 
 
 class TestPagesExtract:
