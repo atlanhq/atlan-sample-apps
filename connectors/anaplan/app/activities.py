@@ -3,16 +3,12 @@ import os
 from typing import Any, Dict, Type
 
 import pandas as pd
+from app.clients import AppClient
 from app.extracts.apps import extract_apps_data
 from app.extracts.pages import extract_pages_with_details
-from app.utils import (
-    get_app_guids,
-    setup_parquet_output,
-    should_include_asset,
-)
-from app.clients import AppClient
 from app.handlers import AppHandler
 from app.transformers import AppTransformer
+from app.utils import get_app_guids, setup_parquet_output, should_include_asset
 from application_sdk.activities.common.models import ActivityStatistics
 from application_sdk.activities.common.utils import auto_heartbeater, get_workflow_id
 from application_sdk.activities.metadata_extraction.base import (

@@ -1,8 +1,8 @@
 from typing import Any
 
 from application_sdk.clients.base import BaseClient
-from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.common.error_codes import ClientError
+from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
@@ -55,7 +55,9 @@ class AppClient(BaseClient):
 
         if self.auth_type == "basic":
             if not self.username or not self.password:
-                raise ClientError("Username and password are required for basic authentication")
+                raise ClientError(
+                    "Username and password are required for basic authentication"
+                )
 
             # Pass the auth parameters to BaseClient's execute_http_post_request
             response = await self.execute_http_post_request(
