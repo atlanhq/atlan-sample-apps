@@ -8,8 +8,9 @@ setting up the workflow, worker, and server components.
 import asyncio
 
 from app.activities import ActivitiesClass
-from app.clients import ClientClass
-from app.workflows import WorkflowClass
+from app.client import ClientClass
+from app.handler import HandlerClass
+from app.workflow import WorkflowClass
 from application_sdk.application import BaseApplication
 from application_sdk.common.error_codes import ApiError
 from application_sdk.constants import APPLICATION_NAME
@@ -35,7 +36,9 @@ async def main():
         # TODO: Add your custom initialization here
 
         # Initialize the application
-        application = BaseApplication(name=APPLICATION_NAME, client_class=ClientClass)
+        application = BaseApplication(
+            name=APPLICATION_NAME, client_class=ClientClass, handler_class=HandlerClass
+        )
 
         await application.setup_workflow(
             workflow_and_activities_classes=[(WorkflowClass, ActivitiesClass)],
