@@ -163,8 +163,8 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     )
             except Exception as e:
                 raise ValueError(
-                    f"Invalid JSON in include-metadata or exclude-metadata: {str(e)}"
-                )
+                    "Invalid JSON in include-metadata or exclude-metadata"
+                ) from e
 
             return {
                 "metadata_filter": state.metadata_filter,
@@ -172,8 +172,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             }
 
         except Exception as e:
-            logger.error(f"Failed to set metadata filter state: {str(e)}")
-            raise
+            raise Exception(f"Failed to set metadata filter state: {str(e)}") from e
 
     @auto_heartbeater
     @activity.defn
