@@ -148,7 +148,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["daft", "iam-auth", "pandas", "sqlalchemy", "tests", "workflows"], specifier = "==0.1.1rc51" },
+    { name = "atlan-application-sdk", extras = ["daft", "iam-auth", "pandas", "sqlalchemy", "tests", "workflows"], specifier = "==0.1.1rc54" },
     { name = "poethepoet", specifier = ">=0.37.0" },
 ]
 
@@ -171,7 +171,7 @@ test = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "0.1.1rc51"
+version = "0.1.1rc54"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -186,9 +186,9 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/11/f9/1fbb0e31a53029faa888538bd8b032fe51450cbcddea1e6d1c34003093a8/atlan_application_sdk-0.1.1rc51.tar.gz", hash = "sha256:99cea9e2eab2336a0678c8e58e7b0b8a5381a9674e9a93a15b470230fdb312fb", size = 1054596, upload-time = "2025-10-01T17:25:55.753Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/24/ea15eb1fc63239ddf967fc9e2f4f21f6a37b6eff975f843e75dd25e9643b/atlan_application_sdk-0.1.1rc54.tar.gz", hash = "sha256:eb5f6faba09cb4e9b789bdaefd065a0f69661b2451acc7393fec37910333db44", size = 1059003, upload-time = "2025-10-09T08:22:28.988Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/97/02/27b6633b9fd7b1befc90bb5c6433d271d17483992aad7be2454cc43fd516/atlan_application_sdk-0.1.1rc51-py3-none-any.whl", hash = "sha256:731e5fa7b8c1adb46f20232b2cc357fa833809464d80571d24571dfc7201aa5f", size = 280696, upload-time = "2025-10-01T17:25:54.31Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/cd/55e9b49849ab114f82cad8018c7ef9829be05f6238a0abd23655e484b5c9/atlan_application_sdk-0.1.1rc54-py3-none-any.whl", hash = "sha256:1ca2ad824196bf36aba92269c7afc13bda81ab153df6a1b65c0c1b08b622d814", size = 282411, upload-time = "2025-10-09T08:22:27.157Z" },
 ]
 
 [package.optional-dependencies]
