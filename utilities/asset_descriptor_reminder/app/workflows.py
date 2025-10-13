@@ -16,7 +16,6 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
         workflow.logger.info(f"Workflow started with initial args: {initial_args}")
 
         activities_instance = AssetDescriptionReminderActivities()
-        workflow_id = workflow.info().workflow_id
 
         # Get the full workflow arguments from the state store with configuration
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
