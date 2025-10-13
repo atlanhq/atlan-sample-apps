@@ -54,7 +54,6 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
                 count_of_assets_without_descriptions += len(assets_without_descriptions)
                 upload_data = UploadDataInput(
                     assets_data=assets_without_descriptions,
-                    workflow_id=workflow_id,
                     offset=fetch_user_assets_input.start,
                 )
                 # Step 3: Upload the assets without a description to object store
@@ -80,7 +79,6 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             await workflow.execute_activity_method(
                 activities_instance.send_slack_reminder,
                 SendSlackReminderInput(
-                    workflow_id=workflow_id,
                     config=workflow_args["config"],
                     count_of_assets_without_description=count_of_assets_without_descriptions,
                 ),
@@ -90,7 +88,6 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             (
                 await workflow.execute_activity_method(
                     activities_instance.purge_files,
-                    workflow_id,
                     start_to_close_timeout=timedelta(minutes=1),
                 ),
             )

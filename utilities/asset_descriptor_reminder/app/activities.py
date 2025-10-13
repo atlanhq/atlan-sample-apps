@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Dict, List
 
 from app.client import AssetDescriptionClient
@@ -136,7 +137,7 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         Returns:
             None.
         """
-        local_directory = create_local_directory(input.workflow_id)
+        local_directory = create_local_directory()
         source_file = save_result_locally(result=input, local_directory=local_directory)
         await save_result_object_storage(source_file=source_file)
 
@@ -152,10 +153,8 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
 
         """
         try:
-            local_directory = create_local_directory(input.workflow_id)
-            await download_files(
-                workflow_id=input.workflow_id, local_directory=local_directory
-            )
+            local_directory = create_local_directory()
+            await download_files(local_directory=local_directory)
             output_files = concatenate_files(local_directory=local_directory)
 
             client = await self._get_client(input.config)
@@ -170,16 +169,15 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
             return {"success": False, "error": str(e)}
 
     @activity.defn
-    async def purge_files(self, workflow_id: str):
+    async def purge_files(
+        self,
+    ):
         """
         Deletes all files for a workflow from object storage.
 
-        Removes all files associated with the given workflow ID from the object store.
-
-        Args:
-            workflow_id: The unique identifier for the workflow whose files should be deleted.
+        Removes all intermediate files from the object store.
 
         Returns:
             None.
         """
-        await purge_files(workflow_id=workflow_id)
+        await purge_files()

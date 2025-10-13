@@ -36,12 +36,9 @@ class UploadDataInput:
 
     Attributes:
         assets_data: A list of dictionaries containing asset metadata.
-        workflow_id: The unique identifier for the workflow.
         offset: The offset used for file naming or pagination.
     """
-
     assets_data: List[Dict[str, Any]]
-    workflow_id: str
     offset: int
 
 
@@ -53,11 +50,9 @@ class SendSlackReminderInput:
     Contains workflow ID, configuration, and the count of assets missing descriptions.
 
     Attributes:
-        workflow_id: The unique identifier for the workflow.
         config: Configuration dictionary for the client.
         count_of_assets_without_description: The number of assets without descriptions.
     """
 
-    workflow_id: str
     config: Dict[str, str]
     count_of_assets_without_description: int

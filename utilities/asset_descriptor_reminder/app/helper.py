@@ -3,6 +3,10 @@ import os
 
 import httpx
 from app.models import UploadDataInput
+from application_sdk.activities.common.utils import (
+    build_output_path,
+    get_object_store_prefix,
+)
 from application_sdk.constants import TEMPORARY_PATH
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.services import ObjectStore
@@ -12,19 +16,16 @@ from slack_sdk.web.async_client import AsyncWebClient
 logger = get_logger(__name__)
 
 
-def create_local_directory(workflow_id: str) -> str:
+def create_local_directory() -> str:
     """
-    Creates a local directory for the given workflow ID if it does not already exist.
+    Creates a local directory if it does not already exist.
 
     Returns the path to the created or existing local directory.
-
-    Args:
-        workflow_id: The unique identifier for the workflow.
 
     Returns:
         The path to the local directory as a string.
     """
-    local_directory = f"{TEMPORARY_PATH}{workflow_id}"
+    local_directory = f"{TEMPORARY_PATH}{build_output_path()}"
     if os.path.exists(local_directory):
         logger.info(f"Local directory {local_directory} already exists.")
     else:
@@ -74,13 +75,13 @@ async def save_result_object_storage(source_file: str) -> None:
         None.
     """
     try:
-        parts = source_file.split("/")
+        destination = get_object_store_prefix(source_file)
         await ObjectStore.upload_file(
             source=source_file,
-            destination=f"{parts[-2]}/{parts[-1]}",
-            retain_local_copy=False,
+            destination=destination,
+            retain_local_copy=True,
         )
-        logger.info(f"{source_file} pushed to object storage.")
+        logger.info(f"{source_file} pushed to object storage {destination}.")
 
     except Exception as e:
         logger.error(
@@ -89,22 +90,23 @@ async def save_result_object_storage(source_file: str) -> None:
         raise e
 
 
-async def download_files(workflow_id: str, local_directory: str):
+async def download_files(local_directory: str):
     """
     Downloads all files for a workflow from object storage to a local directory.
 
-    The files are downloaded using the workflow ID and stored in the specified local directory.
+    The files are downloaded and stored in the specified local directory.
 
     Args:
-        workflow_id: The unique identifier for the workflow.
         local_directory: The directory where files will be downloaded.
 
     Returns:
         None.
     """
     try:
-        await ObjectStore.download_prefix(workflow_id, TEMPORARY_PATH)
-        logger.info(f"{workflow_id} downloaded to {local_directory}")
+        source = get_object_store_prefix(local_directory)
+        logger.info(f"Downloading files from {source} to {local_directory}")
+        await ObjectStore.download_prefix(source, TEMPORARY_PATH)
+        logger.info(f"{source} downloaded to {local_directory}")
     except Exception as e:
         logger.error(
             f"Error downloading workflow result from object storage: {str(e)}",
@@ -113,21 +115,20 @@ async def download_files(workflow_id: str, local_directory: str):
         raise e
 
 
-async def purge_files(workflow_id: str):
+async def purge_files():
     """
     Deletes all files for a workflow from object storage.
 
-    Removes all files associated with the given workflow ID from the object store.
+    Removes all intermediate files from the object store.
 
-    Args:
-        workflow_id: The unique identifier for the workflow whose files should be deleted.
 
     Returns:
         None.
     """
     try:
-        await ObjectStore.delete_prefix(workflow_id)
-        logger.info(f"Prefix {workflow_id} deleted from object storage.")
+        prefix = get_object_store_prefix(build_output_path())
+        await ObjectStore.delete_prefix(prefix)
+        logger.info(f"Prefix {prefix} deleted from object storage.")
     except Exception as e:
         logger.error(
             f"Error purge workflow result from object storage: {str(e)}",
