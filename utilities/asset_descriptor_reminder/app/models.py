@@ -38,6 +38,7 @@ class UploadDataInput:
         assets_data: A list of dictionaries containing asset metadata.
         offset: The offset used for file naming or pagination.
     """
+
     assets_data: List[Dict[str, Any]]
     offset: int
 
