@@ -1,12 +1,24 @@
-import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from app.client import AssetDescriptionClient
+from app.helper import (
+    concatenate_files,
+    create_local_directory,
+    download_files,
+    post_to_slack,
+    save_result_locally,
+    save_result_object_storage,
+)
+from app.models import FetchUserAssetsInput, SendSlackReminderInput, UploadDataInput
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.activities.common.utils import (
+    build_output_path,
+    get_object_store_prefix,
+)
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.services import ObjectStore
 from pyatlan.model.assets import Asset
 from pyatlan.model.fluent_search import FluentSearch
-from slack_sdk.errors import SlackApiError
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -14,6 +26,7 @@ logger = get_logger(__name__)
 
 class AssetDescriptionReminderActivities(ActivitiesInterface):
     def __init__(self):
+        super().__init__()
         self.client = None
 
     async def _get_client(self, config: Dict[str, str]) -> AssetDescriptionClient:
@@ -24,16 +37,31 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         return self.client
 
     @activity.defn
-    async def fetch_user_assets(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Activity 1: Fetch assets owned by the selected user"""
-        client = await self._get_client(args["config"])
-        atlan_client = await client.get_atlan_client()
-        user_username = args["user_username"]
-        limit = args.get("limit", 50)
+    async def fetch_user_assets(
+        self, input: FetchUserAssetsInput
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetches assets owned by a specific user from Atlan.
+        Returns a list of asset metadata dictionaries for the given user and page parameters.
 
-        logger.info(f"Fetching assets owned by user: {user_username}")
+        Args:
+            input: The input containing user username, config, page size, and start index.
+
+        Returns:
+            A list of dictionaries, each representing an asset's metadata.
+        """
+        client = await self._get_client(input.config)
+        atlan_client = await client.get_atlan_client()
+        user_username = input.user_username
+        page_size = input.page_size
+        start = input.start
+
+        logger.info(
+            f"Fetching assets owned by user: {user_username}, page size: {page_size}"
+        )
         try:
-            search_results = await (
+            logger.info("Create search query")
+            search_request = (
                 FluentSearch()
                 .select()
                 .where(Asset.TYPE_NAME.within(["Table", "View", "Database"]))
@@ -43,40 +71,53 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
                 .include_on_results(Asset.DESCRIPTION)
                 .include_on_results(Asset.OWNER_USERS)
                 .include_on_results(Asset.USER_DESCRIPTION)
-                .page_size(limit)
-                .execute_async(client=atlan_client)
+                .page_size(page_size)
+                .to_request()
             )
+            logger.info("created search")
+            # Start retrieving results at the given start
+            search_request.dsl.from_ = start
+            search_results = await atlan_client.asset.search(search_request)
+            logger.info(f"found {search_results.count} assets")
+
             assets_data = []
-            async for asset in search_results:
+            count = 0
+            for asset in search_results.current_page():
+                count += 1
                 asset_info = {
-                    "qualified_name": getattr(asset.attributes, "qualified_name", ""),
-                    "name": getattr(asset.attributes, "name", ""),
-                    "description": getattr(asset.attributes, "description", ""),
-                    "user_description": getattr(
-                        asset.attributes, "user_description", ""
-                    ),
-                    "owner_users": getattr(asset.attributes, "owner_users", []),
+                    "qualified_name": asset.qualified_name,
+                    "name": asset.name,
+                    "description": asset.description,
+                    "user_description": asset.user_description,
+                    "owner_users": asset.owner_users,
                     "guid": asset.guid,
                     "type_name": asset.type_name,
                 }
                 assets_data.append(asset_info)
-                logger.info(
+                logger.debug(
                     f"Found asset: {asset_info['name']} - Description: {bool(asset_info['description'] or asset_info['user_description'])}"
                 )
-                if len(assets_data) >= limit:
-                    logger.info("Limit of assets reached")
-                    break
+            logger.info(f"Total additional assets processed: {count}")
             return assets_data
         except Exception as e:
             logger.error(f"Error searching for user assets: {str(e)}")
-            return [{"error": str(e)}]
+            return []
 
     @activity.defn
     def find_asset_without_description(
-        self, args: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
-        """Activity 2: Check if the description of any asset is empty, get the first one"""
-        assets_data = args["assets_data"]
+        self, assets_data: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Identifies assets that do not have a description or user description.
+
+        Returns a list of assets missing both description and user description fields.
+
+        Args:
+            assets_data: A list of asset metadata dictionaries.
+
+        Returns:
+            A list of asset dictionaries without any description.
+        """
         without_description_assets = []
         for asset in assets_data:
             description = (asset.get("description") or "").strip()
@@ -84,112 +125,71 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
             if not description and not user_description:
                 logger.info(f"Found asset without description: {asset['name']}")
                 without_description_assets.append(asset)
-
-        return {
-            "success": True,
-            "assets": without_description_assets,
-            "count": len(without_description_assets),
-        }
+        return without_description_assets
 
     @activity.defn
-    async def find_slack_user(self, args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Activity 3: Find the person by email in Slack"""
-        client = await self._get_client(args["config"])
-        slack_client = await client.get_slack_client()
-        email_to_find = os.getenv("SLACK_USER_EMAIL")
-        username = args["user_username"]
+    async def upload_data(self, input: UploadDataInput):
+        """
+        Uploads workflow data to local storage and then to object storage.
 
-        if not slack_client:
-            logger.error("Slack client not available")
-            return {"id": "U1234567890", "name": username, "real_name": username}
+        Saves the result locally and then uploads the saved file to object storage.
 
-        try:
-            logger.info(f"🔍 Looking for Slack user with email: {email_to_find}")
-            response = slack_client.users_lookupByEmail(email=email_to_find)
-            if user := response.get("user"):
-                return {
-                    "id": user["id"],
-                    "name": user.get("name"),
-                    "real_name": user.get("real_name"),
-                    "email": user.get("profile", {}).get("email"),
-                    "display_name": user.get("profile", {}).get("display_name"),
-                }
+        Args:
+            input: The input containing workflow ID and result data.
 
-            logger.error(f"❌ No matching Slack user found for email: {email_to_find}")
-            return None
-
-        except SlackApiError as e:
-            logger.error(f"❌ Error searching Slack users by email: {e}")
-            if e.response["error"] == "users_not_found":
-                logger.error(
-                    f"      No user with the email '{email_to_find}' was found in the workspace."
-                )
-            elif "not_authed" in str(e):
-                logger.error("      The Slack token is invalid or has been revoked.")
-            elif "invalid_auth" in str(e):
-                logger.error(
-                    "      Invalid Slack authentication. Check your SLACK_BOT_TOKEN."
-                )
-            return None
+        Returns:
+            None.
+        """
+        local_directory = create_local_directory()
+        source_file = save_result_locally(result=input, local_directory=local_directory)
+        await save_result_object_storage(source_file=source_file)
 
     @activity.defn
-    async def send_slack_reminder(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """Activity 4: Send a Slack message to the person about missing description"""
-        client = await self._get_client(args["config"])
-        slack_client = await client.get_slack_client()
-        slack_user = args["slack_user"]
-        assets = args["assets"]
+    async def send_slack_reminder(self, input: SendSlackReminderInput):
+        """
+        Sends a Slack reminder with information about assets missing descriptions.
 
-        # Format the header
-        header = f"Hi {slack_user.get('real_name', slack_user['name'])}! 👋\n\n"
-        header += (
-            f"I noticed that your {len(assets)} assets are missing a description.\n\n"
-        )
-        header += "Asset Details:\n"
+        Downloads and concatenates result files, then posts a message to Slack with the relevant asset information.
 
-        # Format each asset's details
-        asset_details = []
-        for asset in assets:
-            asset_text = [
-                f"• Name: {asset['name']}",
-                f"• Type: {asset.get('type_name', 'Asset')}",
-                f"• Qualified Name: {asset['qualified_name']}",
-            ]
-            asset_details.append("\n".join(asset_text))
+        Args:
+            input: The input containing workflow ID, configuration, and asset count.
 
-        # Format the footer
-        footer = """
-Adding a description helps other team members understand what this asset is used for and makes it easier to discover and use.
-
-Could you please add a description when you get a chance? Thanks! 🙏
-
-_This is an automated reminder from the Asset Description Monitor._"""
-
-        # Combine all parts
-        message = header + "\n\n".join(asset_details) + footer
-
-        if not slack_client:
-            logger.error("Slack client not available - would send message")
-            return {
-                "success": True,
-                "message": "Would send message (Slack client not available)",
-                "debug": {"user": slack_user, "message": message},
-            }
-
+        """
         try:
-            slack_client.chat_postMessage(
-                channel=slack_user["id"],
-                text=message.strip(),
-                username="Asset Description Monitor",
-                icon_emoji=":memo:",
+            local_directory = create_local_directory()
+            await download_files(local_directory=local_directory)
+            output_files = concatenate_files(local_directory=local_directory)
+
+            client = await self._get_client(input.config)
+            slack_client = await client.get_slack_client()
+            await post_to_slack(
+                slack_client,
+                output_files,
+                count_of_assets_without_description=input.count_of_assets_without_description,
             )
-
-            return {
-                "success": True,
-                "message": "Slack message sent",
-                "debug": {"user": slack_user},
-            }
-
         except Exception as e:
             logger.error(f"❌ Error sending Slack message: {e}")
             return {"success": False, "error": str(e)}
+
+    @activity.defn
+    async def purge_files(
+        self,
+    ):
+        """
+        Deletes all files for a workflow from object storage.
+
+        Removes all intermediate files from the object store.
+
+        Returns:
+            None.
+        """
+        try:
+            prefix = get_object_store_prefix(build_output_path())
+            await ObjectStore.delete_prefix(prefix)
+            logger.info(f"Prefix {prefix} deleted from object storage.")
+        except Exception as e:
+            logger.error(
+                f"Error purge workflow result from object storage: {str(e)}",
+                exc_info=e,
+            )
+            raise e
