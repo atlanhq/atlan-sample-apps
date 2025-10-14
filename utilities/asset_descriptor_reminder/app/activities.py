@@ -6,13 +6,17 @@ from app.helper import (
     create_local_directory,
     download_files,
     post_to_slack,
-    purge_files,
     save_result_locally,
     save_result_object_storage,
 )
 from app.models import FetchUserAssetsInput, SendSlackReminderInput, UploadDataInput
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.activities.common.utils import (
+    build_output_path,
+    get_object_store_prefix,
+)
 from application_sdk.observability.logger_adaptor import get_logger
+from application_sdk.services import ObjectStore
 from pyatlan.model.assets import Asset
 from pyatlan.model.fluent_search import FluentSearch
 from temporalio import activity
@@ -179,4 +183,13 @@ class AssetDescriptionReminderActivities(ActivitiesInterface):
         Returns:
             None.
         """
-        await purge_files()
+        try:
+            prefix = get_object_store_prefix(build_output_path())
+            await ObjectStore.delete_prefix(prefix)
+            logger.info(f"Prefix {prefix} deleted from object storage.")
+        except Exception as e:
+            logger.error(
+                f"Error purge workflow result from object storage: {str(e)}",
+                exc_info=e,
+            )
+            raise e

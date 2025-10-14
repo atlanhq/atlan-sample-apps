@@ -115,28 +115,6 @@ async def download_files(local_directory: str):
         raise e
 
 
-async def purge_files():
-    """
-    Deletes all files for a workflow from object storage.
-
-    Removes all intermediate files from the object store.
-
-
-    Returns:
-        None.
-    """
-    try:
-        prefix = get_object_store_prefix(build_output_path())
-        await ObjectStore.delete_prefix(prefix)
-        logger.info(f"Prefix {prefix} deleted from object storage.")
-    except Exception as e:
-        logger.error(
-            f"Error purge workflow result from object storage: {str(e)}",
-            exc_info=e,
-        )
-        raise e
-
-
 def concatenate_files(local_directory: str) -> str:
     """
     Concatenates all JSON files in a local directory into a single results file.
