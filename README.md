@@ -11,7 +11,8 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
   - [Debugging](#debugging)
   - [Build Docker images](#build-docker-images)
     - [Setup the App Directory](#setup-the-app-directory)
-    - [Build the Docker image](#build-the-docker-image)
+    - [Build the Docker Image](#build-the-docker-image)
+    - [Build the multi-platform Docker image](#build-the-multi-platform-docker-image)
     - [Run the Docker container:](#run-the-docker-container)
   - [Contributing](#contributing)
   - [Need Help?](#need-help)
@@ -24,12 +25,14 @@ Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/appli
 Each sample app is **self-contained** with its own dependencies and setup instructions. This makes it easy to run individual apps without installing unnecessary dependencies.
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/atlanhq/atlan-sample-apps.git
    cd atlan-sample-apps
    ```
 
 2. **Navigate to any sample app directory:**
+
    ```bash
    cd quickstart/hello_world  # or any other app directory
    ```
@@ -47,31 +50,28 @@ help me /setup and run the mysql /app
 
 This will automatically handle the environment setup and app initialization for you!
 
-
 > [!NOTE]
+>
 > - Each app has its own environment variables and configuration requirements
 > - Always check the README.md file in each app directory for specific instructions
 > - When switching between apps, clear your browser cache to avoid cached static files (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>)
 
-
 ### Sample Apps
 
-| Sample App | Description | Directory |
-|------------|-------------|-----------|
-| 🤖 AI Giphy | An AI-powered application that allows sending GIFs via email using natural language | [quickstart/ai_giphy](./quickstart/ai_giphy) |
-| 👋 Hello World | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [quickstart/hello_world](./quickstart/hello_world) |
-| 🤡 Giphy | An application that allows sending GIFs via email using Python and Temporal workflows | [quickstart/giphy](./quickstart/giphy) |
-| 🗃️ MySQL | An application that extracts metadata from a MySQL database and transforms it into a standardized format | [connectors/mysql](./connectors/mysql) |
-| 📈 Workflows Observability | An application that retrieves and logs workflow run metadata from Atlan | [utilities/workflows_observability](./utilities/workflows_observability) |
+| Sample App                    | Description                                                                                                                                             | Directory                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 🤖 AI Giphy                   | An AI-powered application that allows sending GIFs via email using natural language                                                                     | [quickstart/ai_giphy](./quickstart/ai_giphy)                                 |
+| 👋 Hello World                | A basic example demonstrating the fundamental concepts of the Atlan Application SDK along with the use of both async and sync activities in a workflow. | [quickstart/hello_world](./quickstart/hello_world)                           |
+| 🤡 Giphy                      | An application that allows sending GIFs via email using Python and Temporal workflows                                                                   | [quickstart/giphy](./quickstart/giphy)                                       |
+| 🗃️ MySQL                      | An application that extracts metadata from a MySQL database and transforms it into a standardized format                                                | [connectors/mysql](./connectors/mysql)                                       |
+| 📈 Workflows Observability    | An application that retrieves and logs workflow run metadata from Atlan                                                                                 | [utilities/workflows_observability](./utilities/workflows_observability)     |
 | 📝 Asset Description Reminder | An application that helps maintain data quality by reminding asset owners to add descriptions to their assets through Slack messages                    | [utilities/asset_descriptor_reminder](./utilities/asset_descriptor_reminder) |
 | ⏰ Freshness Monitor          | An application that monitors the freshness of assets in Atlan and sends notifications when assets become stale                                          | [utilities/freshness_monitor](./utilities/freshness_monitor)                 |
-
 
 ## Debugging
 
 - If you use [Cursor](https://cursor.com/) or [VSCode](https://code.visualstudio.com/) IDE, the repository has a launch configuration setup; just update the app directory and run the launch configuration.
 - For example, the configuration is defaulted to run the MySQL app, you can click on the "Run App + Deps" launch configuration to run the app along with the dependent services.
-
 
 ## Build Docker images
 
@@ -91,25 +91,43 @@ Navigate to the app directory (for example `connectors/mysql`, `quickstart/ai_gi
 cd connectors/mysql
 ```
 
-### Build the Docker image
+### Build the Docker Image
+
 From the app directory (for example `connectors/mysql`, `quickstart/ai_giphy`, etc.):
 
 ```bash
 docker build --no-cache -f ./Dockerfile -t app-name:latest .
 ```
 
+### Build the multi-platform Docker image
+
+From the app directory (for example `connectors/mysql`, `quickstart/ai_giphy`, etc.):
+
+> [!NOTE]
+> We expect app developers to send multi-platform images to Atlan when submitting apps for release.
+
+```bash
+docker buildx build --nocache --platform linux/amd64,linux/arm64 -t app-name:latest . --push
+```
+
+> [!NOTE]
+> If you are using a docker driver which is not docker desktop, make sure that you create a builder and use that for the multi-platform build. You can find the instructions for the same for OrbStack [here](https://docs.orbstack.dev/docker/images#multiplatform) and for Colima [here](https://github.com/abiosoft/colima/issues/44#issuecomment-952281801).
+
 ### Run the Docker container:
 
 **If your Temporal service is running on the host machine:**
+
 ```bash
 docker run -p 8000:8000 --add-host=host.docker.internal:host-gateway -e ATLAN_WORKFLOW_HOST=host.docker.internal -e ATLAN_WORKFLOW_PORT=7233 --user 1000:1000 app-name
 ```
 
 **If your Temporal service is running elsewhere (remote server/container):**
+
 ```bash
 docker run -p 8000:8000 -e ATLAN_WORKFLOW_HOST=<your-temporal-host> -e ATLAN_WORKFLOW_PORT=<your-temporal-port> --user 1000:1000 app-name
 ```
-*Replace `<your-temporal-host>` and `<your-temporal-port>` with your actual Temporal service hostname/IP and port.*
+
+_Replace `<your-temporal-host>` and `<your-temporal-port>` with your actual Temporal service hostname/IP and port._
 
 ## Contributing
 
