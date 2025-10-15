@@ -1,15 +1,22 @@
 # Atlan Sample Apps
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/atlanhq/atlan-sample-apps)
+
 Sample apps built using [Atlan Application SDK](https://github.com/atlanhq/application-sdk)
 
 
-- [Quick Start](#quick-start)
-- [Debugging](#debugging)
-- [Build Docker images](#build-docker-images)
-- [Contributing](#contributing)
-- [Need Help?](#need-help)
-- [Security](#security)
-- [License](#license)
+- [Atlan Sample Apps](#atlan-sample-apps)
+  - [Quick Start](#quick-start)
+    - [Sample Apps](#sample-apps)
+  - [Debugging](#debugging)
+  - [Build Docker images](#build-docker-images)
+    - [Setup the App Directory](#setup-the-app-directory)
+    - [Build the Docker image](#build-the-docker-image)
+    - [Run the Docker container:](#run-the-docker-container)
+  - [Contributing](#contributing)
+  - [Need Help?](#need-help)
+  - [Security](#security)
+  - [License](#license)
 
 
 ## Quick Start
