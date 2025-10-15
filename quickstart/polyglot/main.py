@@ -16,7 +16,6 @@ from application_sdk.observability.decorators.observability_decorator import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from application_sdk.server.fastapi import HttpWorkflowTrigger
 
 logger = get_logger(__name__)
 metrics = get_metrics()
@@ -55,20 +54,6 @@ async def main():
         # Setup the application server
         logger.info("Setting up API server...")
         await app.setup_server(workflow_class=PolyglotWorkflow)
-
-        # Register the workflow with HTTP trigger
-        # This creates the /workflows/v1/start endpoint that the frontend calls
-        logger.info("Registering workflow endpoints...")
-        app.server.register_workflow(
-            workflow_class=PolyglotWorkflow,
-            triggers=[
-                HttpWorkflowTrigger(
-                    endpoint="/start",
-                    methods=["POST"],
-                    workflow_class=PolyglotWorkflow,
-                )
-            ],
-        )
 
         # Start the server
         logger.info("Starting API server on port 8000...")

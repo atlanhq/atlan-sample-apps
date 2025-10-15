@@ -1,192 +1,102 @@
-# Polyglot Sample App
+# 🔀 Polyglot
 
-A demonstration application showcasing Python-Java integration using **JPype** within the **Atlan Application SDK** framework. This sample app illustrates how to call Java methods from Python code, manage JVM lifecycle, and integrate Java libraries into Python workflows.
+A demonstration app showcasing Python-Java integration using JPype. Built with Application SDK.
 
-## 🎯 Purpose
+## Prerequisites
 
-This polyglot application demonstrates:
-- **Cross-language integration**: Calling Java code from Python seamlessly
-- **JVM lifecycle management**: Starting, reusing, and managing the Java Virtual Machine
-- **Temporal workflows**: Orchestrating polyglot (Python-Java) activities
-- **Real-world patterns**: Following best practices from production applications like the Atlan Query Intelligence App
+- Python 3.11+
+- Java JDK 11+ (required for JPype)
+- [uv](https://docs.astral.sh/uv/) package manager
+- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+- [Temporal CLI](https://docs.temporal.io/cli)
 
-## 📚 Use Cases
+### Installation Guides
+- [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
+- [Linux Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
+- [Windows Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
 
-Use polyglot (Python-Java) integration when you need to:
-- Leverage existing Java libraries without rewriting them in Python
-- Execute performance-critical operations in Java
-- Integrate with Java-based systems and APIs
-- Utilize specialized Java parsers, transformers, or processors
+## Quick Start
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-1. **Python 3.11+**
+1. **Build the Java JAR:**
    ```bash
-   python --version
+   uv run poe build-java
    ```
 
-2. **Java JDK 11+** (required for JPype)
+2. **Download required components:**
    ```bash
-   java -version
-   javac -version
+   uv run poe download-components
    ```
 
-3. **uv** (Python package manager)
+3. **Set up environment variables (see below)**
+
+4. **Start dependencies (in separate terminal):**
    ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
+   uv run poe start-deps
    ```
 
-4. **Dapr CLI** (for local development)
+5. **Run the application:**
    ```bash
-   # macOS
-   brew install dapr/tap/dapr-cli
-
-   # Linux
-   wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash
+   uv run python main.py
    ```
 
-5. **Temporal CLI** (for workflow engine)
-   ```bash
-   # macOS
-   brew install temporal
+## Features
 
-   # Linux
-   curl -sSf https://temporal.download/cli.sh | sh\
-   ```
+- Python-Java integration using JPype
+- JVM lifecycle management
+- Temporal workflow orchestration
+- Real-world factorial calculation demo
+- Cross-language method invocation
+- Safe resource management with context managers
 
-## 🔧 Configuration
+## Environment Variables
 
-### Environment Variables
-
+Create a `.env` file in the `polyglot` root directory.
 Configure Java integration using these environment variables:
 
-```bash
-# Java home directory
-export POLYGLOT_JAVA_HOME=/path/to/java
+```env
+# Java home directory (optional)
+POLYGLOT_JAVA_HOME=/path/to/java
 
-# Custom JAR path
-export POLYGLOT_JAR_PATH=/path/to/factorial-calculator.jar
+# Custom JAR path (optional)
+POLYGLOT_JAR_PATH=/path/to/factorial-calculator.jar
 
 # JVM memory settings (optional)
-export POLYGLOT_JVM_MAX_MEMORY=512m
-export POLYGLOT_JVM_INITIAL_MEMORY=256m
+POLYGLOT_JVM_MAX_MEMORY=512m
+POLYGLOT_JVM_INITIAL_MEMORY=256m
 ```
 
-### Default Configuration
-
-If environment variables are not set, the application uses these defaults:
+**Default Configuration:**
 - **JAVA_HOME**: System `JAVA_HOME` or `/usr/lib/jvm/java-17-openjdk`
 - **JAR_PATH**: `app/libs/factorial-calculator.jar`
 - **JVM_MAX_MEMORY**: `512m`
 - **JVM_INITIAL_MEMORY**: `256m`
 
-### Installation Steps
+## Usage
 
-#### 1. Build the Java JAR
-
-Build the jar file if not already present.
-
-```bash
-uv run poe build-java
-```
-
-This will:
-- Compile `FactorialCalculator.java`
-- Create `factorial-calculator.jar` in `app/libs/`
-- Clean up intermediate class files
-- Test the JAR file
-
-#### 2. Install Python Dependencies
-
-```bash
-# Create virtual environment and install dependencies
-uv sync
-
-# Or manually
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-uv pip install -e .
-```
-
-#### 3. Download SDK Components
-
-```bash
-uv run poe download-components
-```
-
-This downloads the necessary Dapr component configurations from the Application SDK.
-
-#### 4. Start Dependencies
-
-In separate terminal windows:
-
-```bash
-# Terminal 1: Start Dapr
-uv run poe start-dapr
-
-# Terminal 2: Start Temporal
-uv run poe start-temporal
-```
-
-Or start both together:
-```bash
-uv run poe start-deps
-```
-
-#### 5. Run the Application
-
-```bash
-# Make sure you're in the virtual environment
-uv run python main.py
-```
-
-The application will start on `http://localhost:8000`
-
-#### 6. Access the Frontend
+### Web Interface
 
 Open your browser and navigate to:
 ```
 http://localhost:8000
 ```
 
-## 🎮 Usage
-
-### Web Interface
-
 Enter a number (0-20) and click "Calculate Factorial" to see the result.
 
 ### API Endpoints
 
-#### Start a Workflow
-
+**Start a Workflow:**
 ```bash
 curl -X POST http://localhost:8000/workflows/v1/start \
   -H "Content-Type: application/json" \
   -d '{"number": 5}'
 ```
 
-Response:
-```json
-{
-  "success": true,
-  "message": "Workflow started successfully",
-  "data": {
-    "workflow_id": "generated-uuid-here",
-    "run_id": "..."
-  }
-}
-```
-
-#### Get Workflow Result
-
+**Get Workflow Result:**
 ```bash
 curl http://localhost:8000/workflows/v1/result/{workflow_id}
 ```
 
-### Example Response
-
+**Example Response:**
 ```json
 {
   "status": "completed",
@@ -201,36 +111,61 @@ curl http://localhost:8000/workflows/v1/result/{workflow_id}
 }
 ```
 
-## 🧪 Testing
+## Development
 
-### Run All Tests
-
+### Stop Dependencies
 ```bash
-uv run pytest tests/ -v
+uv run poe stop-deps
 ```
 
-### Run Unit Tests Only
-
+### Run Tests
 ```bash
-uv run pytest tests/test_activities.py tests/test_workflow.py -v
+uv run pytest
 ```
 
-### Run Integration Tests (requires Java)
-
-```bash
-# Make sure Java JAR is built first
-uv run pytest tests/test_utils.py -v
-```
-
-### Test with Coverage
-
+### Run Tests with Coverage
 ```bash
 uv run coverage run -m pytest tests/
 uv run coverage report
-uv run coverage html  # Generate HTML report
 ```
 
-## 📖 How It Works
+### Project Structure
+
+```
+polyglot/
+├── app/                      # Core application logic
+│   ├── activities.py         # Workflow activities
+│   ├── workflow.py           # Workflow definitions
+│   ├── utils/               # JPype utilities
+│   │   ├── config.py        # Configuration management
+│   │   └── processor.py     # JVM processor
+│   └── libs/                # Java JAR files
+│       ├── FactorialCalculator.java  # Java source
+│       ├── factorial-calculator.jar  # Compiled JAR
+│       └── build.sh         # Build script
+├── components/               # Dapr component configs
+├── frontend/                 # Frontend assets
+│   ├── static/              # Static files (CSS, JS)
+│   └── templates/           # HTML templates
+├── local/                    # Local data storage
+│   ├── dapr/                # Dapr runtime data
+│   └── tmp/                 # Temporary files
+├── tests/                    # Test files
+│   ├── test_activities.py   # Activity tests
+│   ├── test_workflow.py     # Workflow tests
+│   └── test_java_interop.py # Java integration tests
+├── main.py                   # Application entry point
+├── pyproject.toml            # Dependencies and config
+└── README.md                 # This file
+```
+
+> [!NOTE]
+> Make sure you have a `.env` file that matches the [.env.template](.env.template) file in this directory.
+
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the repository root README for unified build and run instructions.
+
+## How It Works
 
 ### JPype Integration
 
@@ -258,14 +193,13 @@ result = FactorialCalculator.calculateFactorial(5)  # Returns 120
 print(f"Factorial: {int(result)}")
 ```
 
-### Context Manager Pattern
+## Learning Resources
 
-The `FactorialProcessor` uses a context manager for safe JVM handling:
+- [Temporal Documentation](https://docs.temporal.io/)
+- [Atlan Application SDK Documentation](https://github.com/atlanhq/application-sdk/tree/main/docs)
+- [Python FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [JPype Documentation](https://jpype.readthedocs.io/)
 
-```python
-with FactorialProcessor(number=5) as processor:
-    result = processor.calculate()
-    # JVM is guaranteed to be started
-    # Resources are properly managed
-```
+## Contributing
 
+We welcome contributions! Please feel free to submit a Pull Request.
