@@ -9,9 +9,8 @@ from typing import Any, Dict
 
 import jpype
 import jpype.imports
-from application_sdk.observability.logger_adaptor import get_logger
-
 from app.utils.config import JavaConfig
+from application_sdk.observability.logger_adaptor import get_logger
 
 LOGGER = get_logger(__name__)
 
@@ -155,7 +154,7 @@ class FactorialProcessor:
         try:
             # Load the Java class using jpype.JClass
             # This is the proper way to import Java classes after JVM is started
-            FactorialCalculator = jpype.JClass('FactorialCalculator')
+            FactorialCalculator = jpype.JClass("FactorialCalculator")
 
             # Call the static method
             result = FactorialCalculator.calculateFactorial(self.number)
@@ -194,7 +193,7 @@ class FactorialProcessor:
                 raise RuntimeError("JVM is not started")
 
             # Load the Java class using jpype.JClass
-            FactorialCalculator = jpype.JClass('FactorialCalculator')
+            FactorialCalculator = jpype.JClass("FactorialCalculator")
 
             version = FactorialCalculator.getVersion()
             LOGGER.debug(f"Java calculator version: {version}")
@@ -219,7 +218,7 @@ class FactorialProcessor:
                 raise RuntimeError("JVM is not started")
 
             # Load the Java class using jpype.JClass
-            FactorialCalculator = jpype.JClass('FactorialCalculator')
+            FactorialCalculator = jpype.JClass("FactorialCalculator")
 
             description = FactorialCalculator.getDescription()
             LOGGER.debug(f"Java calculator description: {description}")
@@ -228,4 +227,3 @@ class FactorialProcessor:
         except Exception as e:
             LOGGER.error(f"Failed to get description: {e}", exc_info=True)
             raise
-

@@ -1,9 +1,6 @@
 """Unit tests for polyglot workflow."""
 
-from unittest.mock import AsyncMock, MagicMock
-
 import pytest
-
 from app.activities import PolyglotActivities
 from app.workflow import PolyglotWorkflow
 
@@ -40,16 +37,7 @@ class TestPolyglotWorkflow:
         """
         # This test demonstrates the workflow structure
         # For complete testing, use Temporal's test framework
-        workflow_config = {
-            "workflow_id": "test-workflow-123",
-        }
-
-        workflow_args = {
-            "number": 5,
-        }
-
         # Mock the workflow execution context
         # In real tests, you'd use Temporal's workflow testing utilities
         assert workflow is not None
         assert hasattr(workflow, "run")
-

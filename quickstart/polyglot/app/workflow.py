@@ -125,4 +125,3 @@ class PolyglotWorkflow(WorkflowInterface):
             activities.save_result_to_json,
             activities.get_workflow_args,
         ]
-

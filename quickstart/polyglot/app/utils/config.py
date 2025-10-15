@@ -93,4 +93,3 @@ class JavaConfig:
         LOGGER.info(f"  JAR_PATH: {cls.JAR_PATH}")
         LOGGER.info(f"  JVM_MAX_MEMORY: {cls.JVM_MAX_MEMORY}")
         LOGGER.info(f"  JVM_INITIAL_MEMORY: {cls.JVM_INITIAL_MEMORY}")
-

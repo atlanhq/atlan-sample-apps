@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.activities import PolyglotActivities
 
 
@@ -59,6 +58,7 @@ class TestPolyglotActivities:
             "result": 120,
             "input": 5,
             "success": True,
+            "output_path": "/tmp/test",
         }
 
         # Mock JsonOutput with AsyncMock for async methods
@@ -72,12 +72,9 @@ class TestPolyglotActivities:
             mock_instance.get_statistics = AsyncMock(return_value=mock_stats)
             mock_json_output.return_value = mock_instance
 
-            result = await activities.save_result_to_json(
-                calculation_result, "/tmp/test"
-            )
+            result = await activities.save_result_to_json(calculation_result)
 
             assert result["success"] is True
             assert result["record_count"] == 1
             assert result["chunk_count"] == 1
             assert "/tmp/test/results/factorial_result" in result["file_path"]
-

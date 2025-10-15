@@ -5,7 +5,6 @@ They are integration tests that actually start the JVM and call Java methods.
 """
 
 import pytest
-
 from app.utils.config import JavaConfig
 from app.utils.processor import FactorialProcessor
 
@@ -176,4 +175,3 @@ class TestFactorialProcessor:
 
 # Run tests with: pytest tests/utils.py -v
 # Skip integration tests: pytest tests/utils.py -v -m "not skipif"
-

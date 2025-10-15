@@ -4,15 +4,14 @@ This module defines Temporal activities that demonstrate calling Java code
 from Python using JPype for cross-language integration.
 """
 
-import pandas as pd
 from typing import Any, Dict
 
+import pandas as pd
+from app.utils.processor import FactorialProcessor
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.outputs.json import JsonOutput
 from temporalio import activity
-
-from app.utils.processor import FactorialProcessor
 
 logger = get_logger(__name__)
 activity.logger = logger
@@ -95,7 +94,9 @@ class PolyglotActivities(ActivitiesInterface):
             >>> print(stats)
             {'file_path': '/tmp/output/results/factorial_result.json', ...}
         """
-        logger.info(f"Activity: save_result_to_json called with result: {calculation_result}")
+        logger.info(
+            f"Activity: save_result_to_json called with result: {calculation_result}"
+        )
 
         try:
             # Create a DataFrame from the result
@@ -134,4 +135,3 @@ class PolyglotActivities(ActivitiesInterface):
                 "success": False,
                 "error": error_msg,
             }
-

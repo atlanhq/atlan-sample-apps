@@ -42,7 +42,7 @@ Use polyglot (Python-Java) integration when you need to:
    ```bash
    # macOS
    brew install dapr/tap/dapr-cli
-   
+
    # Linux
    wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash
    ```
@@ -51,7 +51,7 @@ Use polyglot (Python-Java) integration when you need to:
    ```bash
    # macOS
    brew install temporal
-   
+
    # Linux
    curl -sSf https://temporal.download/cli.sh | sh\
    ```
