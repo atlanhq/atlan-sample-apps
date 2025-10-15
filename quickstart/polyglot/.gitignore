@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.venv/
+venv/
+ENV/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Java
+*.class
+app/libs/*.class
+
+# Keep the JAR in version control is optional, uncomment to ignore it:
+# app/libs/factorial-calculator.jar
+
+# Temporal
+temporal.db
+temporal.db-shm
+temporal.db-wal
+
+# Dapr
+.dapr/
+components/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local development
+local/
+.env
+.env.local
+
+# UV
+.uv/
+uv.lock
+
