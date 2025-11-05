@@ -39,7 +39,7 @@ COPY --chown=appuser:appuser . .
 USER root
 
 # Install Dapr CLI
-RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.16.0
+RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.16.2
 
 # Remove curl and bash
 RUN apk del curl bash
