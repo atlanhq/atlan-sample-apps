@@ -19,7 +19,7 @@
                 "ui": {
                     "widget": "credential",
                     "label": "",
-                    "credentialType": "csa-connectors-anaplan",
+                    "credentialType": "atlan-connectors-anaplan",
                     "placeholder": "Credential Guid",
                     "hidden": false
                 }
@@ -32,7 +32,7 @@
                 "default": "{}",
                 "ui": {
                     "widget": "apitree",
-                    "connectorConfigName": "csa-connectors-anaplan",
+                    "connectorConfigName": "atlan-connectors-anaplan",
                     "credential": "credential-guid",
                     "label": "Include Metadata",
                     "description": "Selected projects will be processed.",
