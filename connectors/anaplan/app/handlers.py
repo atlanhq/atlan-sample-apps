@@ -1,4 +1,6 @@
 from typing import Any, Dict, List
+import json
+from pathlib import Path
 
 from app.clients import AppClient
 from app.extracts.apps import extract_apps_data
@@ -233,3 +235,17 @@ class AppHandler(BaseHandler):
                     "failureMessage": f"Preflight check failed: {str(e)}",
                 }
             }
+    
+    @staticmethod
+    async def get_configmap(config_map_id: str) -> Dict[str, Any]:
+        workflow_json_path = Path().cwd() / "app" / "templates" / "workflow.json"
+        credential_json_path = (
+            Path().cwd() / "app" / "templates" / "atlan-connectors-anaplan.json"
+        )
+
+        if config_map_id == "atlan-connectors-anaplan":
+            with open(credential_json_path) as f:
+                return json.load(f)
+
+        with open(workflow_json_path) as f:
+            return json.load(f)
