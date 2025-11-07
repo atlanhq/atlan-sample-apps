@@ -10,8 +10,7 @@
                 "ui": {
                     "widget": "connection",
                     "label": "",
-                    "placeholder": "Connection Name",
-                    "connectionOptions": false
+                    "placeholder": "Connection Name"
                 }
             },
             "credential-guid": {
@@ -48,36 +47,11 @@
                 "default": "{}",
                 "ui": {
                     "widget": "apitree",
-                    "connectorConfigName": "csa-connectors-anaplan",
+                    "connectorConfigName": "atlan-connectors-anaplan",
                     "credential": "credential-guid",
                     "label": "Exclude Metadata",
                     "description": "Selected projects will not be processed.",
                     "help": "Selected projects will not be processed.",
-                    "grid": 4
-                }
-            },
-            "exclude-empty-modules": {
-                "type": "boolean",
-                "required": true,
-                "default": false,
-                "ui": {
-                    "hidden": false,
-                    "label": "Exclude Empty Modules",
-                    "help": "Exclude empty modules (modules that do not have a lineitem in them).",
-                    "grid": 4
-                }
-            },
-            "ingest-system-dimension": {
-                "type": "string",
-                "enum": ["proxy","individual","no"],
-                "default": "proxy",
-                "required": true,
-                "enumNames": ["Yes, proxy","Yes, individually","No"],
-                "ui": {
-                    "widget": "radio",
-                    "hidden": false,
-                    "help": "Ingest System Dimensions (Time and Versions) separately or in each model. Can be ignored completely.",
-                    "label": "Ingest System Dimensions ?",
                     "grid": 4
                 }
             },
@@ -122,8 +96,6 @@
                 "properties": [
                     "include-metadata",
                     "exclude-metadata",
-                    "exclude-empty-modules",
-                    "ingest-system-dimension",
                     "preflight-check"
                 ]
             }
