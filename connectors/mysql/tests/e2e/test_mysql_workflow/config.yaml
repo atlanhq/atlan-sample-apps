@@ -1,0 +1,46 @@
+test_workflow_args:
+  credentials:
+    username: $E2E_MYSQL_USERNAME
+    password: $E2E_MYSQL_PASSWORD
+    host: $E2E_MYSQL_HOST
+    port: $E2E_MYSQL_PORT
+    extra:
+      database: "test"
+    authType: "basic"
+    type: "all"
+    database: "test"
+  metadata:
+    exclude-filter: "{}"
+    include-filter: "{}"
+    temp-table-regex: ""
+    extraction-method: "direct"
+  connection:
+    connection_name: "test"
+    connection_qualified_name: "default/mysql/test"
+test_name: "test_mysql_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  auth:
+    success: true
+    message: "Authentication successful"
+  metadata:
+    success: true
+    data: []
+  preflight_check:
+    success: true
+    data:
+      databaseSchemaCheck:
+        success: true
+        successMessage: "Schemas and Databases check successful"
+        failureMessage: ""
+      tablesCheck:
+        success: true
+        successMessage: "Tables check successful"
+        failureMessage: ""
+      versionCheck:
+        success: true
+        successMessage: "Client version meets minimum required version"
+        failureMessage: ""
+

@@ -1,0 +1,3 @@
+# This directory is required by the test framework
+# Giphy app doesn't perform data validation, so this directory is kept empty
+

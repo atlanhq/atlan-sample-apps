@@ -1,0 +1,25 @@
+test_workflow_args:
+  credentials: {}
+  metadata:
+    user_username: "test_user"
+    asset_limit: 50
+    config:
+      slack_webhook_url: "https://hooks.slack.com/services/test/test/test"
+  connection:
+    connection_name: "asset_descriptor_reminder_test"
+    connection_qualified_name: "default/asset-descriptor-reminder/test"
+test_name: "test_asset_descriptor_reminder_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  auth:
+    success: true
+    message: "Authentication successful"
+  metadata:
+    success: true
+    data: []
+  preflight_check:
+    success: true
+    data: {}
+

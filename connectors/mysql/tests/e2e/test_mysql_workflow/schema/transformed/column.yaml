@@ -1,0 +1,37 @@
+schema_type: dataframe
+version: 0.22.1
+columns:
+  typeName:
+    title: Type Name Check
+    description: Check if the type name of records in the transformed data is matched as expected
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+  qualifiedName:
+    title: Qualified Name Check
+    description: Check if the qualified name of records in the transformed data is matched as expected
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+checks:
+  check_record_count_ge:
+    value: 1
+    options:
+      raise_warning: false
+index: null
+dtype: null
+coerce: false
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: true
+add_missing_columns: false
+title: Transformed Column Pandera Schema
+description: Pandera schema definition for the transformed column output
+

@@ -1,6 +1,7 @@
 // Polyglot Demo - Frontend JavaScript
 
-const API_BASE_URL = 'http://localhost:8000';
+// Use relative URL to avoid CORS issues - will use the same origin as the page
+const API_BASE_URL = '';
 
 // DOM Elements
 const calculateBtn = document.getElementById('calculate-btn');

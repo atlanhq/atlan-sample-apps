@@ -1,0 +1,22 @@
+test_workflow_args:
+  credentials: {}
+  metadata:
+    name: "John Doe"
+  connection:
+    connection_name: "hello_world_test"
+    connection_qualified_name: "default/hello-world/test"
+test_name: "test_hello_world_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  auth:
+    success: true
+    message: "Authentication successful"
+  metadata:
+    success: true
+    data: []
+  preflight_check:
+    success: true
+    data: {}
+
