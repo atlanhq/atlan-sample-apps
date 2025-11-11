@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - base-image-change
     paths:
       - '**'
       - '!kurl-installer.yaml'
