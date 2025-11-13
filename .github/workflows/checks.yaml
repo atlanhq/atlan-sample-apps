@@ -8,7 +8,38 @@ on:
       - main
 
 jobs:
+  discover-apps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover app directories
+        id: set-matrix
+        run: |
+          app_paths=()
+          
+          # Find all subdirectories in quickstart, connectors, utilities, and templates
+          for root_dir in quickstart connectors utilities templates; do
+            if [ -d "$root_dir" ]; then
+              for dir in "$root_dir"/*; do
+                if [ -d "$dir" ] && [ -f "$dir/pyproject.toml" ]; then
+                  app_paths+=("$dir")
+                fi
+              done
+            fi
+          done
+          
+          # Convert to JSON array format for matrix
+          json_paths=$(printf '%s\n' "${app_paths[@]}" | jq -R . | jq -s .)
+          echo "matrix={\"app_path\":$json_paths}" >> $GITHUB_OUTPUT
+          echo "Discovered app paths:"
+          echo "$json_paths" | jq -r '.[]'
+
   pre-commit:
+    needs: discover-apps
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,18 +49,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       fail-fast: false
-      matrix:
-        app_path:
-          - quickstart/ai_giphy
-          - quickstart/giphy
-          - quickstart/hello_world
-          - quickstart/polyglot
-          - connectors/anaplan
-          - connectors/mysql
-          - utilities/asset_descriptor_reminder
-          - utilities/freshness_monitor
-          - utilities/workflows_observability
-          - templates/generic
+      matrix: ${{ fromJson(needs.discover-apps.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
