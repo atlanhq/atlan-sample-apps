@@ -32,11 +32,14 @@ jobs:
             fi
           done
           
-          # Convert to JSON array format for matrix
-          json_paths=$(printf '%s\n' "${app_paths[@]}" | jq -R . | jq -s .)
-          echo "matrix={\"app_path\":$json_paths}" >> $GITHUB_OUTPUT
+          # Convert to compact JSON array format for matrix
+          json_paths=$(printf '%s\n' "${app_paths[@]}" | jq -R . | jq -s -c .)
+          matrix_json="{\"app_path\":$json_paths}"
+          echo "matrix<<EOF" >> $GITHUB_OUTPUT
+          echo "$matrix_json" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           echo "Discovered app paths:"
-          echo "$json_paths" | jq -r '.[]'
+          printf '%s\n' "${app_paths[@]}"
 
   pre-commit:
     needs: discover-apps
