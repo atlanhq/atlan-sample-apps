@@ -1,0 +1,229 @@
+name: Snyk check for Docker Image
+
+on:
+  push:
+    branches:
+      - main
+      - dockerfile
+    paths:
+      - '**'
+      - '!kurl-installer.yaml'
+      - '!**.md'
+      - '!images/**'
+      - '!**.png'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+    timeout-minutes: 20  # Increased from 10 to handle multi-platform builds
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Get branch name
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: get_branch
+
+      - run: echo "REPOSITORY_NAME=`echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//"`" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Get version tag
+        run: echo "version=$(echo `git ls-remote https://${{ secrets.ORG_PAT_GITHUB }}@github.com/atlanhq/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)abcd" >> $GITHUB_OUTPUT
+        id: get_version
+
+      - name: Lowercase branch name
+        run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        id: get_lowercase_branch
+
+      - name: Set up Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0 https://github.com/docker/setup-buildx-action/releases/tag/v3.10.0
+
+      - name: Login to GitHub Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0 https://github.com/docker/login-action/releases/tag/v3.4.0
+        with:
+          registry: ghcr.io
+          username: $GITHUB_ACTOR
+          password: ${{ secrets.ORG_PAT_GITHUB }}
+
+      # Add Docker Hub login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: atlanhq  # Replace with your Docker Hub username/organization
+          password: ${{ secrets.DOCKER_HUB_PAT_RW }}
+
+      # Set up the Snyk CLI
+      - name: Set up Snyk CLI
+        uses: snyk/actions/setup@master
+
+      - name: Build and load docker image
+        id: ghcr_docker_build_argo
+        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # v6.17.0 https://github.com/docker/build-push-action/releases/tag/v6.17.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-argo-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-argo-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+          build-args: |
+            ACCESS_TOKEN_USR=$GITHUB_ACTOR
+            ACCESS_TOKEN_PWD=${{ secrets.ORG_PAT_GITHUB }}
+        env:
+          DOCKER_CLIENT_TIMEOUT: 600  # Increased timeout
+          COMPOSE_HTTP_TIMEOUT: 600
+      # Run the Snyk Docker scan
+      - name: Run Snyk to check for vulnerabilities
+        id: snyk_scan
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_API: https://api.us.snyk.io
+          DOCKER_IMAGE: ghcr.io/atlanhq/${{ github.event.repository.name }}-argo-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+        run: ./.github/scripts/run-snyk-scan.sh
+
+      - name: Check Scan Results
+        id: check_results
+        run: ./.github/scripts/check-scan-results.sh
+
+
+        # Create Partner-Friendly Report on Failure
+      - name: Create Partner-Friendly Report
+        if: steps.check_results.outputs.vulnerabilities_found == 'true'
+        id: snyk_report
+        run: |
+          # Handle cases where the scan itself failed (e.g., auth error)
+          if jq -e .error snyk_results.json > /dev/null; then
+            ERROR_MESSAGE=$(jq -r '.error' snyk_results.json)
+            REPORT="*Snyk scan failed with an error:* ${ERROR_MESSAGE}"
+          else
+            # Get high/critical vulnerability counts
+            OS_HIGH_CRITICAL=$(jq '[.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' snyk_results.json)
+            APP_HIGH_CRITICAL=0
+            if jq -e '.applications' snyk_results.json > /dev/null; then
+              APP_HIGH_CRITICAL=$(jq '[.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' snyk_results.json)
+            fi
+            TOTAL_HIGH_CRITICAL=$((OS_HIGH_CRITICAL + APP_HIGH_CRITICAL))
+
+            PATH_TO_IMAGE=$(jq -r '.path' snyk_results.json)
+
+            # Get top 3 UNIQUE critical vulnerabilities with detailed info and path counts
+            TOP_VULNS=""
+            if [ "$APP_HIGH_CRITICAL" -gt 0 ]; then
+              TOP_VULNS=$(jq -r '
+                [.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")]
+                | group_by(.id + .moduleName + .version)
+                | map({
+                    id: .[0].id,
+                    title: .[0].title,
+                    severity: .[0].severity,
+                    moduleName: .[0].moduleName,
+                    version: .[0].version,
+                    fixedIn: .[0].fixedIn,
+                    pathCount: length
+                  })
+                | sort_by(.severity == "critical" | not)
+                | .[0:3]
+                | .[] |
+                "• **\(.title)** (\(.severity | ascii_upcase))\n" +
+                "  📦 Package: `\(.moduleName)@\(.version)`\n" +
+                "  🔗 ID: \(.id)\n" +
+                "  🛤️  Paths: \(.pathCount) dependency path(s)\n" +
+                "  ✅ Fixed in: \(if .fixedIn and (.fixedIn | length > 0) then (.fixedIn | join(", ")) else "No fix available" end)"
+              ' snyk_results.json)
+            fi
+
+            if [ "$OS_HIGH_CRITICAL" -gt 0 ] && [ -z "$TOP_VULNS" ]; then
+              TOP_VULNS=$(jq -r '
+                [.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")]
+                | group_by(.id + .moduleName + .version)
+                | map({
+                    id: .[0].id,
+                    title: .[0].title,
+                    severity: .[0].severity,
+                    moduleName: .[0].moduleName,
+                    version: .[0].version,
+                    fixedIn: .[0].fixedIn,
+                    pathCount: length
+                  })
+                | sort_by(.severity == "critical" | not)
+                | .[0:3]
+                | .[] |
+                "• **\(.title)** (\(.severity | ascii_upcase))\n" +
+                "  📦 Package: `\(.moduleName)@\(.version)`\n" +
+                "  🔗 ID: \(.id)\n" +
+                "  🛤️  Paths: \(.pathCount) dependency path(s)\n" +
+                "  ✅ Fixed in: \(if .fixedIn and (.fixedIn | length > 0) then (.fixedIn | join(", ")) else "No fix available" end)"
+              ' snyk_results.json)
+            fi
+
+            # Get unique affected packages for summary
+            AFFECTED_PACKAGES=$(jq -r '
+              [.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical") | .moduleName]
+              | unique
+              | .[0:5]
+              | join(", ")
+            ' snyk_results.json)
+
+            # Get unique vulnerability count (not total occurrences)
+            UNIQUE_VULNS=$(jq -r '
+              [.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")]
+              | group_by(.id + .moduleName + .version)
+              | length
+            ' snyk_results.json)
+
+            # Build detailed report
+            REPORT="🚨 **High/Critical Vulnerabilities Found in ${PATH_TO_IMAGE}**"$'\n'
+            REPORT+="📊 **Summary:** ${UNIQUE_VULNS} unique high/critical vulnerabilities (${TOTAL_HIGH_CRITICAL} total occurrences)"$'\n'
+
+            if [ "$OS_HIGH_CRITICAL" -gt 0 ]; then
+              REPORT+="🔧 **OS Vulnerabilities:** ${OS_HIGH_CRITICAL}"$'\n'
+            fi
+
+            if [ "$APP_HIGH_CRITICAL" -gt 0 ]; then
+              REPORT+="📦 **Application Vulnerabilities:** ${APP_HIGH_CRITICAL} occurrences"$'\n'
+            fi
+
+            if [ -n "$AFFECTED_PACKAGES" ]; then
+              REPORT+="🎯 **Affected Packages:** \`${AFFECTED_PACKAGES}\`"$'\n'
+            fi
+
+            if [ -n "$TOP_VULNS" ]; then
+              REPORT+=$'\n'"**🔍 Top Critical Issues:**"$'\n'"$TOP_VULNS"$'\n'
+            fi
+
+            REPORT+=$'\n'"**⚠️ Action Required:** This image cannot be promoted due to high/critical security vulnerabilities."$'\n'
+            REPORT+="**💡 Next Steps:** Update dependencies to the fixed versions above or choose a different base image."
+          fi
+
+          # Set output (no escaping needed for environment variables)
+          {
+            echo "report_text<<EOF"
+            echo "$REPORT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+
+      # Send Detailed Slack Notification on Failure
+      - name: Send Slack notification on failure
+        if: steps.check_results.outputs.vulnerabilities_found == 'true'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: 'danger'
+          SLACK_MESSAGE: |
+            ${{ steps.snyk_report.outputs.report_text }}
+
+            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SLACK_TITLE: 'Snyk Security Scan Alert'
+          SLACK_USERNAME: 'Snyk Security Scanner'
+          SLACK_ICON_EMOJI: ':warning:'
