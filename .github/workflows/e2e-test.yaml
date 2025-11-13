@@ -1,0 +1,113 @@
+name: E2E Application Test
+on:
+  push:
+    branches:
+      - main
+      - e2e
+  pull_request:
+    types: [labeled, reopened, synchronize, opened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+    timeout-minutes: 30
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || contains(github.event.pull_request.labels.*.name, 'e2e-test') }}
+    strategy:
+      matrix:
+        app:
+          - name: hello_world
+            path: quickstart/hello_world
+            application_name: hello-world
+          - name: polyglot
+            path: quickstart/polyglot
+            application_name: polyglot
+
+    steps:
+      - uses: actions/checkout@v4.0.0
+
+      # Install Dapr
+      - name: Install Dapr CLI
+        run: |
+          wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash -s 1.16.2
+          dapr init --runtime-version 1.16.0 --slim
+
+      # Install Temporal
+      - name: Install Temporal CLI and Start Server
+        run: |
+          curl -sSf https://temporal.download/cli.sh | sh
+          export PATH="$HOME/.temporalio/bin:$PATH"
+          temporal server start-dev --db-filename /tmp/temporal-${{ matrix.app.name }}.db &
+          sleep 5
+
+      - uses: atlanhq/application-sdk/.github/actions/setup-deps@main
+
+      # Change to app directory
+      - name: Change to app directory
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          pwd
+          ls -la
+
+      # Build Java JAR for polyglot (if needed)
+      - name: Build Java JAR for polyglot
+        if: matrix.app.name == 'polyglot'
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          uv run poe build-java || echo "Java build not required or failed"
+
+      # Download components and start dapr and temporal services
+      - name: Start Platform Services
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          uv run poe download-components
+          uv run poe start-deps
+          # Wait for Dapr sidecar to be ready
+          sleep 5
+
+      # Start the application
+      - name: Start the application
+        id: start_app
+        working-directory: ${{ matrix.app.path }}
+        env:
+          ATLAN_LOCAL_DEVELOPMENT: true
+          ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
+        run: |
+          uv run python main.py &
+          APP_PID=$!
+          echo "app_pid=$APP_PID" >> $GITHUB_OUTPUT
+          # Wait for application to start
+          sleep 10
+          # Check if app is running
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/server/health > /dev/null 2>&1; then
+              echo "Application is ready"
+              break
+            fi
+            echo "Waiting for application to start... ($i/30)"
+            sleep 2
+          done
+
+      # Run E2E tests
+      - name: Run E2E tests
+        working-directory: ${{ matrix.app.path }}
+        env:
+          ATLAN_LOCAL_DEVELOPMENT: true
+          ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
+        run: |
+          export PATH="$HOME/.temporalio/bin:$PATH"
+          uv run pytest tests/e2e -v --tb=short
+
+      # Stop all services
+      - name: Stop all services
+        if: always()
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          # Kill the application
+          kill $(lsof -t -i :8000) 2>/dev/null || true
+          # Stop dependencies
+          uv run poe stop-deps || true
+          # Clean up any remaining processes
+          pkill -f "temporal.*${{ matrix.app.name }}" || true
