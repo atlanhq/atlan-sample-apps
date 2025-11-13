@@ -1,5 +1,5 @@
 # Chainguard application-sdk base image with Python
-FROM junaidrahimatlan/application-sdk-chainguard:latest
+FROM ghcr.io/atlanhq/application-sdk-chainguard:latest
 
 # Switch back to root for system installations
 USER root
