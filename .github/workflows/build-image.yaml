@@ -13,66 +13,20 @@ on:
       - '!**.png'
 
 jobs:
-  discover-apps:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Discover app directories
-        id: set-matrix
-        run: |
-          app_paths=()
-
-          # Find all subdirectories in quickstart, connectors, utilities, and templates
-          for root_dir in quickstart connectors utilities templates; do
-            if [ -d "$root_dir" ]; then
-              for dir in "$root_dir"/*; do
-                if [ -d "$dir" ] && [ -f "$dir/pyproject.toml" ] && [ -f "$dir/Dockerfile" ]; then
-                  app_paths+=("$dir")
-                fi
-              done
-            fi
-          done
-
-          # Convert to compact JSON array format for matrix
-          json_paths=$(printf '%s\n' "${app_paths[@]}" | jq -R . | jq -s -c .)
-          matrix_json="{\"app_path\":$json_paths}"
-          echo "matrix<<EOF" >> $GITHUB_OUTPUT
-          echo "$matrix_json" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "Discovered app paths:"
-          printf '%s\n' "${app_paths[@]}"
-
   build:
-    needs: discover-apps
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: read
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app_path }}
+      group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
     timeout-minutes: 20  # Increased from 10 to handle multi-platform builds
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.discover-apps.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4.0.0
         with:
           fetch-depth: 0
-          token: ${{ secrets.ORG_PAT_GITHUB }}
 
       - name: Get branch name
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: get_branch
-
-      - name: Extract app name from path
-        run: echo "app_name=$(basename '${{ matrix.app_path }}')" >> $GITHUB_OUTPUT
-        id: get_app_name
 
       - run: echo "REPOSITORY_NAME=`echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//"`" >> $GITHUB_ENV
         shell: bash
@@ -102,13 +56,13 @@ jobs:
         with:
           branch: ${{ github.ref_name }}
           snyk-token: ${{ secrets.SNYK_TOKEN_BU_APPS }}
-          context: ${{ matrix.app_path }}
-          file: ${{ matrix.app_path }}/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/atlanhq/${{ steps.get_app_name.outputs.app_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
-            ghcr.io/atlanhq/${{ steps.get_app_name.outputs.app_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
           build-args: |
             ACCESS_TOKEN_USR=$GITHUB_ACTOR
             ACCESS_TOKEN_PWD=${{ secrets.ORG_PAT_GITHUB }}
@@ -129,13 +83,13 @@ jobs:
         with:
           branch: ${{ github.ref_name }}
           snyk-token: ${{ secrets.SNYK_TOKEN_BU_APPS }}
-          context: ${{ matrix.app_path }}
-          file: ${{ matrix.app_path }}/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            registry-1.docker.io/atlanhq/${{ steps.get_app_name.outputs.app_name }}:${{ steps.get_branch.outputs.branch }}-${{ steps.get_version.outputs.version }}
-            registry-1.docker.io/atlanhq/${{ steps.get_app_name.outputs.app_name }}:${{ steps.get_branch.outputs.branch }}-latest
+            registry-1.docker.io/atlanhq/${{ github.event.repository.name }}:${{ steps.get_branch.outputs.branch }}-${{ steps.get_version.outputs.version }}
+            registry-1.docker.io/atlanhq/${{ github.event.repository.name }}:${{ steps.get_branch.outputs.branch }}-latest
         env:
           DOCKER_CLIENT_TIMEOUT: 300
           COMPOSE_HTTP_TIMEOUT: 300
