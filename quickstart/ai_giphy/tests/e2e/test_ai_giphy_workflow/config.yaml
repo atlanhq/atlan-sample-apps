@@ -1,0 +1,14 @@
+test_workflow_args:
+  ai_input_string: "Fetch a funny cat gif and send it to test@example.com"
+  connection:
+    connection_name: "ai-giphy-test"
+    connection_qualified_name: "default/ai-giphy/test"
+test_name: "test_ai_giphy_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  workflow:
+    success: true
+    message: "Workflow started successfully"
+
