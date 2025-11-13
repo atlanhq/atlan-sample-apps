@@ -13,8 +13,8 @@ jobs:
     permissions:
       contents: read
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app_path }}
+      cancel-in-progress: false
     timeout-minutes: 10
     strategy:
       fail-fast: false
