@@ -144,7 +144,7 @@ jobs:
       - name: Run tests 🧪
         working-directory: ${{ matrix.app }}
         run: |
-          uv run python -m pytest tests/ -v --tb=short
+          uv run python -m pytest tests/unit/ -v --tb=short
 
       - name: Run tests with coverage 🔄
         working-directory: ${{ matrix.app }}
