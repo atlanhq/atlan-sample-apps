@@ -42,14 +42,22 @@ jobs:
           temporal server start-dev --db-filename /tmp/temporal-${{ matrix.app.name }}.db &
           sleep 5
 
-      - uses: atlanhq/application-sdk/.github/actions/setup-deps@main
+      # Setup Python and uv
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      # Change to app directory
-      - name: Change to app directory
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.7.3"
+
+      # Sync dependencies in app directory
+      - name: Sync dependencies
         working-directory: ${{ matrix.app.path }}
         run: |
-          pwd
-          ls -la
+          uv sync --all-extras --all-groups
 
       # Build Java JAR for polyglot (if needed)
       - name: Build Java JAR for polyglot
