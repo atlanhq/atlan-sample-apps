@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dockerfile
     paths:
       - '**'
       - '!kurl-installer.yaml'
