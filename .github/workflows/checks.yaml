@@ -31,7 +31,7 @@ jobs:
               done
             fi
           done
-          
+
           # Convert to compact JSON array format for matrix
           json_paths=$(printf '%s\n' "${app_paths[@]}" | jq -R . | jq -s -c .)
           matrix_json="{\"app_path\":$json_paths}"
@@ -74,7 +74,20 @@ jobs:
           app_files=$(git ls-files ${{ matrix.app_path }}/)
           if [ -n "$app_files" ]; then
             echo "Running pre-commit on files in ${{ matrix.app_path }} (including tests if present)..."
-            echo "$app_files" | xargs pre-commit run --config ${{ github.workspace }}/.pre-commit-config.yaml --files
+            echo "Files to check:"
+            echo "$app_files" | head -10
+            # Run pre-commit and capture exit code
+            # Exit code 1 means files were modified (need fixing) - this is expected in CI
+            echo "$app_files" | xargs pre-commit run --config ${{ github.workspace }}/.pre-commit-config.yaml --files || {
+              exit_code=$?
+              if [ $exit_code -eq 1 ]; then
+                echo "::error::Pre-commit found issues that need to be fixed. Please run 'pre-commit run --all-files' locally and commit the fixes."
+                exit 1
+              else
+                echo "::error::Pre-commit failed with exit code $exit_code"
+                exit $exit_code
+              fi
+            }
           else
             echo "No tracked files found in ${{ matrix.app_path }}"
           fi
