@@ -42,7 +42,7 @@ jobs:
           version: "0.7.3"
       - name: Install pre-commit
         run: |
-          uv pip install pre-commit
+          pip install pre-commit
       - name: Run pre-commit for ${{ matrix.app_path }}
         run: |
           cd ${{ matrix.app_path }}
