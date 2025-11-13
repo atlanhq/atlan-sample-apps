@@ -32,10 +32,17 @@ jobs:
           - templates/generic
     steps:
       - uses: actions/checkout@v4
-      - uses: atlanhq/application-sdk/.github/actions/setup-deps@main
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.7.3"
       - name: Install pre-commit
         run: |
-          pip install pre-commit
+          uv pip install pre-commit
       - name: Run pre-commit for ${{ matrix.app_path }}
         run: |
           cd ${{ matrix.app_path }}
