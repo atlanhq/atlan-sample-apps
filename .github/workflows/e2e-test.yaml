@@ -108,7 +108,7 @@ jobs:
           APP_PID=$!
           echo "app_pid=$APP_PID" >> $GITHUB_OUTPUT
           echo "Started application with PID: $APP_PID"
-          
+
           # Wait for application to start with health check
           APP_READY=false
           for i in {1..60}; do
@@ -118,7 +118,7 @@ jobs:
               cat app.log || true
               exit 1
             fi
-            
+
             # Check if health endpoint is responding
             if curl -f http://localhost:8000/server/health > /dev/null 2>&1; then
               echo "Application is ready!"
@@ -128,7 +128,7 @@ jobs:
             echo "Waiting for application to start... ($i/60)"
             sleep 2
           done
-          
+
           if [ "$APP_READY" = "false" ]; then
             echo "Application failed to start. Logs:"
             cat app.log || true
@@ -136,7 +136,7 @@ jobs:
             lsof -i :8000 || true
             exit 1
           fi
-          
+
           # Verify app is still running
           if ! kill -0 $APP_PID 2>/dev/null; then
             echo "Application died after starting. Logs:"
