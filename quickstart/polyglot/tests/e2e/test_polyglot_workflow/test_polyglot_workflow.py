@@ -2,13 +2,12 @@ import os
 import unittest
 
 import pytest
-
 from application_sdk.test_utils.e2e.base import BaseTest
 
 
 class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
     """E2E tests for Polyglot workflow.
-    
+
     Polyglot is a simple workflow that:
     - Takes a number as input
     - Calculates factorial using Java code from Python via JPype
@@ -103,7 +102,9 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(6)
-    @pytest.mark.skip(reason="Polyglot workflow doesn't have metadata for configuration update")
+    @pytest.mark.skip(
+        reason="Polyglot workflow doesn't have metadata for configuration update"
+    )
     def test_configuration_update(self):
         """Skip - polyglot doesn't have metadata for updates."""
         pass
@@ -143,4 +144,3 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - polyglot doesn't require credentials."""
         pass
-

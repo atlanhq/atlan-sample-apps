@@ -2,13 +2,12 @@ import os
 import unittest
 
 import pytest
-
 from application_sdk.test_utils.e2e.base import BaseTest
 
 
 class TestAIGiphyWorkflow(unittest.TestCase, BaseTest):
     """E2E tests for AI Giphy workflow.
-    
+
     AI Giphy is a simple workflow that:
     - Takes an ai_input_string as input (e.g., "Fetch a funny cat gif and send it to test@example.com")
     - Uses an AI agent to determine what GIF to fetch and who to send it to
@@ -105,7 +104,9 @@ class TestAIGiphyWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(6)
-    @pytest.mark.skip(reason="AI Giphy workflow doesn't have metadata for configuration update")
+    @pytest.mark.skip(
+        reason="AI Giphy workflow doesn't have metadata for configuration update"
+    )
     def test_configuration_update(self):
         """Skip - ai_giphy doesn't have metadata for updates."""
         pass
@@ -145,4 +146,3 @@ class TestAIGiphyWorkflow(unittest.TestCase, BaseTest):
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - ai_giphy doesn't require credentials."""
         pass
-

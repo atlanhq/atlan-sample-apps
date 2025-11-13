@@ -2,13 +2,12 @@ import os
 import unittest
 
 import pytest
-
 from application_sdk.test_utils.e2e.base import BaseTest
 
 
 class TestHelloWorldWorkflow(unittest.TestCase, BaseTest):
     """E2E tests for Hello World workflow.
-    
+
     Hello World is a simple workflow that:
     - Takes a name as input
     - Says hello to that name
@@ -80,9 +79,7 @@ class TestHelloWorldWorkflow(unittest.TestCase, BaseTest):
         )
 
         # Verify that response data contains the expected name
-        self.assertEqual(
-            response_data["data"]["name"], self.test_workflow_args["name"]
-        )
+        self.assertEqual(response_data["data"]["name"], self.test_workflow_args["name"])
 
     # Override BaseTest methods that don't apply to hello_world - all skipped
     @pytest.mark.skip(reason="Hello World workflow doesn't have auth endpoint")
@@ -96,13 +93,17 @@ class TestHelloWorldWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(4)
-    @pytest.mark.skip(reason="Hello World workflow doesn't have preflight check endpoint")
+    @pytest.mark.skip(
+        reason="Hello World workflow doesn't have preflight check endpoint"
+    )
     def test_preflight_check(self):
         """Skip - hello_world doesn't have preflight check."""
         pass
 
     @pytest.mark.order(6)
-    @pytest.mark.skip(reason="Hello World workflow doesn't have metadata for configuration update")
+    @pytest.mark.skip(
+        reason="Hello World workflow doesn't have metadata for configuration update"
+    )
     def test_configuration_update(self):
         """Skip - hello_world doesn't have metadata for updates."""
         pass
@@ -132,14 +133,17 @@ class TestHelloWorldWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(14)
-    @pytest.mark.skip(reason="Hello World workflow doesn't have preflight check endpoint")
+    @pytest.mark.skip(
+        reason="Hello World workflow doesn't have preflight check endpoint"
+    )
     def test_preflight_check_with_invalid_credentials(self):
         """Skip - hello_world doesn't have preflight check."""
         pass
 
     @pytest.mark.order(15)
-    @pytest.mark.skip(reason="Hello World workflow doesn't require credentials/metadata")
+    @pytest.mark.skip(
+        reason="Hello World workflow doesn't require credentials/metadata"
+    )
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - hello_world doesn't require credentials."""
         pass
-

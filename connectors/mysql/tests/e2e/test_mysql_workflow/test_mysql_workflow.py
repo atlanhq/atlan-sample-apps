@@ -9,4 +9,3 @@ class TestMySQLWorkflow(unittest.TestCase, BaseTest):
     extracted_output_base_path = (
         "./local/dapr/objectstore/artifacts/apps/mysql/workflows"
     )
-

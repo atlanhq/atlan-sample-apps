@@ -2,13 +2,12 @@ import os
 import unittest
 
 import pytest
-
 from application_sdk.test_utils.e2e.base import BaseTest
 
 
 class TestGiphyWorkflow(unittest.TestCase, BaseTest):
     """E2E tests for Giphy workflow.
-    
+
     Giphy is a simple workflow that:
     - Takes a search_term and recipients as input
     - Fetches a GIF from Giphy API
@@ -106,7 +105,9 @@ class TestGiphyWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(6)
-    @pytest.mark.skip(reason="Giphy workflow doesn't have metadata for configuration update")
+    @pytest.mark.skip(
+        reason="Giphy workflow doesn't have metadata for configuration update"
+    )
     def test_configuration_update(self):
         """Skip - giphy doesn't have metadata for updates."""
         pass
@@ -146,4 +147,3 @@ class TestGiphyWorkflow(unittest.TestCase, BaseTest):
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - giphy doesn't require credentials."""
         pass
-

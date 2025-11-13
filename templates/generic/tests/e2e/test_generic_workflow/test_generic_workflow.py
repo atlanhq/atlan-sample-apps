@@ -2,13 +2,12 @@ import os
 import unittest
 
 import pytest
-
 from application_sdk.test_utils.e2e.base import BaseTest
 
 
 class TestGenericWorkflow(unittest.TestCase, BaseTest):
     """E2E tests for Generic workflow.
-    
+
     Generic is a template workflow that:
     - Is a simple workflow template for building extractor apps
     - Does NOT have auth, metadata, or preflight check endpoints
@@ -102,7 +101,9 @@ class TestGenericWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(6)
-    @pytest.mark.skip(reason="Generic workflow doesn't have metadata for configuration update")
+    @pytest.mark.skip(
+        reason="Generic workflow doesn't have metadata for configuration update"
+    )
     def test_configuration_update(self):
         """Skip - generic doesn't have metadata for updates."""
         pass
@@ -142,4 +143,3 @@ class TestGenericWorkflow(unittest.TestCase, BaseTest):
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - generic doesn't require credentials."""
         pass
-
