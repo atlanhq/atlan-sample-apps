@@ -1,0 +1,44 @@
+name: Pre-commit Checks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        app_path:
+          - quickstart/ai_giphy
+          - quickstart/giphy
+          - quickstart/hello_world
+          - quickstart/polyglot
+          - connectors/anaplan
+          - connectors/mysql
+          - utilities/asset_descriptor_reminder
+          - utilities/freshness_monitor
+          - utilities/workflows_observability
+          - templates/generic
+    steps:
+      - uses: actions/checkout@v4
+      - uses: atlanhq/application-sdk/.github/actions/setup-deps@main
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+      - name: Run pre-commit for ${{ matrix.app_path }}
+        run: |
+          cd ${{ matrix.app_path }}
+          pre-commit run --config ${{ github.workspace }}/.pre-commit-config.yaml --all-files
+        env:
+          SKIP: ""
