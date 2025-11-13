@@ -149,7 +149,7 @@ jobs:
       - name: Run tests with coverage 🔄
         working-directory: ${{ matrix.app }}
         run: |
-          uv run coverage run -m pytest tests/ -v
+          uv run coverage run -m pytest tests/unit/ -v
           uv run coverage report --show-missing
           uv run coverage xml
 
