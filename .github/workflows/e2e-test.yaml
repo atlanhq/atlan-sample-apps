@@ -187,10 +187,12 @@ jobs:
 
       # Generate test results report
       - name: Generate test results report
-        working-directory: ${{ matrix.app.path }}
         if: ${{ github.event_name == 'pull_request' }}
         run: |
+          echo "Generating test results report for ${{ matrix.app.name }}"
           TEST_STATUS="${{ steps.run_tests.outputs.test_status }}"
+          echo "Test status: $TEST_STATUS"
+          
           if [ "$TEST_STATUS" = "passed" ]; then
             STATUS_EMOJI="✅"
             STATUS_TEXT="All Tests Passed"
@@ -199,28 +201,48 @@ jobs:
             STATUS_TEXT="Tests Failed"
           fi
 
-          # Generate test results report
-          echo "## 📊 ${{ matrix.app.name }} App E2E Test Results" >> metrics.md
-          echo "" >> metrics.md
-          echo "### 🎯 Test Summary" >> metrics.md
-          echo "| Metric | Value |" >> metrics.md
-          echo "|--------|-------|" >> metrics.md
-          echo "| App | ${{ matrix.app.name }} |" >> metrics.md
-          echo "| Status | $STATUS_EMOJI $STATUS_TEXT |" >> metrics.md
-          echo "| Branch | \`${{ github.head_ref || github.ref_name }}\` |" >> metrics.md
-          echo "" >> metrics.md
-          echo "### 📝 Test Details" >> metrics.md
+          # Generate test results report in workspace root
+          METRICS_FILE="${{ matrix.app.path }}/metrics.md"
+          echo "Creating metrics file at: $METRICS_FILE"
+          
+          echo "## 📊 ${{ matrix.app.name }} App E2E Test Results" > "$METRICS_FILE"
+          echo "" >> "$METRICS_FILE"
+          echo "### 🎯 Test Summary" >> "$METRICS_FILE"
+          echo "| Metric | Value |" >> "$METRICS_FILE"
+          echo "|--------|-------|" >> "$METRICS_FILE"
+          echo "| App | ${{ matrix.app.name }} |" >> "$METRICS_FILE"
+          echo "| Status | $STATUS_EMOJI $STATUS_TEXT |" >> "$METRICS_FILE"
+          echo "| Branch | \`${{ github.head_ref || github.ref_name }}\` |" >> "$METRICS_FILE"
+          echo "" >> "$METRICS_FILE"
+          echo "### 📝 Test Details" >> "$METRICS_FILE"
           if [ "$TEST_STATUS" = "passed" ]; then
-            echo "All E2E tests completed successfully for the \`${{ matrix.app.name }}\` application." >> metrics.md
+            echo "All E2E tests completed successfully for the \`${{ matrix.app.name }}\` application." >> "$METRICS_FILE"
           else
-            echo "Some E2E tests failed for the \`${{ matrix.app.name }}\` application. Please check the workflow logs for details." >> metrics.md
+            echo "Some E2E tests failed for the \`${{ matrix.app.name }}\` application. Please check the workflow logs for details." >> "$METRICS_FILE"
           fi
-          echo "" >> metrics.md
-          echo "---" >> metrics.md
+          echo "" >> "$METRICS_FILE"
+          echo "---" >> "$METRICS_FILE"
 
-          cat metrics.md
+          echo "Metrics file contents:"
+          cat "$METRICS_FILE"
+          echo ""
+          echo "Verifying file exists:"
+          ls -la "$METRICS_FILE" || echo "ERROR: Metrics file not found!"
 
       - name: Comment workflow status on Pull Request
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          METRICS_FILE="${{ matrix.app.path }}/metrics.md"
+          echo "Checking if metrics file exists: $METRICS_FILE"
+          if [ ! -f "$METRICS_FILE" ]; then
+            echo "ERROR: Metrics file does not exist at $METRICS_FILE"
+            exit 1
+          fi
+          echo "Metrics file found. Contents:"
+          cat "$METRICS_FILE"
+        continue-on-error: true
+
+      - name: Post PR comment
         if: ${{ github.event_name == 'pull_request' }}
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2 https://github.com/mshick/add-pr-comment/releases/tag/v2.8.2
         with:
