@@ -1,6 +1,7 @@
 name: E2E Application Test
 permissions:
   contents: read
+  pull-requests: write
 on:
   push:
     branches:
@@ -60,8 +61,6 @@ jobs:
         working-directory: ${{ matrix.app.path }}
         run: |
           uv sync --all-extras --all-groups
-          # Install scalene if not already available
-          uv pip install scalene || echo "Scalene already installed or installation failed"
 
       # Build Java JAR for polyglot (if needed)
       - name: Build Java JAR for polyglot
@@ -98,7 +97,7 @@ jobs:
             sleep 2
           done
 
-      # Start the application with scalene profiling
+      # Start the application
       - name: Start the application
         id: start_app
         working-directory: ${{ matrix.app.path }}
@@ -107,10 +106,8 @@ jobs:
           ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
-          # Create .github directory if it doesn't exist
-          mkdir -p .github
-          # Start the application with scalene profiling
-          uv run scalene --profile-all --cli --outfile ./.github/scalene-${{ matrix.app.name }}.json --json main.py > app.log 2>&1 &
+          # Start the application in background and capture output
+          uv run python main.py > app.log 2>&1 &
           APP_PID=$!
           echo "app_pid=$APP_PID" >> $GITHUB_OUTPUT
           echo "Started application with PID: $APP_PID"
@@ -170,6 +167,8 @@ jobs:
 
       # Run E2E tests
       - name: Run E2E tests
+        id: run_tests
+        continue-on-error: true
         working-directory: ${{ matrix.app.path }}
         env:
           ATLAN_LOCAL_DEVELOPMENT: true
@@ -177,118 +176,48 @@ jobs:
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
           uv run pytest tests/e2e -v --tb=short || TEST_EXIT_CODE=$?
-          # If tests fail, show app logs
+          # Store test result
           if [ -n "${TEST_EXIT_CODE:-}" ]; then
+            echo "test_status=failed" >> $GITHUB_OUTPUT
             echo "Tests failed. Application logs:"
             cat app.log || true
-            exit $TEST_EXIT_CODE
+          else
+            echo "test_status=passed" >> $GITHUB_OUTPUT
           fi
 
-      # Collect scalene metrics and generate report
-      - name: Get scalene metrics and output
+      # Generate test results report
+      - name: Generate test results report
         working-directory: ${{ matrix.app.path }}
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e' || contains(github.event.pull_request.labels.*.name, 'e2e-test') }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
-          export PATH="$HOME/.temporalio/bin:$PATH"
-          # Kill the application to finalize scalene profiling
-          APP_PID=${{ steps.start_app.outputs.app_pid }}
-          if [ -n "$APP_PID" ]; then
-            kill $APP_PID 2>/dev/null || true
-            sleep 5
-          fi
-
-          SCALENE_FILE=".github/scalene-${{ matrix.app.name }}.json"
-
-          # First calculate metrics from current run's scalene.json
-          if [ -f "$SCALENE_FILE" ]; then
-            # Calculate Average CPU Usage upto 2 decimal places
-            AVG_CPU=$(jq -r '
-              [
-                .files |
-                to_entries[] |
-                .value.functions[] |
-                select(.n_cpu_percent_c != null and .n_cpu_percent_python != null and .n_sys_percent != null) |
-                (.n_cpu_percent_c + .n_cpu_percent_python + .n_sys_percent)
-              ] |
-              add / length
-            ' "$SCALENE_FILE" 2>/dev/null | awk '{printf "%.2f\n", $1}' || echo "N/A")
-
-            # Max CPU Usage upto 2 decimal places
-            MAX_CPU=$(jq -r '
-              .files |
-              to_entries[] |
-              .value.functions[] |
-              select(.n_cpu_percent_c != null and .n_cpu_percent_python != null and .n_sys_percent != null) |
-              (.n_cpu_percent_c + .n_cpu_percent_python + .n_sys_percent)
-            ' "$SCALENE_FILE" 2>/dev/null | sort -rn | head -n1 | awk '{printf "%.2f\n", $1}' || echo "N/A")
-
-            MEMORY_USAGE=$(jq -r '
-              .max_footprint_mb
-            ' "$SCALENE_FILE" 2>/dev/null | awk '{printf "%.2f\n", $1}' || echo "N/A")
+          TEST_STATUS="${{ steps.run_tests.outputs.test_status }}"
+          if [ "$TEST_STATUS" = "passed" ]; then
+            STATUS_EMOJI="✅"
+            STATUS_TEXT="All Tests Passed"
           else
-            echo "Current scalene.json does not exist"
-            AVG_CPU="N/A"
-            MAX_CPU="N/A"
-            MEMORY_USAGE="N/A"
+            STATUS_EMOJI="❌"
+            STATUS_TEXT="Tests Failed"
           fi
-
-          # Now fetch Main branch and calculate its metrics
-          git fetch origin main
-          MAIN_SCALENE_FILE=".github/scalene-${{ matrix.app.name }}.json"
-          if git cat-file -e origin/main:${{ matrix.app.path }}/$MAIN_SCALENE_FILE 2>/dev/null && \
-              git show origin/main:${{ matrix.app.path }}/$MAIN_SCALENE_FILE > main_scalene.json; then
-            # Calculate metrics for the main branch
-            MAIN_AVG_CPU=$(jq -r '
-              [
-                .files |
-                to_entries[] |
-                .value.functions[] |
-                select(.n_cpu_percent_c != null and .n_cpu_percent_python != null and .n_sys_percent != null) |
-                (.n_cpu_percent_c + .n_cpu_percent_python + .n_sys_percent)
-              ] |
-              add / length
-            ' main_scalene.json 2>/dev/null | awk '{printf "%.2f\n", $1}' || echo "N/A")
-
-            MAIN_MAX_CPU=$(jq -r '
-              .files |
-              to_entries[] |
-              .value.functions[] |
-              select(.n_cpu_percent_c != null and .n_cpu_percent_python != null and .n_sys_percent != null) |
-              (.n_cpu_percent_c + .n_cpu_percent_python + .n_sys_percent)
-            ' main_scalene.json 2>/dev/null | sort -rn | head -n1 | awk '{printf "%.2f\n", $1}' || echo "N/A")
-
-            MAIN_MEMORY_USAGE=$(jq -r '
-              .max_footprint_mb
-            ' main_scalene.json 2>/dev/null | awk '{printf "%.2f\n", $1}' || echo "N/A")
-          else
-            echo "$MAIN_SCALENE_FILE does not exist in the main branch"
-            MAIN_AVG_CPU="N/A"
-            MAIN_MAX_CPU="N/A"
-            MAIN_MEMORY_USAGE="N/A"
-          fi
-
-          # Generate comprehensive report
-          echo "## 📊 ${{ matrix.app.name }} App E2E Test Results and Performance Metrics" >> metrics.md
-          echo "### Runner Environment Details" >> metrics.md
-          echo "$(mpstat 1 1 | awk 'NR == 1')" >> metrics.md
-          echo "Total Memory: $(free -m | awk 'NR == 2 {print $2}')" MB >> metrics.md
-
+          
+          # Generate test results report
+          echo "## 📊 ${{ matrix.app.name }} App E2E Test Results" >> metrics.md
+          echo "" >> metrics.md
           echo "### 🎯 Test Summary" >> metrics.md
           echo "| Metric | Value |" >> metrics.md
           echo "|--------|-------|" >> metrics.md
           echo "| App | ${{ matrix.app.name }} |" >> metrics.md
-          echo "| Status | ✅ Tests Passed |" >> metrics.md
-
-          # Update metrics report to include both current and main branch summaries
-          echo "## 📊 Performance Usage Summary" >> metrics.md
-          echo "| Metric | Current Branch | Main Branch |" >> metrics.md
-          echo "|--------|----------------|-------------|" >> metrics.md
-          echo "| Average CPU Usage | $AVG_CPU% | $MAIN_AVG_CPU% |" >> metrics.md
-          echo "| Max CPU Usage | $MAX_CPU% | $MAIN_MAX_CPU% |" >> metrics.md
-          echo "| Memory Usage | $MEMORY_USAGE MB | $MAIN_MEMORY_USAGE MB |" >> metrics.md
-
+          echo "| Status | $STATUS_EMOJI $STATUS_TEXT |" >> metrics.md
+          echo "| Branch | \`${{ github.head_ref || github.ref_name }}\` |" >> metrics.md
+          echo "" >> metrics.md
+          echo "### 📝 Test Details" >> metrics.md
+          if [ "$TEST_STATUS" = "passed" ]; then
+            echo "All E2E tests completed successfully for the \`${{ matrix.app.name }}\` application." >> metrics.md
+          else
+            echo "Some E2E tests failed for the \`${{ matrix.app.name }}\` application. Please check the workflow logs for details." >> metrics.md
+          fi
+          echo "" >> metrics.md
           echo "---" >> metrics.md
-
+          
           cat metrics.md
 
       - name: Comment workflow status on Pull Request
@@ -298,6 +227,13 @@ jobs:
           message-id: "workflow_status_${{ matrix.app.name }}"
           message-path: ${{ matrix.app.path }}/metrics.md
         continue-on-error: true
+
+      # Fail job if tests failed
+      - name: Check test results
+        if: steps.run_tests.outputs.test_status == 'failed'
+        run: |
+          echo "Tests failed for ${{ matrix.app.name }}"
+          exit 1
 
       # Stop all services
       - name: Stop all services
@@ -323,13 +259,3 @@ jobs:
             echo "Final application logs:"
             cat app.log
           fi
-
-      - name: Commit scalene.json file
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e' }}
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0 https://github.com/stefanzweifel/git-auto-commit-action/releases/tag/v5.2.0
-        with:
-          commit_message: "[skip ci] chore: update scalene-${{ matrix.app.name }}.json with latest performance metrics"
-          file_pattern: "${{ matrix.app.path }}/.github/scalene-${{ matrix.app.name }}.json"
-          commit_author: GitHub Actions <actions@github.com>
-          skip_dirty_check: false
-          push_options: "--force"
