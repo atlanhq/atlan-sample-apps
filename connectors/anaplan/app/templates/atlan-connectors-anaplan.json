@@ -1,0 +1,136 @@
+{
+    "config": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": false,
+            "ui": {
+              "label": "Name",
+              "hidden": true,
+              "placeholder": "Name"
+            }
+          },
+          "connector": {
+            "type": "string",
+            "default": "anaplan",
+            "required": false,
+            "ui": {
+              "label": "Connector",
+              "hidden": true,
+              "placeholder": "Connector"
+            }
+          },
+          "connectorType": {
+            "type": "string",
+            "required": false,
+            "ui": {
+              "key": "_host",
+              "label": "connectorType",
+              "placeholder": "connectorType",
+              "hidden": true
+            }
+          },
+          "host": {
+            "type": "string",
+            "required": true,
+            "default": "",
+            "ui": {
+              "label": "Host",
+              "help": "Enter the host name without the 'https://' and trailing '/', e.g. us1a.app.anaplan.com",
+              "placeholder": "us1a.app.anaplan.com",
+              "hidden": false,
+              "BYOCdisabled": true,
+              "addonBefore": "https://",
+              "rules": [
+                {
+                  "pattern": "^(?!https?:\/\/)[^\\s\/$.?#].[^\/]*$",
+                  "message": "Please remove any trailing slash or http(s):// prefix",
+                  "trigger": "change"
+                },
+                {
+                  "required": true,
+                  "message": "Please enter a valid host name"
+                }
+              ],
+              "grid": 8
+            }
+          },
+          "auth-type": {
+            "type": "string",
+            "enum": ["basic"],
+            "default": "basic",
+            "required": true,
+            "enumNames": ["Basic"],
+            "ui": {
+              "widget": "radio",
+              "label": "Authentication",
+              "placeholder": "Credential Type",
+              "hidden": false,
+              "rules": [
+                {
+                  "required": true,
+                  "message": "Please enter a valid authentication type"
+                }
+              ]
+            }
+          },
+          "basic": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "required": true,
+                "ui": {
+                  "label": "Username",
+                  "help": "Anaplan Username (can be email-id) for the account with access to all workspaces and apps to be cataloged on Atlan.",
+                  "feedback": true,
+                  "message": "Please enter a valid Username",
+                  "placeholder": "Username",
+                  "grid": 4,
+                  "rules": [
+                    {
+                      "required": true,
+                      "message": "Please enter a valid Username"
+                    }
+                  ]
+                }
+              },
+              "password": {
+                "type": "string",
+                "required": true,
+                "ui": {
+                  "widget": "password",
+                  "label": "Password",
+                  "help": "Anaplan Password for the account mentioned in the username field.",
+                  "placeholder": "Password",
+                  "feedback": true,
+                  "grid": 4,
+                  "rules": [
+                    {
+                      "required": true,
+                      "message": "Please enter a valid Password"
+                    }
+                  ]
+                }
+              }
+            },
+            "ui": {
+              "widget": "nested",
+              "label": "Basic Authentication",
+              "nestedValue": false,
+              "hidden": true
+            }
+          }
+        },
+        "anyOf": [
+          {
+            "properties": {
+              "auth-type": {
+                "const": "basic"
+              }
+            },
+            "required": ["basic"]
+          }
+        ]
+    }
+}
