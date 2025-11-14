@@ -1,6 +1,6 @@
-from typing import Any, Dict, List
 import json
 from pathlib import Path
+from typing import Any, Dict, List
 
 from app.clients import AppClient
 from app.extracts.apps import extract_apps_data
@@ -235,7 +235,7 @@ class AppHandler(BaseHandler):
                     "failureMessage": f"Preflight check failed: {str(e)}",
                 }
             }
-    
+
     @staticmethod
     async def get_configmap(config_map_id: str) -> Dict[str, Any]:
         workflow_json_path = Path().cwd() / "app" / "templates" / "workflow.json"
