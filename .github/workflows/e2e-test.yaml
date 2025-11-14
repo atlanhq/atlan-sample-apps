@@ -198,7 +198,7 @@ jobs:
             STATUS_EMOJI="❌"
             STATUS_TEXT="Tests Failed"
           fi
-          
+
           # Generate test results report
           echo "## 📊 ${{ matrix.app.name }} App E2E Test Results" >> metrics.md
           echo "" >> metrics.md
@@ -217,7 +217,7 @@ jobs:
           fi
           echo "" >> metrics.md
           echo "---" >> metrics.md
-          
+
           cat metrics.md
 
       - name: Comment workflow status on Pull Request
