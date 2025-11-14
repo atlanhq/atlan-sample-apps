@@ -18,12 +18,22 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
-    timeout-minutes: 20  # Increased from 10 to handle multi-platform builds
+    timeout-minutes: 20
+
     steps:
+      # Checkout current repo (your app)
       - uses: actions/checkout@v4.0.0
         with:
           fetch-depth: 0
           token: ${{ secrets.ORG_PAT_GITHUB }}
+
+      # Checkout the private atlanhq/.github repo to a folder
+      - name: Checkout private action repo
+        uses: actions/checkout@v4
+        with:
+          repository: atlanhq/.github
+          token: ${{ secrets.ORG_PAT_GITHUB }}
+          path: private_github
 
       - name: Get branch name
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
@@ -42,10 +52,10 @@ jobs:
 
       - name: Set up Buildx
         id: buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0 https://github.com/docker/setup-buildx-action/releases/tag/v3.10.0
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2
 
       - name: Login to GitHub Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0 https://github.com/docker/login-action/releases/tag/v3.4.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
         with:
           registry: ghcr.io
           username: $GITHUB_ACTOR
@@ -53,7 +63,7 @@ jobs:
 
       - name: Build and push docker image to GHCR
         id: ghcr_docker_build
-        uses: atlanhq/.github/.github/actions/secure-build-push-apps@main
+        uses: ./private_github/.github/actions/secure-build-push-apps
         with:
           branch: ${{ github.ref_name }}
           snyk-token: ${{ secrets.SNYK_TOKEN_BU_APPS }}
@@ -68,10 +78,10 @@ jobs:
             ACCESS_TOKEN_USR=$GITHUB_ACTOR
             ACCESS_TOKEN_PWD=${{ secrets.ORG_PAT_GITHUB }}
         env:
-          DOCKER_CLIENT_TIMEOUT: 600  # Increased timeout
+          DOCKER_CLIENT_TIMEOUT: 600
           COMPOSE_HTTP_TIMEOUT: 600
 
-      # Add Docker Hub login
+      # Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -80,7 +90,7 @@ jobs:
 
       - name: Build and push docker image to Docker Hub
         id: docker_build
-        uses: atlanhq/.github/.github/actions/secure-build-push-apps@main
+        uses: ./private_github/.github/actions/secure-build-push-apps
         with:
           branch: ${{ github.ref_name }}
           snyk-token: ${{ secrets.SNYK_TOKEN_BU_APPS }}
