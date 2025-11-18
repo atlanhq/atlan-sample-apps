@@ -1,0 +1,38 @@
+[project]
+name = "simple-message-processor"
+version = "0.1.0"
+description = "Simple Kafka message processor using Atlan Application SDK"
+authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
+requires-python = ">=3.11"
+license = "Apache-2.0"
+readme = "README.md"
+dependencies = [
+    "atlan-application-sdk @ file:///Users/niteesh.hegde/work/temp-app/application-sdk",
+    "pandas>=2.2.3",
+    "dapr==1.16.0",
+    "temporalio>=1.7.1",
+    "orjson>=3.10.18",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.2",
+    "pytest-mock>=3.14.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20"
+]
+
