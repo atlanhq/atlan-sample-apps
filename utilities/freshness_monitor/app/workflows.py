@@ -10,6 +10,7 @@ from app.activities import (
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 logger = get_logger(__name__)
 
@@ -41,9 +42,15 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
         total = Total()
         activities_instance = FreshnessMonitorActivities()
 
+        retry_policy = RetryPolicy(
+            maximum_attempts=6,  # 1 initial attempt + 5 retries
+            backoff_coefficient=2,
+        )
+
         workflow_args = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             workflow_args,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=60),
         )
 
@@ -55,6 +62,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
             tables_data = await workflow.execute_activity_method(
                 activities_instance.fetch_tables_metadata,
                 metadata_input,
+                retry_policy=retry_policy,
                 start_to_close_timeout=timedelta(minutes=5),
             )
             # Step 2: If not more data available exit loop
@@ -65,6 +73,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
             stale_tables = await workflow.execute_activity_method(
                 activities_instance.identify_stale_tables,
                 {"tables_data": tables_data, "threshold_days": threshold_days},
+                retry_policy=retry_policy,
                 start_to_close_timeout=timedelta(minutes=5),
             )
 
@@ -74,6 +83,7 @@ class FreshnessMonitorWorkflow(WorkflowInterface):
                 tag_output = await workflow.execute_activity_method(
                     activities_instance.tag_stale_tables,
                     {"stale_tables": stale_tables},
+                    retry_policy=retry_policy,
                     start_to_close_timeout=timedelta(minutes=60),
                 )
                 total.add_tagged_counts(tag_output)

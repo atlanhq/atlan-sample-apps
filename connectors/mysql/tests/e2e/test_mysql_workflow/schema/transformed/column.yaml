@@ -1,0 +1,132 @@
+schema_type: dataframe
+version: 0.22.1
+columns:
+  typeName:
+    title: Type Name
+    description: Check the type name of the data asset
+    dtype: str
+    nullable: false
+    checks:
+      str_matches:
+        value: Column
+        options:
+          raise_warning: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.name:
+    title: Column Name
+    description: The name of the column
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.tenantId:
+    title: Tenant ID
+    description: The ID of the tenant
+    dtype: str
+    nullable: false
+    checks:
+      str_matches:
+        value: default
+        options:
+          raise_warning: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.connectorName:
+    title: Connector Name
+    description: Checks the name of the connector.
+    dtype: str
+    nullable: false
+    checks:
+      str_matches:
+        value: mysql
+        options:
+          raise_warning: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.connectionQualifiedName:
+    title: Connection Qualified Name
+    description: The qualified name of the connection
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.qualifiedName:
+    title: Qualified Name
+    description: The qualified name of the attribute
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.databaseName:
+    title: Database Name
+    description: The name of the database
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.schemaName:
+    title: Schema Name
+    description: The name of the schema
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.tableName:
+    title: Table Name
+    description: The name of the table
+    dtype: str
+    nullable: true
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  status:
+    title: Status
+    description: The status of the schema
+    dtype: str
+    nullable: false
+    checks:
+      str_matches:
+        value: ACTIVE
+        options:
+          raise_warning: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks:
+  check_record_count_ge:
+    value: 1
+    options:
+      raise_warning: false
+
+index: null
+dtype: null
+coerce: false
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: true
+add_missing_columns: false
+title: Transformed Column Pandera Schema
+description: Pandera schema definition for the transformed column output
+
