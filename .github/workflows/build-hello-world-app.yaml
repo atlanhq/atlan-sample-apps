@@ -1,0 +1,86 @@
+name: Build Hello World App Image
+
+on:
+  push:
+    branches:
+      - hw-pkg
+    paths:
+      - 'quickstart/hello_world/**'
+      - '.github/workflows/build-hello-world-app.yaml'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: false
+        default: 'hw-pkg'
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE_NAME: atlanhq/atlan-hello-world-app
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image 🐋
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set image name based on branch
+        id: image-name
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          # Replace / with - in branch name for valid image name
+          SANITIZED_BRANCH=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
+          IMAGE_NAME="${{ env.IMAGE_BASE_NAME }}-${SANITIZED_BRANCH}"
+          echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "Building image: ${IMAGE_NAME}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.image-name.outputs.image_name }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value={{branch}}-latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./quickstart/hello_world
+          file: ./quickstart/hello_world/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Image digest
+        run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
+
+      - name: Print image tags
+        run: |
+          echo "🎉 Successfully built and pushed image!"
+          echo "Tags:"
+          echo "${{ steps.meta.outputs.tags }}"
