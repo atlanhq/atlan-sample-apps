@@ -1,4 +1,5 @@
 import asyncio
+import os
 from datetime import timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Sequence
 
@@ -42,8 +43,14 @@ class HelloWorldWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
-        name: str = workflow_args.get("name", "John Doe")
-        logger.info("Starting hello world workflow")
+        # Try environment variable first (for Argo), then workflow_args (for frontend)
+        # Argo sets NAME env var, but also check INPUT for backward compatibility
+        name: str = os.getenv("NAME") or workflow_args.get("name") or "John Doe"
+
+        logger.info(f"Starting hello world workflow with name: {name}")
+        logger.info(
+            f"Workflow args received: {workflow_args}"
+        )  # Debug: see what's in workflow_args
 
         activities: List[Coroutine[Any, Any, Any]] = [
             workflow.execute_activity(  # pyright: ignore[reportUnknownMemberType]
