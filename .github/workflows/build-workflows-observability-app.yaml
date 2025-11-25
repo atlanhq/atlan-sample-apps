@@ -57,12 +57,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ steps.image-name.outputs.image_name }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value={{branch}}-latest
+            type=raw,value=ATLAN_WORKFLOWS_OBSERVABILITY_APP_IMAGE_TAG
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: ./utilities/workflows_observability
