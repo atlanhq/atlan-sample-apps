@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+import os
+from datetime import date, datetime, timedelta
 from typing import Any, Callable, Dict, Sequence
 
 from app.activities import FetchWorkflowsRunInput, WorkflowsObservabilityActivities
@@ -30,11 +31,42 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
         workflow.logger.info(f"Workflow args: {workflow_args}")
-        selected_date: str = workflow_args.get(
-            "selectedDate", date.today().strftime("%Y-%m-%d")
-        )
+        selected_date: str = workflow_args.get("selectedDate")
+        if not selected_date:
+            env_date = os.getenv("SELECTED_DATE")
+            if env_date:
+                try:
+                    # Parse the date from env var and format it to ensure correct format
+                    parsed_date = datetime.strptime(env_date, "%Y-%m-%d")
+                    selected_date = parsed_date.strftime("%Y-%m-%d")
+                except ValueError:
+                    # If parsing fails, try common date formats
+                    for fmt in [
+                        "%Y/%m/%d",
+                        "%m/%d/%Y",
+                        "%d/%m/%Y",
+                        "%Y-%m-%dT%H:%M:%S",
+                    ]:
+                        try:
+                            parsed_date = datetime.strptime(env_date, fmt)
+                            selected_date = parsed_date.strftime("%Y-%m-%d")
+                            break
+                        except ValueError:
+                            continue
+                    else:
+                        # If all parsing fails, fall back to today
+                        workflow.logger.warning(
+                            f"Could not parse SELECTED_DATE env var '{env_date}', using today's date"
+                        )
+                        selected_date = date.today().strftime("%Y-%m-%d")
+            else:
+                selected_date = date.today().strftime("%Y-%m-%d")
+
         workflow.logger.info(f"Selected date: {selected_date}")
-        output_prefix: str = workflow_args.get("outputPrefix", "")
+
+        output_prefix: str = (
+            workflow_args.get("outputPrefix") or os.getenv("OUTPUT_PREFIX") or ""
+        )
         workflow.logger.info(f"Output prefix: {output_prefix}")
         workflow.logger.info("Starting workflows observability workflow")
 
