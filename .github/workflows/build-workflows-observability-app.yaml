@@ -36,7 +36,7 @@ jobs:
       - name: Set image name based on branch
         id: image-name
         run: |
-          SANITIZED_BRANCH=ATLAN_WORKFLOWS_OBSERVABILITY_APP_IMAGE_BRANCH
+          SANITIZED_BRANCH="ATLAN_WORKFLOWS_OBSERVABILITY_APP_IMAGE_BRANCH"
           IMAGE_NAME="${{ env.IMAGE_BASE_NAME }}-${SANITIZED_BRANCH}"
           echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
           echo "Building image: ${IMAGE_NAME}"
