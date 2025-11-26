@@ -1,4 +1,6 @@
+import math
 import os
+import time
 import unittest
 
 import pytest
@@ -82,6 +84,50 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
         # Verify that response data contains the expected number
         self.assertEqual(
             response_data["data"]["number"], self.test_workflow_args["number"]
+        )
+
+        # Get workflow result to verify factorial calculation
+        workflow_id = workflow_details[self.test_name]["workflow_id"]
+
+        # Wait for workflow to complete and get the result
+        max_wait_time = 60  # Wait up to 60 seconds
+        wait_interval = 2
+        elapsed_time = 0
+
+        while elapsed_time < max_wait_time:
+            result_response = self.client._get(f"/workflows/v1/result/{workflow_id}")
+            if result_response.status_code == 200:
+                result_data = result_response.json()
+                if result_data.get("status") == "completed":
+                    # Verify factorial calculation
+                    calculation_result = result_data.get("result", {}).get(
+                        "calculation_result", {}
+                    )
+                    input_number = calculation_result.get("input")
+                    factorial_result = calculation_result.get("result")
+                    success = calculation_result.get("success", False)
+
+                    # Assert calculation was successful
+                    self.assertTrue(success, "Factorial calculation should succeed")
+                    self.assertEqual(input_number, self.test_workflow_args["number"])
+
+                    # Calculate expected factorial using math.factorial
+                    expected_factorial = math.factorial(input_number)
+
+                    # Assert factorial result is correct
+                    self.assertEqual(
+                        factorial_result,
+                        expected_factorial,
+                        f"Factorial of {input_number} should be {expected_factorial}, but got {factorial_result}",
+                    )
+                    return  # Test passed
+
+            time.sleep(wait_interval)
+            elapsed_time += wait_interval
+
+        # If we get here, workflow didn't complete in time
+        self.fail(
+            f"Workflow {workflow_id} did not complete within {max_wait_time} seconds"
         )
 
     # Override BaseTest methods that don't apply to polyglot - all skipped
