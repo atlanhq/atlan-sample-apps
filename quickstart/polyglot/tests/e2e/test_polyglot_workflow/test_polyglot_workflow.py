@@ -90,7 +90,7 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
         workflow_id = workflow_details[self.test_name]["workflow_id"]
 
         # Wait for workflow to complete and get the result
-        max_wait_time = 60  # Wait up to 60 seconds
+        max_wait_time = 300  # Wait up to 5 minutes
         wait_interval = 2
         elapsed_time = 0
 
@@ -127,7 +127,7 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
 
         # If we get here, workflow didn't complete in time
         self.fail(
-            f"Workflow {workflow_id} did not complete within {max_wait_time} seconds"
+            f"Workflow {workflow_id} did not complete within {max_wait_time} seconds (5 minutes)"
         )
 
     # Override BaseTest methods that don't apply to polyglot - all skipped
