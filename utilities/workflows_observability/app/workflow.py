@@ -68,6 +68,20 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             workflow_args.get("outputPrefix") or os.getenv("OUTPUT_PREFIX") or ""
         )
         workflow.logger.info(f"Output prefix: {output_prefix}")
+
+        atlan_base_url: str = (
+            workflow_args.get("atlan_base_url") or os.getenv("ATLAN_BASE_URL") or ""
+        )
+        workflow.logger.info(f"Atlan Base URL: {atlan_base_url}")
+
+        # Extract Atlan API Key with fallback to env var
+        atlan_api_key: str = (
+            workflow_args.get("atlan_api_key") or os.getenv("ATLAN_API_KEY") or ""
+        )
+        workflow.logger.info(
+            f"Atlan API Key: {'*' * len(atlan_api_key) if atlan_api_key else 'Not set'}"
+        )
+
         workflow.logger.info("Starting workflows observability workflow")
 
         run_input = FetchWorkflowsRunInput(
