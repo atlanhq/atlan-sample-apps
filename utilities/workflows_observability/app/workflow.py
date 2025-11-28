@@ -42,8 +42,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
 
         # Handle both 'workflow_date' (from Argo) and 'selected_date' (for backward compatibility)
         selected_date: str = workflow_args.get(
-            "workflow_date",
-            workflow_args.get("selected_date", date.today().strftime("%Y-%m-%d")),
+            "selected_date", date.today().strftime("%Y-%m-%d")
         )
         workflow.logger.info(f"Selected date: {selected_date}")
         output_prefix: str = workflow_args.get("output_prefix", "")
