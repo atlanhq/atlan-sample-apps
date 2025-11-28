@@ -27,11 +27,11 @@
             required
           />
 
-          <label for="outputPrefix" style="margin-bottom: 4px;">Output Prefix</label>
+          <label for="output_prefix" style="margin-bottom: 4px;">Output Prefix</label>
           <input
             type="text"
-            id="outputPrefix"
-            name="outputPrefix"
+            id="output_prefix"
+            name="output_prefix"
             placeholder="Enter output prefix for the object storage"
             style="padding: 6px; font-size: 14px;"
           />
@@ -72,7 +72,7 @@
 
         // Bind form submission
         const form = document.getElementById("nameForm");
-        const outputPrefixInput = document.getElementById("outputPrefix");
+        const outputPrefixInput = document.getElementById("output_prefix");
 
         if (form) {
           form.addEventListener("submit", async function handleSubmit(event) {
@@ -97,8 +97,8 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  selectedDate: dateInput,
-                  outputPrefix
+                  selected_date: dateInput,
+                  output_prefix: outputPrefix
                 }),
               });
 
