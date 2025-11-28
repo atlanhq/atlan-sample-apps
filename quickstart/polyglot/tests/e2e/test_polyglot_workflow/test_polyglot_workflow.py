@@ -1,6 +1,5 @@
 import math
 import os
-import time
 import unittest
 
 import pytest
@@ -64,11 +63,16 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
         self.run_workflow()
 
     @pytest.mark.order(3)
-    def test_configuration_get(self):
+    @pytest.mark.asyncio
+    async def test_configuration_get(self):
         """
         Test configuration retrieval
         """
         from application_sdk.test_utils.e2e.conftest import workflow_details
+
+        # Ensure workflow has been run (in case test is run individually)
+        if self.test_name not in workflow_details:
+            self.run_workflow()
 
         response = self.client._get(
             f"/config/{workflow_details[self.test_name]['workflow_id']}"
@@ -87,47 +91,96 @@ class TestPolyglotWorkflow(unittest.TestCase, BaseTest):
         )
 
         # Get workflow result to verify factorial calculation
+        # Since the API result endpoint may not be available, we'll get the result
+        # directly from Temporal after run_workflow() completes
         workflow_id = workflow_details[self.test_name]["workflow_id"]
 
-        # Wait for workflow to complete and get the result
-        max_wait_time = 300  # Wait up to 5 minutes
-        wait_interval = 2
-        elapsed_time = 0
+        # Get result from Temporal client (run_workflow already waits for completion)
+        from app.workflow import PolyglotWorkflow
+        from application_sdk.test_utils.e2e.conftest import temporal_client
 
-        while elapsed_time < max_wait_time:
-            result_response = self.client._get(f"/workflows/v1/result/{workflow_id}")
-            if result_response.status_code == 200:
-                result_data = result_response.json()
-                if result_data.get("status") == "completed":
-                    # Verify factorial calculation
-                    calculation_result = result_data.get("result", {}).get(
-                        "calculation_result", {}
-                    )
-                    input_number = calculation_result.get("input")
-                    factorial_result = calculation_result.get("result")
-                    success = calculation_result.get("success", False)
+        # Get workflow result from Temporal
+        workflow_handle = temporal_client.get_workflow_handle(
+            workflow_id, workflow_type=PolyglotWorkflow
+        )
+        workflow_result = await workflow_handle.result()
 
-                    # Assert calculation was successful
-                    self.assertTrue(success, "Factorial calculation should succeed")
-                    self.assertEqual(input_number, self.test_workflow_args["number"])
+        # Verify the overall workflow status
+        self.assertEqual(
+            workflow_result.get("status"),
+            "success",
+            "Workflow status should be 'success'",
+        )
 
-                    # Calculate expected factorial using math.factorial
-                    expected_factorial = math.factorial(input_number)
+        # Verify calculation_result structure
+        calculation_result = workflow_result.get("calculation_result", {})
+        self.assertIsInstance(
+            calculation_result, dict, "calculation_result should be a dictionary"
+        )
 
-                    # Assert factorial result is correct
-                    self.assertEqual(
-                        factorial_result,
-                        expected_factorial,
-                        f"Factorial of {input_number} should be {expected_factorial}, but got {factorial_result}",
-                    )
-                    return  # Test passed
+        input_number = calculation_result.get("input")
+        factorial_result = calculation_result.get("result")
+        success = calculation_result.get("success", False)
+        output_path = calculation_result.get("output_path")
 
-            time.sleep(wait_interval)
-            elapsed_time += wait_interval
+        # Assert calculation was successful
+        self.assertTrue(success, "Factorial calculation should succeed")
+        self.assertEqual(
+            input_number,
+            self.test_workflow_args["number"],
+            f"Input number should match test input: {self.test_workflow_args['number']}",
+        )
+        self.assertIsNotNone(
+            factorial_result,
+            "Factorial result should not be None",
+        )
+        self.assertIsNotNone(
+            output_path,
+            "Output path should be present in calculation_result",
+        )
+        self.assertIsInstance(output_path, str, "Output path should be a string")
 
-        # If we get here, workflow didn't complete in time
-        self.fail(
-            f"Workflow {workflow_id} did not complete within {max_wait_time} seconds (5 minutes)"
+        # Calculate expected factorial using math.factorial
+        expected_factorial = math.factorial(input_number)
+
+        # Assert factorial result is correct
+        self.assertEqual(
+            factorial_result,
+            expected_factorial,
+            f"Factorial of {input_number} should be {expected_factorial}, but got {factorial_result}",
+        )
+
+        # Verify save_stats structure
+        save_stats = workflow_result.get("save_stats", {})
+        self.assertIsInstance(save_stats, dict, "save_stats should be a dictionary")
+        self.assertTrue(
+            save_stats.get("success", False),
+            "Save operation should be successful",
+        )
+        self.assertIn(
+            "file_path",
+            save_stats,
+            "save_stats should contain 'file_path'",
+        )
+        self.assertIn(
+            "record_count",
+            save_stats,
+            "save_stats should contain 'record_count'",
+        )
+        self.assertIn(
+            "chunk_count",
+            save_stats,
+            "save_stats should contain 'chunk_count'",
+        )
+        self.assertIsInstance(
+            save_stats.get("record_count"),
+            int,
+            "record_count should be an integer",
+        )
+        self.assertGreater(
+            save_stats.get("record_count", 0),
+            0,
+            "record_count should be greater than 0",
         )
 
     # Override BaseTest methods that don't apply to polyglot - all skipped
