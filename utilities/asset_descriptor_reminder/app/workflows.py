@@ -5,6 +5,7 @@ from app.activities import AssetDescriptionReminderActivities
 from app.models import FetchUserAssetsInput, SendSlackReminderInput, UploadDataInput
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 
 @workflow.defn
@@ -17,10 +18,16 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
 
         activities_instance = AssetDescriptionReminderActivities()
 
+        retry_policy = RetryPolicy(
+            maximum_attempts=6,  # 1 initial attempt + 5 retries
+            backoff_coefficient=2,
+        )
+
         # Get the full workflow arguments from the state store with configuration
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             initial_args,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(minutes=1),
         )
         fetch_user_assets_input = FetchUserAssetsInput(
@@ -38,6 +45,7 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             assets_data = await workflow.execute_activity_method(
                 activities_instance.fetch_user_assets,
                 fetch_user_assets_input,
+                retry_policy=retry_policy,
                 start_to_close_timeout=timedelta(minutes=1),
             )
             # When no more assets are found exit the while loop
@@ -47,6 +55,7 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
             assets_without_descriptions = await workflow.execute_activity_method(
                 activities_instance.find_asset_without_description,
                 assets_data,
+                retry_policy=retry_policy,
                 start_to_close_timeout=timedelta(minutes=1),
             )
             if assets_without_descriptions:
@@ -62,6 +71,7 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
                 await workflow.execute_activity_method(
                     activities_instance.upload_data,
                     upload_data,
+                    retry_policy=retry_policy,
                     start_to_close_timeout=timedelta(minutes=1),
                 )
             # Increment start to retrieve the new page of assets
@@ -81,12 +91,14 @@ class AssetDescriptionReminderWorkflow(WorkflowInterface):
                     config=workflow_args["config"],
                     count_of_assets_without_description=count_of_assets_without_descriptions,
                 ),
+                retry_policy=retry_policy,
                 start_to_close_timeout=timedelta(minutes=1),
             )
             # Step 5: Purge intermediate files from object storage
             (
                 await workflow.execute_activity_method(
                     activities_instance.purge_files,
+                    retry_policy=retry_policy,
                     start_to_close_timeout=timedelta(minutes=1),
                 ),
             )

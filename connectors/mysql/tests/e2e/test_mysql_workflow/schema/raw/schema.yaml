@@ -1,0 +1,40 @@
+schema_type: dataframe
+version: 0.22.1
+columns:
+  catalog_name:
+    title: Catalog Name
+    description: Check the name of the catalog
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  schema_name:
+    title: Schema Name
+    description: Check the name of the schema
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks:
+  check_record_count_ge:
+    value: 1
+    options:
+      raise_warning: false
+
+index: null
+dtype: null
+coerce: false
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: true
+add_missing_columns: false
+title: Raw Schema Pandera Schema
+description: Pandera schema definition for the raw schema output
+

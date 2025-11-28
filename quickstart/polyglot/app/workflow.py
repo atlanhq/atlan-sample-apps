@@ -17,6 +17,7 @@ from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 logger = get_logger(__name__)
 workflow.logger = logger
@@ -59,12 +60,18 @@ class PolyglotWorkflow(WorkflowInterface):
         """
         activities_instance = PolyglotActivities()
 
+        retry_policy = RetryPolicy(
+            maximum_attempts=6,  # 1 initial attempt + 5 retries
+            backoff_coefficient=2,
+        )
+
         logger.info(f"Starting polyglot workflow with config: {workflow_config}")
 
         # Get workflow configuration from the state store
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             workflow_config,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
 
@@ -77,6 +84,7 @@ class PolyglotWorkflow(WorkflowInterface):
         calculation_result = await workflow.execute_activity_method(
             activities_instance.calculate_factorial,
             number,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
 
@@ -88,6 +96,7 @@ class PolyglotWorkflow(WorkflowInterface):
         save_stats = await workflow.execute_activity_method(
             activities_instance.save_result_to_json,
             calculation_result,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
 

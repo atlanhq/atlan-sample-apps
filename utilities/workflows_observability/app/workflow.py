@@ -5,6 +5,7 @@ from app.activities import FetchWorkflowsRunInput, WorkflowsObservabilityActivit
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 workflow.logger = get_logger(__name__)
 
@@ -23,10 +24,16 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             workflow_config (Dict[str, Any]): The configuration dictionary for the workflow.
 
         """
+        retry_policy = RetryPolicy(
+            maximum_attempts=6,  # 1 initial attempt + 5 retries
+            backoff_coefficient=2,
+        )
+
         # Get the workflow configuration from the state store
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             WorkflowsObservabilityActivities.get_workflow_args,
             workflow_config,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
         workflow.logger.info(f"Workflow args: {workflow_args}")
@@ -49,6 +56,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             count = await workflow.execute_activity(
                 WorkflowsObservabilityActivities.fetch_and_store_workflows_run_by_page,
                 run_input,
+                retry_policy=retry_policy,
                 start_to_close_timeout=timedelta(seconds=60),
             )
             workflow.logger.info(f"results: {count}")

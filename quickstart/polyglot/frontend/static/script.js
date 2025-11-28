@@ -1,23 +1,47 @@
 // Polyglot Demo - Frontend JavaScript
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.location.origin;
 
-// DOM Elements
-const calculateBtn = document.getElementById('calculate-btn');
-const numberInput = document.getElementById('number-input');
+// DOM Elements - will be initialized when DOM is ready
+let calculateBtn;
+let numberInput;
 
-// Event Listeners
-calculateBtn.addEventListener('click', calculateFactorial);
+// Wait for DOM to be ready before accessing elements
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    calculateBtn = document.getElementById('calculate-btn');
+    numberInput = document.getElementById('number-input');
 
-// Allow Enter key to trigger calculation
-numberInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') calculateFactorial();
+    // Check if elements exist
+    if (!calculateBtn) {
+        console.error('Calculate button not found!');
+        return;
+    }
+    if (!numberInput) {
+        console.error('Number input not found!');
+        return;
+    }
+
+    // Event Listeners
+    calculateBtn.addEventListener('click', calculateFactorial);
+
+    // Allow Enter key to trigger calculation
+    numberInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') calculateFactorial();
+    });
 });
 
 /**
  * Calculate factorial
  */
 async function calculateFactorial() {
+    // Safety check - ensure elements are available
+    if (!numberInput || !calculateBtn) {
+        console.error('DOM elements not initialized');
+        showErrorPopup('Page not fully loaded. Please refresh and try again.');
+        return;
+    }
+
     const number = parseInt(numberInput.value);
 
     if (isNaN(number) || number < 0 || number > 20) {
