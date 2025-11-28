@@ -23,6 +23,9 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             workflow_config (Dict[str, Any]): The configuration dictionary for the workflow.
 
         """
+        # Log incoming workflow_config for debugging
+        workflow.logger.info(f"Incoming workflow_config: {workflow_config}")
+
         # Get the workflow configuration from the state store
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             WorkflowsObservabilityActivities.get_workflow_args,
@@ -30,8 +33,17 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
+        # Merge workflow_config directly to ensure Argo inputs take precedence
+        # This ensures values from Argo workflow-arguments are used over state store defaults
+        if workflow_config:
+            workflow_args.update(workflow_config)
+
+        workflow.logger.info(f"Merged workflow_args: {workflow_args}")
+
+        # Handle both 'workflow_date' (from Argo) and 'selected_date' (for backward compatibility)
         selected_date: str = workflow_args.get(
-            "selected_date", date.today().strftime("%Y-%m-%d")
+            "workflow_date",
+            workflow_args.get("selected_date", date.today().strftime("%Y-%m-%d")),
         )
         workflow.logger.info(f"Selected date: {selected_date}")
         output_prefix: str = workflow_args.get("output_prefix", "")
