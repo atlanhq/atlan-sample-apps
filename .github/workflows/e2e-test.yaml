@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - e2e
   pull_request:
     types: [labeled, reopened, synchronize, opened]
 
