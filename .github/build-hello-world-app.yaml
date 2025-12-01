@@ -1,0 +1,87 @@
+name: Build Hello World App Image
+
+on:
+  push:
+    branches:
+      - hello-world-pkg
+    paths:
+      - 'quickstart/hello_world/**'
+      - '.github/workflows/build-hello-world-app.yaml'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: false
+        default: 'hello-world-pkg'
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE_NAME: atlanhq/atlan-hello-world-app
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image 🐋
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get branch name
+        id: get_branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> "$GITHUB_OUTPUT"
+
+      - name: Set REPOSITORY_NAME env
+        shell: bash
+        run: |
+          echo "REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e 's/:refs//')" >> "$GITHUB_ENV"
+
+      - name: Get version tag
+        id: get_version
+        run: |
+          version=$(git ls-remote "https://${{ secrets.ORG_PAT_GITHUB }}@github.com/atlanhq/${REPOSITORY_NAME}.git" "${{ steps.get_branch.outputs.branch }}" | awk '{print $1}' | cut -c1-7)
+          echo "version=${version}abcd" >> "$GITHUB_OUTPUT"
+
+      - name: Lowercase branch name
+        id: get_lowercase_branch
+        run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./quickstart/hello_world
+          file: ./quickstart/hello_world/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Image digest
+        run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
+
+      - name: Print image tags
+        run: |
+          echo "🎉 Successfully built and pushed image!"
+          echo "Tags:"
+          echo "${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest"
+          echo "${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}"
