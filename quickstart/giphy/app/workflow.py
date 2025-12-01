@@ -33,6 +33,10 @@ class GiphyWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
+        if workflow_config:
+            workflow_args.update(workflow_config)
+            logger.info(f"Merged workflow_args: {workflow_args}")
+
         search_term: str = workflow_args.get("search_term", "funny cat")
         recipients: str = workflow_args.get("recipients")  # pyright: ignore[reportAssignmentType]
 

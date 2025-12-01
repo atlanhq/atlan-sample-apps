@@ -89,7 +89,7 @@ class GiphyActivities(ActivitiesInterface):
             logger.error("No valid recipients provided")
             raise ValueError("No valid recipients provided")
 
-        sender = "support@atlan.app"
+        sender = SMTP_SENDER
         subject = "Your Surprise GIF!"
         body = f"""
         <html>
@@ -122,3 +122,4 @@ class GiphyActivities(ActivitiesInterface):
             logger.info(f"Email successfully sent to {', '.join(recipients)}")
         except Exception as e:
             logger.error(f"Email failed to send to {', '.join(recipients)}: {e}")
+            raise  # Re-raise the exception so the activity fails

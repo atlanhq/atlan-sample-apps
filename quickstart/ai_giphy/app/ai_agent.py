@@ -19,6 +19,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "apikey")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 GIPHY_API_KEY = os.getenv("GIPHY_API_KEY")
+SMTP_SENDER = os.getenv("SMTP_SENDER", "support@atlan.app")
 
 
 def fetch_gif(search_term: str) -> str:
@@ -57,7 +58,7 @@ def send_email_with_gify(to: str, gify_url: str):
             "SMTP_PASSWORD is not set, please set it in the environment variables for the application. For reference, please refer to the README.md file and .env.example file"
         )
 
-    sender = "support@atlan.app"
+    sender = SMTP_SENDER
     subject = "Your Surprise GIF!"
     body = f"""
         <html>
@@ -85,7 +86,7 @@ def send_email_with_gify(to: str, gify_url: str):
             return "Email sent successfully"
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
-        return "Failed to send email"
+        raise
 
 
 def get_chain():

@@ -33,6 +33,10 @@ class AIGiphyWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
+        if workflow_config:
+            workflow_args.update(workflow_config)
+            logger.info(f"Merged workflow_args: {workflow_args}")
+
         # Get the input string from workflow_args. Provide a default if not found.
         ai_input_string: str = workflow_args.get(
             "ai_input_string", "Fetch a cat gif and send it to test@example.com"
