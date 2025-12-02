@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - e2e
   pull_request:
     types: [labeled, reopened, synchronize, opened]
 
@@ -26,6 +27,15 @@ jobs:
           - name: polyglot
             path: quickstart/polyglot
             application_name: polyglot
+          - name: mysql
+            path: connectors/mysql
+            application_name: mysql
+          - name: freshness_monitor
+            path: utilities/freshness_monitor
+            application_name: freshness-monitor
+          - name: workflows_observability
+            path: utilities/workflows_observability
+            application_name: workflows-observability
 
     steps:
       - uses: actions/checkout@v4.0.0
@@ -172,6 +182,13 @@ jobs:
         env:
           ATLAN_LOCAL_DEVELOPMENT: true
           ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
+          ATLAN_API_KEY: ${{ secrets.ATLAN_API_KEY }}
+          ATLAN_BASE_URL: ${{ secrets.ATLAN_BASE_URL }}
+          E2E_MYSQL_BASIC_AUTH_HOST: ${{ secrets.E2E_MYSQL_BASIC_AUTH_HOST }}
+          E2E_MYSQL_BASIC_AUTH_PASSWORD: ${{ secrets.E2E_MYSQL_BASIC_AUTH_PASSWORD }}
+          E2E_MYSQL_BASIC_AUTH_PORT: ${{ secrets.E2E_MYSQL_BASIC_AUTH_PORT }}
+          E2E_MYSQL_BASIC_AUTH_USERNAME: ${{ secrets.E2E_MYSQL_BASIC_AUTH_USERNAME }}
+          E2E_MYSQL_BASIC_DATABASE: ${{ secrets.E2E_MYSQL_BASIC_DATABASE }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
           uv run pytest tests/e2e -v --tb=short || TEST_EXIT_CODE=$?
