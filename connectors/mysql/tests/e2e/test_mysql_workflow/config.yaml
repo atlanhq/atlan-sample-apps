@@ -1,6 +1,6 @@
 test_workflow_args:
   credentials:
-    username: $E2E_MYSQL_BASIC_AUTH_USERNAME
+    user: $E2E_MYSQL_BASIC_AUTH_USERNAME
     password: $E2E_MYSQL_BASIC_AUTH_PASSWORD
     host: $E2E_MYSQL_BASIC_AUTH_HOST
     port: $E2E_MYSQL_BASIC_AUTH_PORT
