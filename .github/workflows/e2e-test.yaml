@@ -115,6 +115,8 @@ jobs:
         env:
           ATLAN_LOCAL_DEVELOPMENT: true
           ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
+          ATLAN_API_KEY: ${{ secrets.ATLAN_API_KEY }}
+          ATLAN_BASE_URL: ${{ secrets.ATLAN_BASE_URL }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
           # Start the application in background and capture output
