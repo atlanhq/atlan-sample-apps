@@ -37,6 +37,42 @@ columns:
     coerce: false
     required: true
     regex: false
+  ordinal_position:
+    title: Ordinal Position
+    description: The ordinal position of the column
+    dtype: Int64
+    nullable: false
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  is_nullable:
+    title: Is Nullable
+    description: Whether the column allows null values
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  data_type:
+    title: Data Type
+    description: The data type of the column
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  is_autoincrement:
+    title: Is Auto Increment
+    description: Whether the column is auto-increment
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
 checks:
   check_record_count_ge:
     value: 1

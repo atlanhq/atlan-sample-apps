@@ -8,7 +8,7 @@ columns:
     nullable: false
     checks:
       str_matches:
-        value: Column
+        value: COLUMN
         options:
           raise_warning: false
     unique: false
@@ -24,7 +24,7 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.tenantId:
+  attributes.tenant_id:
     title: Tenant ID
     description: The ID of the tenant
     dtype: str
@@ -38,7 +38,7 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.connectorName:
+  attributes.connector_name:
     title: Connector Name
     description: Checks the name of the connector.
     dtype: str
@@ -93,6 +93,65 @@ columns:
     description: The name of the table
     dtype: str
     nullable: true
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.dataType:
+    title: Data Type
+    description: The data type of the column
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.isNullable:
+    title: Is Nullable
+    description: Whether the column allows null values
+    dtype: bool
+    nullable: false
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  attributes.order:
+    title: Column Order
+    description: The ordinal position of the column
+    dtype: Int64
+    nullable: false
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  attributes.connection_name:
+    title: Connection Name
+    description: The name of the connection
+    dtype: str
+    nullable: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  attributes.status:
+    title: Status
+    description: The status of the column
+    dtype: str
+    nullable: false
+    checks:
+      str_matches:
+        value: ACTIVE
+        options:
+          raise_warning: false
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  customAttributes.is_autoincrement:
+    title: Is Auto Increment
+    description: Whether the column is auto-increment
+    dtype: str
+    nullable: false
     unique: false
     coerce: false
     required: true

@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from application_sdk.test_utils.e2e.base import BaseTest
 
 
@@ -10,6 +11,7 @@ class TestMySQLWorkflow(unittest.TestCase, BaseTest):
         "./local/dapr/objectstore/artifacts/apps/mysql/workflows"
     )
 
+    @pytest.mark.order(3)
     def test_metadata(self):
         """
         Test Metadata with pattern matching instead of exact matching.
@@ -24,6 +26,7 @@ class TestMySQLWorkflow(unittest.TestCase, BaseTest):
         self.assertIn("data", response, "Response should have 'data' field")
         self.assertIsInstance(response["data"], list, "Data field should be a list")
 
+    @pytest.mark.order(4)
     def test_preflight_check(self):
         """
         Test Preflight Check with pattern matching instead of exact matching.
@@ -74,3 +77,10 @@ class TestMySQLWorkflow(unittest.TestCase, BaseTest):
                     check_data["successMessage"],
                     "Success message should contain expected text",
                 )
+
+    @pytest.mark.order(4)
+    def test_run_workflow(self):
+        """
+        Test running the metadata extraction workflow
+        """
+        self.run_workflow()

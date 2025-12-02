@@ -8,7 +8,7 @@ columns:
     nullable: false
     checks:
       str_matches:
-        value: Schema
+        value: SCHEMA
         options:
           raise_warning: false
     unique: false
@@ -24,7 +24,7 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.tenantId:
+  attributes.tenant_id:
     title: Tenant ID
     description: The ID of the tenant
     dtype: str
@@ -38,7 +38,7 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.connectorName:
+  attributes.connector_name:
     title: Connector Name
     description: Checks the name of the connector.
     dtype: str
@@ -82,19 +82,19 @@ columns:
   attributes.tableCount:
     title: Table Count
     description: The count of tables in the schema
-    dtype: int64
-    nullable: false
+    dtype: Int64
+    nullable: true
     unique: false
-    coerce: false
+    coerce: true
     required: true
     regex: false
-  attributes.viewsCount:
+  attributes.viewCount:
     title: View Count
     description: The count of views in the schema
-    dtype: int64
-    nullable: false
+    dtype: Int64
+    nullable: true
     unique: false
-    coerce: false
+    coerce: true
     required: true
     regex: false
   status:

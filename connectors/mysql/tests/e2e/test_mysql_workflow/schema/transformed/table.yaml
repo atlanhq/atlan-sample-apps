@@ -8,7 +8,7 @@ columns:
     nullable: false
     checks:
       isin:
-        value: ['Table', 'View', 'MaterialisedView']
+        value: ['TABLE', 'VIEW', 'MATERIALIZED VIEW']
         options:
           raise_warning: false
     unique: false
@@ -24,7 +24,7 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.tenantId:
+  attributes.tenant_id:
     title: Tenant ID
     description: The ID of the tenant
     dtype: str
@@ -38,7 +38,7 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.connectorName:
+  attributes.connector_name:
     title: Connector Name
     description: Checks the name of the connector.
     dtype: str
@@ -88,15 +88,6 @@ columns:
     coerce: false
     required: true
     regex: false
-  attributes.columnCount:
-    title: Column Count
-    description: The count of columns in the table
-    dtype: int64
-    nullable: false
-    unique: false
-    coerce: false
-    required: true
-    regex: false
   status:
     title: Status
     description: The status of the schema
@@ -105,20 +96,6 @@ columns:
     checks:
       str_matches:
         value: ACTIVE
-        options:
-          raise_warning: false
-    unique: false
-    coerce: false
-    required: true
-    regex: false
-  customAttributes.table_type:
-    title: Table type
-    description: Type of the table [Table or View]
-    dtype: str
-    nullable: false
-    checks:
-      isin:
-        value: ['TABLE', 'VIEW', 'BASE TABLE', 'MATERIALIZED VIEW', 'EXTERNAL TABLE']
         options:
           raise_warning: false
     unique: false
