@@ -41,13 +41,36 @@ class AIGiphyWorkflow(WorkflowInterface):
         ai_input_string: str = workflow_args.get(
             "ai_input_string", "Fetch a cat gif and send it to test@example.com"
         )
+        giphy_api_key: str = workflow_args.get("giphy_api_key")
+        smtp_host: str = workflow_args.get("smtp_host")
+        smtp_port: int = workflow_args.get("smtp_port")
+        smtp_username: str = workflow_args.get("smtp_username")
+        smtp_password: str = workflow_args.get("smtp_password")
+        smtp_sender: str = workflow_args.get("smtp_sender")
+        openai_api_key: str = workflow_args.get("openai_api_key")
+        openai_model_name: str = workflow_args.get("openai_model_name")
+        openai_base_url: str = workflow_args.get("openai_base_url")
 
         logger.info(f"Starting AI Giphy workflow with input: {ai_input_string}")
+
+        # Prepare config dict with all configuration values
+        agent_config = {
+            "ai_input_string": ai_input_string,
+            "giphy_api_key": giphy_api_key,
+            "smtp_host": smtp_host,
+            "smtp_port": smtp_port,
+            "smtp_username": smtp_username,
+            "smtp_password": smtp_password,
+            "smtp_sender": smtp_sender,
+            "openai_api_key": openai_api_key,
+            "openai_model_name": openai_model_name,
+            "openai_base_url": openai_base_url,
+        }
 
         # Execute the AI agent activity
         agent_output = await workflow.execute_activity(
             activities_instance.run_ai_agent,
-            ai_input_string,
+            agent_config,
             start_to_close_timeout=timedelta(
                 seconds=60
             ),  # Increased timeout for potentially longer AI tasks

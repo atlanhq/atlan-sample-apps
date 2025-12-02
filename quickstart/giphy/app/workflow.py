@@ -38,20 +38,39 @@ class GiphyWorkflow(WorkflowInterface):
             logger.info(f"Merged workflow_args: {workflow_args}")
 
         search_term: str = workflow_args.get("search_term", "funny cat")
-        recipients: str = workflow_args.get("recipients")  # pyright: ignore[reportAssignmentType]
+        recipients: str = workflow_args.get("recipients")
+        giphy_api_key: str = workflow_args.get("giphy_api_key")
+        smtp_host: str = workflow_args.get("smtp_host")
+        smtp_port: int = workflow_args.get("smtp_port")
+        smtp_username: str = workflow_args.get("smtp_username")
+        smtp_password: str = workflow_args.get("smtp_password")
+        smtp_sender: str = workflow_args.get("smtp_sender")
 
         # Step 1: Fetch the GIF
+        fetch_config = {
+            "search_term": search_term,
+            "giphy_api_key": giphy_api_key,
+        }
         gif_url = await workflow.execute_activity(
             activities_instance.fetch_gif,
-            search_term,
+            fetch_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
         logger.info(f"Fetched GIF: {gif_url}")
 
         # Step 2: Send the email with the GIF
+        email_config = {
+            "recipients": recipients,
+            "gif_url": gif_url,
+            "smtp_host": smtp_host,
+            "smtp_port": smtp_port,
+            "smtp_username": smtp_username,
+            "smtp_password": smtp_password,
+            "smtp_sender": smtp_sender,
+        }
         await workflow.execute_activity(
             activities_instance.send_email,
-            {"recipients": recipients, "gif_url": gif_url},
+            email_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
 
