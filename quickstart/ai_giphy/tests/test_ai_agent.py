@@ -14,18 +14,21 @@ class TestAIAgent:
             patch("app.ai_agent.SMTP_PORT", "587"),
             patch("app.ai_agent.SMTP_USERNAME", "test_user"),
             patch("app.ai_agent.SMTP_PASSWORD", "test_password"),
-            patch("os.environ.get") as mock_env_get,
+            patch("app.ai_agent.OPENAI_API_KEY", "test_openai_key"),
+            patch("app.ai_agent.OPENAI_MODEL_NAME", "gpt-4.1-mini"),
+            patch("app.ai_agent.OPENAI_BASE_URL", None),
+            patch("app.ai_agent.os.getenv") as mock_getenv,
         ):
-            # Mock Azure OpenAI environment variables
-            env_vars = {
-                "APP_AZURE_OPENAI_API_KEY": "test_azure_key",
-                "APP_AZURE_OPENAI_API_VERSION": "2023-05-15",
-                "APP_AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
-                "APP_AZURE_OPENAI_DEPLOYMENT_NAME": "test-deployment",
-            }
-            mock_env_get.side_effect = lambda key, default=None: env_vars.get(
-                key, default
-            )
+            # Mock os.getenv for get_chain() function
+            def getenv_side_effect(key, default=None):
+                env_vars = {
+                    "OPENAI_API_KEY": "test_openai_key",
+                    "OPENAI_MODEL_NAME": "gpt-4.1-mini",
+                    "OPENAI_BASE_URL": None,
+                }
+                return env_vars.get(key, default)
+
+            mock_getenv.side_effect = getenv_side_effect
 
             yield
 
@@ -85,7 +88,7 @@ class TestAIAgent:
     def test_get_chain_success() -> None:
         """Test successful creation of AI agent chain."""
         with (
-            patch("app.ai_agent.AzureChatOpenAI") as mock_llm,
+            patch("app.ai_agent.ChatOpenAI") as mock_llm,
             patch("app.ai_agent.hub.pull") as mock_hub_pull,
             patch("app.ai_agent.create_tool_calling_agent") as mock_create_agent,
             patch("app.ai_agent.AgentExecutor") as mock_agent_executor,
@@ -106,10 +109,9 @@ class TestAIAgent:
 
             assert result == mock_executor
             mock_llm.assert_called_once_with(
-                api_key="test_azure_key",
-                api_version="2023-05-15",
-                azure_endpoint="https://test.openai.azure.com/",
-                azure_deployment="test-deployment",
+                api_key="test_openai_key",
+                model="gpt-4.1-mini",
+                base_url=None,
             )
             mock_hub_pull.assert_called_once_with("hwchase17/openai-tools-agent")
             mock_create_agent.assert_called_once()
@@ -119,7 +121,7 @@ class TestAIAgent:
     def test_get_chain_failure() -> None:
         """Test get_chain raises exception when agent creation fails."""
         with (
-            patch("app.ai_agent.AzureChatOpenAI"),
+            patch("app.ai_agent.ChatOpenAI"),
             patch("app.ai_agent.hub.pull", side_effect=Exception("Hub Error")),
         ):
             with pytest.raises(Exception, match="Hub Error"):
