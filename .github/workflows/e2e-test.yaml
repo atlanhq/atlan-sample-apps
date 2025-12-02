@@ -383,14 +383,21 @@ jobs:
           E2E_MYSQL_BASIC_DATABASE: ${{ secrets.E2E_MYSQL_BASIC_DATABASE }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
-          uv run pytest tests/e2e -v --tb=short || TEST_EXIT_CODE=$?
-          # Store test result
-          if [ -n "${TEST_EXIT_CODE:-}" ]; then
-            echo "test_status=failed" >> $GITHUB_OUTPUT
-            echo "Tests failed. Application logs:"
-            cat app.log || true
+          # Check if tests/e2e directory exists
+          if [ -d "tests/e2e" ]; then
+            echo "E2E tests directory found, running tests..."
+            uv run pytest tests/e2e -v --tb=short || TEST_EXIT_CODE=$?
+            # Store test result
+            if [ -n "${TEST_EXIT_CODE:-}" ]; then
+              echo "test_status=failed" >> $GITHUB_OUTPUT
+              echo "Tests failed. Application logs:"
+              cat app.log || true
+            else
+              echo "test_status=passed" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "test_status=passed" >> $GITHUB_OUTPUT
+            echo "No tests/e2e directory found, skipping E2E tests for ${{ matrix.app.name }}"
+            echo "test_status=skipped" >> $GITHUB_OUTPUT
           fi
 
       # Generate test results report
@@ -404,6 +411,9 @@ jobs:
           if [ "$TEST_STATUS" = "passed" ]; then
             STATUS_EMOJI="✅"
             STATUS_TEXT="All Tests Passed"
+          elif [ "$TEST_STATUS" = "skipped" ]; then
+            STATUS_EMOJI="⏭️"
+            STATUS_TEXT="Tests Skipped (No E2E tests directory)"
           else
             STATUS_EMOJI="❌"
             STATUS_TEXT="Tests Failed"
@@ -496,6 +506,8 @@ jobs:
           echo "### 📝 Test Details" >> "$METRICS_FILE"
           if [ "$TEST_STATUS" = "passed" ]; then
             echo "All E2E tests completed successfully for the \`${{ matrix.app.name }}\` application." >> "$METRICS_FILE"
+          elif [ "$TEST_STATUS" = "skipped" ]; then
+            echo "E2E tests were skipped for the \`${{ matrix.app.name }}\` application as no \`tests/e2e\` directory was found." >> "$METRICS_FILE"
           else
             echo "Some E2E tests failed for the \`${{ matrix.app.name }}\` application. Please check the workflow logs for details." >> "$METRICS_FILE"
           fi
