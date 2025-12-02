@@ -42,6 +42,9 @@ class HelloWorldWorkflow(WorkflowInterface):
             start_to_close_timeout=timedelta(seconds=10),
         )
 
+        if workflow_config:
+            workflow_args.update(workflow_config)
+
         name: str = workflow_args.get("name", "John Doe")
         logger.info("Starting hello world workflow")
 
