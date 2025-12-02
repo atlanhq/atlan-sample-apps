@@ -383,9 +383,18 @@ jobs:
           E2E_MYSQL_BASIC_DATABASE: ${{ secrets.E2E_MYSQL_BASIC_DATABASE }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
+          # Export environment variables for YAML substitution
+          export E2E_MYSQL_BASIC_AUTH_HOST="$E2E_MYSQL_BASIC_AUTH_HOST"
+          export E2E_MYSQL_BASIC_AUTH_PASSWORD="$E2E_MYSQL_BASIC_AUTH_PASSWORD"
+          export E2E_MYSQL_BASIC_AUTH_PORT="$E2E_MYSQL_BASIC_AUTH_PORT"
+          export E2E_MYSQL_BASIC_AUTH_USERNAME="$E2E_MYSQL_BASIC_AUTH_USERNAME"
+          export E2E_MYSQL_BASIC_DATABASE="$E2E_MYSQL_BASIC_DATABASE"
           # Check if tests/e2e directory exists
           if [ -d "tests/e2e" ]; then
             echo "E2E tests directory found, running tests..."
+            echo "Verifying environment variables are set:"
+            echo "E2E_MYSQL_BASIC_AUTH_USERNAME is set: $([ -n "$E2E_MYSQL_BASIC_AUTH_USERNAME" ] && echo "yes" || echo "no")"
+            echo "E2E_MYSQL_BASIC_AUTH_HOST is set: $([ -n "$E2E_MYSQL_BASIC_AUTH_HOST" ] && echo "yes" || echo "no")"
             uv run pytest tests/e2e -v --tb=short || TEST_EXIT_CODE=$?
             # Store test result
             if [ -n "${TEST_EXIT_CODE:-}" ]; then
