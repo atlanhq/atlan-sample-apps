@@ -15,10 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app.name }}
-      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+      cancel-in-progress: false
     timeout-minutes: 30
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
     strategy:
+      fail-fast: false
+      max-parallel: 3
       matrix:
         app:
           - name: hello_world
