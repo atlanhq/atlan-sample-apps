@@ -382,7 +382,6 @@ jobs:
       - name: Connect to VPN
         if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         uses: atlanhq/github-actions/globalprotect-connect-action@main
-        secrets: inherit
         with:
           portal-url: ${{ secrets.GLOBALPROTECT_PORTAL_URL }}
           username: ${{ secrets.GLOBALPROTECT_USERNAME }}
