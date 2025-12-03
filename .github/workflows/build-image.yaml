@@ -29,6 +29,9 @@ jobs:
           - connectors/mysql
           - connectors/anaplan
           - templates/generic
+          - utilities/asset_descriptor_reminder
+          - utilities/freshness_monitor
+          - utilities/workflows_observability
 
     steps:
       # Checkout current repo (your app)
