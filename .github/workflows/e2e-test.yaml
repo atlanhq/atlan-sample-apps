@@ -32,15 +32,15 @@ jobs:
           - name: mysql
             path: connectors/mysql
             application_name: mysql
-          - name: freshness_monitor
-            path: utilities/freshness_monitor
-            application_name: freshness-monitor
           - name: workflows_observability
             path: utilities/workflows_observability
             application_name: workflows-observability
           - name: giphy
             path: quickstart/giphy
             application_name: giphy
+          - name: ai_giphy
+            path: quickstart/ai_giphy
+            application_name: ai-giphy
 
     steps:
       - uses: actions/checkout@v4.0.0
@@ -126,6 +126,9 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
           # Start the application in background and capture output
@@ -264,61 +267,6 @@ jobs:
           echo "status=$STATUS" >> $GITHUB_OUTPUT
           echo "duration=$DURATION" >> $GITHUB_OUTPUT
 
-      # Start the workflow via curl for freshness_monitor
-      - name: Start the workflow for freshness_monitor
-        if: ${{ matrix.app.name == 'freshness_monitor' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
-        id: workflow_info_freshness
-        working-directory: ${{ matrix.app.path }}
-        run: |
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d '{
-              "workflow_id": "freshness-monitor-test",
-              "threshold_days": 30
-            }' \
-            http://0.0.0.0:8000/workflows/v1/start > response.json
-
-          # Parse the response
-          RESPONSE=$(cat response.json)
-          # Extract workflow_id and run_id
-          WORKFLOW_ID=$(echo $RESPONSE | jq -r '.data.workflow_id')
-          RUN_ID=$(echo $RESPONSE | jq -r '.data.run_id')
-
-          echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
-
-      # Check workflow status for freshness_monitor
-      - name: Check workflow status for freshness_monitor
-        if: ${{ matrix.app.name == 'freshness_monitor' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
-        id: workflow_status_freshness
-        working-directory: ${{ matrix.app.path }}
-        run: |
-          export PATH="$HOME/.temporalio/bin:$PATH"
-          # Poll workflow status with timeout
-          MAX_ATTEMPTS=300
-          ATTEMPT=0
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            WORKFLOW_DETAILS=$(temporal workflow describe \
-              --workflow-id=${{ steps.workflow_info_freshness.outputs.workflow_id }} \
-              --run-id=${{ steps.workflow_info_freshness.outputs.run_id }} \
-              --output=json)
-            STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
-            if [ "$STATUS" != "WORKFLOW_EXECUTION_STATUS_RUNNING" ]; then
-              break
-            fi
-            echo "Workflow still running... (Attempt $((ATTEMPT+1))/$MAX_ATTEMPTS)"
-            sleep 10
-            ATTEMPT=$((ATTEMPT+1))
-          done
-          WORKFLOW_DETAILS=$(temporal workflow describe \
-            --workflow-id=${{ steps.workflow_info_freshness.outputs.workflow_id }} \
-            --run-id=${{ steps.workflow_info_freshness.outputs.run_id }} \
-            --output=json)
-          STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
-          DURATION=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.executionDuration | rtrimstr("s") | tonumber | (. * 100 | round | . / 100) | tostring + "s"')
-          echo "status=$STATUS" >> $GITHUB_OUTPUT
-          echo "duration=$DURATION" >> $GITHUB_OUTPUT
-
       # Start the workflow via curl for workflows_observability
       - name: Start the workflow for workflows_observability
         if: ${{ matrix.app.name == 'workflows_observability' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
@@ -430,6 +378,64 @@ jobs:
           echo "status=$STATUS" >> $GITHUB_OUTPUT
           echo "duration=$DURATION" >> $GITHUB_OUTPUT
 
+      # Start the workflow via curl for ai_giphy
+      - name: Start the workflow for ai_giphy
+        if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        id: workflow_info_ai_giphy
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "ai_input_string": "Fetch a funny cat gif and send it to test@example.com",
+              "connection": {
+                "connection_name": "ai-giphy-test",
+                "connection_qualified_name": "default/ai-giphy/test"
+              }
+            }' \
+            http://0.0.0.0:8000/workflows/v1/start > response.json
+
+          # Parse the response
+          RESPONSE=$(cat response.json)
+          # Extract workflow_id and run_id
+          WORKFLOW_ID=$(echo $RESPONSE | jq -r '.data.workflow_id')
+          RUN_ID=$(echo $RESPONSE | jq -r '.data.run_id')
+
+          echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      # Check workflow status for ai_giphy
+      - name: Check workflow status for ai_giphy
+        if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        id: workflow_status_ai_giphy
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          export PATH="$HOME/.temporalio/bin:$PATH"
+          # Poll workflow status with timeout
+          MAX_ATTEMPTS=300
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            WORKFLOW_DETAILS=$(temporal workflow describe \
+              --workflow-id=${{ steps.workflow_info_ai_giphy.outputs.workflow_id }} \
+              --run-id=${{ steps.workflow_info_ai_giphy.outputs.run_id }} \
+              --output=json)
+            STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
+            if [ "$STATUS" != "WORKFLOW_EXECUTION_STATUS_RUNNING" ]; then
+              break
+            fi
+            echo "Workflow still running... (Attempt $((ATTEMPT+1))/$MAX_ATTEMPTS)"
+            sleep 10
+            ATTEMPT=$((ATTEMPT+1))
+          done
+          WORKFLOW_DETAILS=$(temporal workflow describe \
+            --workflow-id=${{ steps.workflow_info_ai_giphy.outputs.workflow_id }} \
+            --run-id=${{ steps.workflow_info_ai_giphy.outputs.run_id }} \
+            --output=json)
+          STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
+          DURATION=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.executionDuration | rtrimstr("s") | tonumber | (. * 100 | round | . / 100) | tostring + "s"')
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "duration=$DURATION" >> $GITHUB_OUTPUT
+
       # Run E2E tests
       - name: Run E2E tests
         id: run_tests
@@ -451,6 +457,9 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
           # Export environment variables for YAML substitution
@@ -537,28 +546,6 @@ jobs:
             echo "| Workflow Duration | $WORKFLOW_DURATION |" >> "$METRICS_FILE"
           fi
 
-          # Add workflow status for freshness_monitor
-          if [ "${{ matrix.app.name }}" = "freshness_monitor" ]; then
-            WORKFLOW_STATUS="${{ steps.workflow_status_freshness.outputs.status }}"
-            WORKFLOW_DURATION="${{ steps.workflow_status_freshness.outputs.duration }}"
-            case $WORKFLOW_STATUS in
-              "WORKFLOW_EXECUTION_STATUS_COMPLETED")
-                DISPLAY_STATUS="🟢 Completed"
-                ;;
-              "WORKFLOW_EXECUTION_STATUS_FAILED")
-                DISPLAY_STATUS="🔴 Failed"
-                ;;
-              "WORKFLOW_EXECUTION_STATUS_RUNNING")
-                DISPLAY_STATUS="🟠 Running"
-                ;;
-              *)
-                DISPLAY_STATUS="❓ ${WORKFLOW_STATUS}"
-                ;;
-            esac
-            echo "| Workflow Status | $DISPLAY_STATUS |" >> "$METRICS_FILE"
-            echo "| Workflow Duration | $WORKFLOW_DURATION |" >> "$METRICS_FILE"
-          fi
-
           # Add workflow status for workflows_observability
           if [ "${{ matrix.app.name }}" = "workflows_observability" ]; then
             WORKFLOW_STATUS="${{ steps.workflow_status_observability.outputs.status }}"
@@ -585,6 +572,28 @@ jobs:
           if [ "${{ matrix.app.name }}" = "giphy" ]; then
             WORKFLOW_STATUS="${{ steps.workflow_status_giphy.outputs.status }}"
             WORKFLOW_DURATION="${{ steps.workflow_status_giphy.outputs.duration }}"
+            case $WORKFLOW_STATUS in
+              "WORKFLOW_EXECUTION_STATUS_COMPLETED")
+                DISPLAY_STATUS="🟢 Completed"
+                ;;
+              "WORKFLOW_EXECUTION_STATUS_FAILED")
+                DISPLAY_STATUS="🔴 Failed"
+                ;;
+              "WORKFLOW_EXECUTION_STATUS_RUNNING")
+                DISPLAY_STATUS="🟠 Running"
+                ;;
+              *)
+                DISPLAY_STATUS="❓ ${WORKFLOW_STATUS}"
+                ;;
+            esac
+            echo "| Workflow Status | $DISPLAY_STATUS |" >> "$METRICS_FILE"
+            echo "| Workflow Duration | $WORKFLOW_DURATION |" >> "$METRICS_FILE"
+          fi
+
+          # Add workflow status for ai_giphy
+          if [ "${{ matrix.app.name }}" = "ai_giphy" ]; then
+            WORKFLOW_STATUS="${{ steps.workflow_status_ai_giphy.outputs.status }}"
+            WORKFLOW_DURATION="${{ steps.workflow_status_ai_giphy.outputs.duration }}"
             case $WORKFLOW_STATUS in
               "WORKFLOW_EXECUTION_STATUS_COMPLETED")
                 DISPLAY_STATUS="🟢 Completed"
