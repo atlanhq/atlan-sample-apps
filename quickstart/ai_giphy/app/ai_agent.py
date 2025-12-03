@@ -102,15 +102,17 @@ def get_chain():
 
     # Optional: Only used if someone is using a proxy / Azure / custom gateway
     openai_base_url = os.getenv("OPENAI_BASE_URL", None)
-    
+
     # Add https:// protocol if base_url is provided but doesn't have a protocol
     if openai_base_url and not openai_base_url.startswith(("http://", "https://")):
         logger.info(f"Adding https:// protocol to OPENAI_BASE_URL: {openai_base_url}")
         openai_base_url = f"https://{openai_base_url}"
-    
+
     if openai_base_url:
         # Log the base URL domain for debugging (without exposing full path)
-        url_parts = openai_base_url.replace("https://", "").replace("http://", "").split("/")[0]
+        url_parts = (
+            openai_base_url.replace("https://", "").replace("http://", "").split("/")[0]
+        )
         logger.info(f"Using OpenAI base URL: https://{url_parts}...")
     else:
         logger.info("Using default OpenAI API endpoint (no custom base URL)")
