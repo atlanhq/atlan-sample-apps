@@ -1,5 +1,5 @@
 # Wolfi base image with Python
-FROM cgr.dev/chainguard/wolfi-base
+FROM ghcr.io/atlanhq/application-sdk-chainguard:latest
 
 # Switch back to root for system installations
 USER root
