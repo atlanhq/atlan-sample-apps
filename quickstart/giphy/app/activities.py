@@ -86,15 +86,16 @@ class GiphyActivities(ActivitiesInterface):
             - ERROR: When email sending fails or no valid recipients
         """
         # Priority: workflow_args -> env vars -> defaults
-        smtp_host = config.get("smtp_host") or _DEFAULT_SMTP_HOST
-        smtp_port = config.get("smtp_port")
-        if smtp_port is None:
-            smtp_port = _DEFAULT_SMTP_PORT
-        else:
-            smtp_port = int(smtp_port)
-        smtp_username = config.get("smtp_username") or _DEFAULT_SMTP_USERNAME
+        smtp_host = config.get("smtp_host") or _DEFAULT_SMTP_HOST or "smtp.sendgrid.net"
+        smtp_port = config.get("smtp_port") or _DEFAULT_SMTP_PORT or 587
+        smtp_port = int(smtp_port)
+        smtp_username = (
+            config.get("smtp_username") or _DEFAULT_SMTP_USERNAME or "apikey"
+        )
         smtp_password = config.get("smtp_password") or _DEFAULT_SMTP_PASSWORD
-        smtp_sender = config.get("smtp_sender") or _DEFAULT_SMTP_SENDER
+        smtp_sender = (
+            config.get("smtp_sender") or _DEFAULT_SMTP_SENDER or "support@atlan.app"
+        )
 
         if not smtp_password:
             # fail the activity if the SMTP_PASSWORD is not set
