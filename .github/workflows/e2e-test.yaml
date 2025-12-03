@@ -387,7 +387,7 @@ jobs:
           curl -X POST \
             -H "Content-Type: application/json" \
             -d '{
-              "ai_input_string": "Fetch a funny cat gif and send it to abhishek.agrawal@atlan.com",
+              "ai_input_string": "Find a cute cat image and send it to abhishek.agrawal@atlan.com",
               "connection": {
                 "connection_name": "ai-giphy-test",
                 "connection_qualified_name": "default/ai-giphy/test"
