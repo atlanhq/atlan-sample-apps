@@ -108,15 +108,6 @@ def get_chain():
         logger.info(f"Adding https:// protocol to OPENAI_BASE_URL: {openai_base_url}")
         openai_base_url = f"https://{openai_base_url}"
 
-    if openai_base_url:
-        # Log the base URL domain for debugging (without exposing full path)
-        url_parts = (
-            openai_base_url.replace("https://", "").replace("http://", "").split("/")[0]
-        )
-        logger.info(f"Using OpenAI base URL: https://{url_parts}...")
-    else:
-        logger.info("Using default OpenAI API endpoint (no custom base URL)")
-
     local_llm = ChatOpenAI(
         api_key=OPENAI_API_KEY,
         model=OPENAI_MODEL_NAME,

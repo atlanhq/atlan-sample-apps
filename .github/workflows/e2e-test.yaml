@@ -17,7 +17,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app.name }}
       cancel-in-progress: false
     timeout-minutes: 30
-    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
+    if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
     strategy:
       fail-fast: false
       max-parallel: 3
@@ -193,7 +193,7 @@ jobs:
 
       # Start the workflow via curl for mysql
       - name: Start the workflow for mysql
-        if: ${{ matrix.app.name == 'mysql' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        if: ${{ matrix.app.name == 'mysql' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         id: workflow_info_mysql
         working-directory: ${{ matrix.app.path }}
         env:
@@ -238,7 +238,7 @@ jobs:
 
       # Check workflow status for mysql
       - name: Check workflow status for mysql
-        if: ${{ matrix.app.name == 'mysql' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        if: ${{ matrix.app.name == 'mysql' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         id: workflow_status_mysql
         working-directory: ${{ matrix.app.path }}
         run: |
@@ -270,7 +270,7 @@ jobs:
 
       # Start the workflow via curl for workflows_observability
       - name: Start the workflow for workflows_observability
-        if: ${{ matrix.app.name == 'workflows_observability' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        if: ${{ matrix.app.name == 'workflows_observability' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         id: workflow_info_observability
         working-directory: ${{ matrix.app.path }}
         run: |
@@ -294,7 +294,7 @@ jobs:
 
       # Check workflow status for workflows_observability
       - name: Check workflow status for workflows_observability
-        if: ${{ matrix.app.name == 'workflows_observability' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        if: ${{ matrix.app.name == 'workflows_observability' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         id: workflow_status_observability
         working-directory: ${{ matrix.app.path }}
         run: |
@@ -326,7 +326,7 @@ jobs:
 
       # Start the workflow via curl for giphy
       - name: Start the workflow for giphy
-        if: ${{ matrix.app.name == 'giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        if: ${{ matrix.app.name == 'giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         id: workflow_info_giphy
         working-directory: ${{ matrix.app.path }}
         run: |
@@ -349,7 +349,7 @@ jobs:
 
       # Check workflow status for giphy
       - name: Check workflow status for giphy
-        if: ${{ matrix.app.name == 'giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+        if: ${{ matrix.app.name == 'giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
         id: workflow_status_giphy
         working-directory: ${{ matrix.app.path }}
         run: |
@@ -382,14 +382,14 @@ jobs:
       # Temporarily disabled - ai_giphy tests require OpenAI proxy IP whitelisting
       # # Start the workflow via curl for ai_giphy
       # - name: Start the workflow for ai_giphy
-      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
       #   id: workflow_info_ai_giphy
       #   working-directory: ${{ matrix.app.path }}
       #   run: |
       #     curl -X POST \
       #       -H "Content-Type: application/json" \
       #       -d '{
-      #         "ai_input_string": "Find a cute cat image and send it to abhishek.agrawal@atlan.com",
+      #         "ai_input_string": "Find a cute cat image and send it to test@example.com",
       #         "connection": {
       #           "connection_name": "ai-giphy-test",
       #           "connection_qualified_name": "default/ai-giphy/test"
@@ -408,7 +408,7 @@ jobs:
       #
       # # Check workflow status for ai_giphy
       # - name: Check workflow status for ai_giphy
-      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/e2e') }}
+      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
       #   id: workflow_status_ai_giphy
       #   working-directory: ${{ matrix.app.path }}
       #   run: |
@@ -473,9 +473,6 @@ jobs:
           # Check if tests/e2e directory exists
           if [ -d "tests/e2e" ]; then
             echo "E2E tests directory found, running tests..."
-            echo "Verifying environment variables are set:"
-            echo "E2E_MYSQL_BASIC_AUTH_USERNAME is set: $([ -n "$E2E_MYSQL_BASIC_AUTH_USERNAME" ] && echo "yes" || echo "no")"
-            echo "E2E_MYSQL_BASIC_AUTH_HOST is set: $([ -n "$E2E_MYSQL_BASIC_AUTH_HOST" ] && echo "yes" || echo "no")"
             uv run pytest tests/e2e -v --tb=short || TEST_EXIT_CODE=$?
             # Store test result
             if [ -n "${TEST_EXIT_CODE:-}" ]; then
