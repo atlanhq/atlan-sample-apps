@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4.0.0
 
       - name: Connect to VPN
-        uses: atlanhq/github-actions/globalprotect-connect-action@main
+        uses: atlanhq/github-actions/.github/actions/globalprotect-connect-action@main
         with:
           portal-url: ${{ secrets.GLOBALPROTECT_PORTAL_URL }}
           username: ${{ secrets.GLOBALPROTECT_USERNAME }}
