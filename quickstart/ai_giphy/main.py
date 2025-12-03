@@ -6,7 +6,7 @@ from app.workflow import AIGiphyWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.logger_adaptor import get_logger
 
-APPLICATION_NAME = "ai_giphy"
+APPLICATION_NAME = "ai-giphy"
 
 logger = get_logger(__name__)
 
