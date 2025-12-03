@@ -47,7 +47,9 @@ async def main():
     await application.start_worker()
 
     # Setup the application server (creates FastAPI server with handlers)
-    await application.setup_server(AppMetadataExtractionWorkflow)
+    await application.setup_server(
+        workflow_class=AppMetadataExtractionWorkflow, has_configmap=True
+    )
 
     # Start the application server
     await application.start_server()
