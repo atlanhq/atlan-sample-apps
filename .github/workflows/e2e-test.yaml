@@ -45,14 +45,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4.0.0
 
-      - name: Connect to VPN
-        if: ${{ matrix.app.name == 'ai_giphy' }}
-        uses: atlanhq/github-actions/globalprotect-connect-action@main
-        with:
-          portal-url: ${{ secrets.GLOBALPROTECT_PORTAL_URL }}
-          username: ${{ secrets.GLOBALPROTECT_USERNAME }}
-          password: ${{ secrets.GLOBALPROTECT_PASSWORD }}
-
       # Install Dapr
       - name: Install Dapr CLI
         run: |
@@ -385,6 +377,15 @@ jobs:
           DURATION=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.executionDuration | rtrimstr("s") | tonumber | (. * 100 | round | . / 100) | tostring + "s"')
           echo "status=$STATUS" >> $GITHUB_OUTPUT
           echo "duration=$DURATION" >> $GITHUB_OUTPUT
+
+      # Connect to VPN for ai_giphy
+      - name: Connect to VPN
+        if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
+        uses: atlanhq/github-actions/globalprotect-connect-action@main
+        with:
+          portal-url: ${{ secrets.GLOBALPROTECT_PORTAL_URL }}
+          username: ${{ secrets.GLOBALPROTECT_USERNAME }}
+          password: ${{ secrets.GLOBALPROTECT_PASSWORD }}
 
       # Start the workflow via curl for ai_giphy
       - name: Start the workflow for ai_giphy
