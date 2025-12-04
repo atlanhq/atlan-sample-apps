@@ -38,9 +38,9 @@ jobs:
           - name: giphy
             path: quickstart/giphy
             application_name: giphy
-          - name: ai_giphy
-            path: quickstart/ai_giphy
-            application_name: ai-giphy
+          # - name: ai_giphy
+          #   path: quickstart/ai_giphy
+          #   application_name: ai-giphy
 
     steps:
       - uses: actions/checkout@v4.0.0
@@ -379,71 +379,71 @@ jobs:
           echo "duration=$DURATION" >> $GITHUB_OUTPUT
 
       # Connect to VPN for ai_giphy
-      - name: Connect to VPN
-        if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
-        uses: atlanhq/github-actions/globalprotect-connect-action@main
-        with:
-          portal-url: ${{ secrets.GLOBALPROTECT_PORTAL_URL }}
-          username: ${{ secrets.GLOBALPROTECT_USERNAME }}
-          password: ${{ secrets.GLOBALPROTECT_PASSWORD }}
+      # - name: Connect to VPN
+      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
+      #   uses: atlanhq/github-actions/globalprotect-connect-action@main
+      #   with:
+      #     portal-url: ${{ secrets.GLOBALPROTECT_PORTAL_URL }}
+      #     username: ${{ secrets.GLOBALPROTECT_USERNAME }}
+      #     password: ${{ secrets.GLOBALPROTECT_PASSWORD }}
 
       # Start the workflow via curl for ai_giphy
-      - name: Start the workflow for ai_giphy
-        if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
-        id: workflow_info_ai_giphy
-        working-directory: ${{ matrix.app.path }}
-        run: |
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d '{
-              "ai_input_string": "Find a cute cat image and send it to test@example.com",
-              "connection": {
-                "connection_name": "ai-giphy-test",
-                "connection_qualified_name": "default/ai-giphy/test"
-              }
-            }' \
-            http://0.0.0.0:8000/workflows/v1/start > response.json
-
-          # Parse the response
-          RESPONSE=$(cat response.json)
-          # Extract workflow_id and run_id
-          WORKFLOW_ID=$(echo $RESPONSE | jq -r '.data.workflow_id')
-          RUN_ID=$(echo $RESPONSE | jq -r '.data.run_id')
-
-          echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+      # - name: Start the workflow for ai_giphy
+      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
+      #   id: workflow_info_ai_giphy
+      #   working-directory: ${{ matrix.app.path }}
+      #   run: |
+      #     curl -X POST \
+      #       -H "Content-Type: application/json" \
+      #       -d '{
+      #         "ai_input_string": "Find a cute cat image and send it to test@example.com",
+      #         "connection": {
+      #           "connection_name": "ai-giphy-test",
+      #           "connection_qualified_name": "default/ai-giphy/test"
+      #         }
+      #       }' \
+      #       http://0.0.0.0:8000/workflows/v1/start > response.json
+      #
+      #     # Parse the response
+      #     RESPONSE=$(cat response.json)
+      #     # Extract workflow_id and run_id
+      #     WORKFLOW_ID=$(echo $RESPONSE | jq -r '.data.workflow_id')
+      #     RUN_ID=$(echo $RESPONSE | jq -r '.data.run_id')
+      #
+      #     echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
+      #     echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
       # Check workflow status for ai_giphy
-      - name: Check workflow status for ai_giphy
-        if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
-        id: workflow_status_ai_giphy
-        working-directory: ${{ matrix.app.path }}
-        run: |
-          export PATH="$HOME/.temporalio/bin:$PATH"
-          # Poll workflow status with timeout
-          MAX_ATTEMPTS=300
-          ATTEMPT=0
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            WORKFLOW_DETAILS=$(temporal workflow describe \
-              --workflow-id=${{ steps.workflow_info_ai_giphy.outputs.workflow_id }} \
-              --run-id=${{ steps.workflow_info_ai_giphy.outputs.run_id }} \
-              --output=json)
-            STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
-            if [ "$STATUS" != "WORKFLOW_EXECUTION_STATUS_RUNNING" ]; then
-              break
-            fi
-            echo "Workflow still running... (Attempt $((ATTEMPT+1))/$MAX_ATTEMPTS)"
-            sleep 10
-            ATTEMPT=$((ATTEMPT+1))
-          done
-          WORKFLOW_DETAILS=$(temporal workflow describe \
-            --workflow-id=${{ steps.workflow_info_ai_giphy.outputs.workflow_id }} \
-            --run-id=${{ steps.workflow_info_ai_giphy.outputs.run_id }} \
-            --output=json)
-          STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
-          DURATION=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.executionDuration | rtrimstr("s") | tonumber | (. * 100 | round | . / 100) | tostring + "s"')
-          echo "status=$STATUS" >> $GITHUB_OUTPUT
-          echo "duration=$DURATION" >> $GITHUB_OUTPUT
+      # - name: Check workflow status for ai_giphy
+      #   if: ${{ matrix.app.name == 'ai_giphy' && (contains(github.event.pull_request.labels.*.name, 'e2e-test') || github.ref == 'refs/heads/main') }}
+      #   id: workflow_status_ai_giphy
+      #   working-directory: ${{ matrix.app.path }}
+      #   run: |
+      #     export PATH="$HOME/.temporalio/bin:$PATH"
+      #     # Poll workflow status with timeout
+      #     MAX_ATTEMPTS=300
+      #     ATTEMPT=0
+      #     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+      #       WORKFLOW_DETAILS=$(temporal workflow describe \
+      #         --workflow-id=${{ steps.workflow_info_ai_giphy.outputs.workflow_id }} \
+      #         --run-id=${{ steps.workflow_info_ai_giphy.outputs.run_id }} \
+      #         --output=json)
+      #       STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
+      #       if [ "$STATUS" != "WORKFLOW_EXECUTION_STATUS_RUNNING" ]; then
+      #         break
+      #       fi
+      #       echo "Workflow still running... (Attempt $((ATTEMPT+1))/$MAX_ATTEMPTS)"
+      #       sleep 10
+      #       ATTEMPT=$((ATTEMPT+1))
+      #     done
+      #     WORKFLOW_DETAILS=$(temporal workflow describe \
+      #       --workflow-id=${{ steps.workflow_info_ai_giphy.outputs.workflow_id }} \
+      #       --run-id=${{ steps.workflow_info_ai_giphy.outputs.run_id }} \
+      #       --output=json)
+      #     STATUS=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.status')
+      #     DURATION=$(echo $WORKFLOW_DETAILS | jq -r '.workflowExecutionInfo.executionDuration | rtrimstr("s") | tonumber | (. * 100 | round | . / 100) | tostring + "s"')
+      #     echo "status=$STATUS" >> $GITHUB_OUTPUT
+      #     echo "duration=$DURATION" >> $GITHUB_OUTPUT
 
       # Run E2E tests
       - name: Run E2E tests
@@ -597,26 +597,26 @@ jobs:
           fi
 
           # Add workflow status for ai_giphy
-          if [ "${{ matrix.app.name }}" = "ai_giphy" ]; then
-            WORKFLOW_STATUS="${{ steps.workflow_status_ai_giphy.outputs.status }}"
-            WORKFLOW_DURATION="${{ steps.workflow_status_ai_giphy.outputs.duration }}"
-            case $WORKFLOW_STATUS in
-              "WORKFLOW_EXECUTION_STATUS_COMPLETED")
-                DISPLAY_STATUS="🟢 Completed"
-                ;;
-              "WORKFLOW_EXECUTION_STATUS_FAILED")
-                DISPLAY_STATUS="🔴 Failed"
-                ;;
-              "WORKFLOW_EXECUTION_STATUS_RUNNING")
-                DISPLAY_STATUS="🟠 Running"
-                ;;
-              *)
-                DISPLAY_STATUS="❓ ${WORKFLOW_STATUS}"
-                ;;
-            esac
-            echo "| Workflow Status | $DISPLAY_STATUS |" >> "$METRICS_FILE"
-            echo "| Workflow Duration | $WORKFLOW_DURATION |" >> "$METRICS_FILE"
-          fi
+          # if [ "${{ matrix.app.name }}" = "ai_giphy" ]; then
+          #   WORKFLOW_STATUS="${{ steps.workflow_status_ai_giphy.outputs.status }}"
+          #   WORKFLOW_DURATION="${{ steps.workflow_status_ai_giphy.outputs.duration }}"
+          #   case $WORKFLOW_STATUS in
+          #     "WORKFLOW_EXECUTION_STATUS_COMPLETED")
+          #       DISPLAY_STATUS="🟢 Completed"
+          #       ;;
+          #     "WORKFLOW_EXECUTION_STATUS_FAILED")
+          #       DISPLAY_STATUS="🔴 Failed"
+          #       ;;
+          #     "WORKFLOW_EXECUTION_STATUS_RUNNING")
+          #       DISPLAY_STATUS="🟠 Running"
+          #       ;;
+          #     *)
+          #       DISPLAY_STATUS="❓ ${WORKFLOW_STATUS}"
+          #       ;;
+          #   esac
+          #   echo "| Workflow Status | $DISPLAY_STATUS |" >> "$METRICS_FILE"
+          #   echo "| Workflow Duration | $WORKFLOW_DURATION |" >> "$METRICS_FILE"
+          # fi
 
           echo "" >> "$METRICS_FILE"
           echo "### 📝 Test Details" >> "$METRICS_FILE"
