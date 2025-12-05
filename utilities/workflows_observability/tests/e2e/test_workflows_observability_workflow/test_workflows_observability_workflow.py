@@ -80,19 +80,25 @@ class TestWorkflowsObservabilityWorkflow(unittest.TestCase, BaseTest):
 
         # Verify that response data contains the expected workflow args
         self.assertEqual(
-            response_data["data"]["selectedDate"], self.test_workflow_args["selectedDate"]
+            response_data["data"]["selectedDate"],
+            self.test_workflow_args["selectedDate"],
         )
         self.assertEqual(
-            response_data["data"]["outputPrefix"], self.test_workflow_args["outputPrefix"]
+            response_data["data"]["outputPrefix"],
+            self.test_workflow_args["outputPrefix"],
         )
 
     # Override BaseTest methods that don't apply to workflows_observability - all skipped
-    @pytest.mark.skip(reason="Workflows Observability workflow doesn't have auth endpoint")
+    @pytest.mark.skip(
+        reason="Workflows Observability workflow doesn't have auth endpoint"
+    )
     def test_auth(self):
         """Skip - workflows_observability doesn't have authentication."""
         pass
 
-    @pytest.mark.skip(reason="Workflows Observability workflow doesn't have metadata endpoint")
+    @pytest.mark.skip(
+        reason="Workflows Observability workflow doesn't have metadata endpoint"
+    )
     def test_metadata(self):
         """Skip - workflows_observability doesn't have metadata endpoint."""
         pass
@@ -114,25 +120,33 @@ class TestWorkflowsObservabilityWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(7)
-    @pytest.mark.skip(reason="Workflows Observability workflow doesn't extract data for validation")
+    @pytest.mark.skip(
+        reason="Workflows Observability workflow doesn't extract data for validation"
+    )
     def test_data_validation(self):
         """Skip - workflows_observability doesn't extract data."""
         pass
 
     @pytest.mark.order(8)
-    @pytest.mark.skip(reason="Workflows Observability workflow doesn't have auth endpoint")
+    @pytest.mark.skip(
+        reason="Workflows Observability workflow doesn't have auth endpoint"
+    )
     def test_auth_negative_invalid_credentials(self):
         """Skip - workflows_observability doesn't have auth endpoint."""
         pass
 
     @pytest.mark.order(9)
-    @pytest.mark.skip(reason="Workflows Observability workflow doesn't have metadata endpoint")
+    @pytest.mark.skip(
+        reason="Workflows Observability workflow doesn't have metadata endpoint"
+    )
     def test_metadata_negative(self):
         """Skip - workflows_observability doesn't have metadata endpoint."""
         pass
 
     @pytest.mark.order(13)
-    @pytest.mark.skip(reason="Workflows Observability workflow doesn't have metadata endpoint")
+    @pytest.mark.skip(
+        reason="Workflows Observability workflow doesn't have metadata endpoint"
+    )
     def test_metadata_with_invalid_credentials(self):
         """Skip - workflows_observability doesn't have metadata endpoint."""
         pass
@@ -152,4 +166,3 @@ class TestWorkflowsObservabilityWorkflow(unittest.TestCase, BaseTest):
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - workflows_observability doesn't require credentials."""
         pass
-

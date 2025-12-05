@@ -80,7 +80,8 @@ class TestFreshnessMonitorWorkflow(unittest.TestCase, BaseTest):
 
         # Verify that response data contains the expected threshold_days
         self.assertEqual(
-            response_data["data"]["threshold_days"], self.test_workflow_args["threshold_days"]
+            response_data["data"]["threshold_days"],
+            self.test_workflow_args["threshold_days"],
         )
 
     # Override BaseTest methods that don't apply to freshness_monitor - all skipped
@@ -89,7 +90,9 @@ class TestFreshnessMonitorWorkflow(unittest.TestCase, BaseTest):
         """Skip - freshness_monitor doesn't have authentication."""
         pass
 
-    @pytest.mark.skip(reason="Freshness Monitor workflow doesn't have metadata endpoint")
+    @pytest.mark.skip(
+        reason="Freshness Monitor workflow doesn't have metadata endpoint"
+    )
     def test_metadata(self):
         """Skip - freshness_monitor doesn't have metadata endpoint."""
         pass
@@ -111,7 +114,9 @@ class TestFreshnessMonitorWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(7)
-    @pytest.mark.skip(reason="Freshness Monitor workflow doesn't extract data for validation")
+    @pytest.mark.skip(
+        reason="Freshness Monitor workflow doesn't extract data for validation"
+    )
     def test_data_validation(self):
         """Skip - freshness_monitor doesn't extract data."""
         pass
@@ -123,13 +128,17 @@ class TestFreshnessMonitorWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(9)
-    @pytest.mark.skip(reason="Freshness Monitor workflow doesn't have metadata endpoint")
+    @pytest.mark.skip(
+        reason="Freshness Monitor workflow doesn't have metadata endpoint"
+    )
     def test_metadata_negative(self):
         """Skip - freshness_monitor doesn't have metadata endpoint."""
         pass
 
     @pytest.mark.order(13)
-    @pytest.mark.skip(reason="Freshness Monitor workflow doesn't have metadata endpoint")
+    @pytest.mark.skip(
+        reason="Freshness Monitor workflow doesn't have metadata endpoint"
+    )
     def test_metadata_with_invalid_credentials(self):
         """Skip - freshness_monitor doesn't have metadata endpoint."""
         pass
@@ -149,4 +158,3 @@ class TestFreshnessMonitorWorkflow(unittest.TestCase, BaseTest):
     def test_run_workflow_with_invalid_credentials(self):
         """Skip - freshness_monitor doesn't require credentials."""
         pass
-
