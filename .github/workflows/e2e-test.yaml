@@ -61,6 +61,12 @@ jobs:
 
       - uses: atlanhq/application-sdk/.github/actions/setup-deps@main
 
+      # Sync dependencies in app directory
+      - name: Sync dependencies
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          uv sync --all-extras --all-groups
+
       # Build Java JAR for polyglot (if needed)
       - name: Build Java JAR for polyglot
         if: matrix.app.name == 'polyglot'
