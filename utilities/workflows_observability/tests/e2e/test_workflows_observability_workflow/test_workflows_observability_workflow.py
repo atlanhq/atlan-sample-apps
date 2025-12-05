@@ -58,6 +58,12 @@ class TestWorkflowsObservabilityWorkflow(unittest.TestCase, BaseTest):
         """
         Test running the workflows observability workflow
         """
+        from datetime import date, timedelta
+        
+        # Set selectedDate to 10 days ago from current date
+        selected_date = (date.today() - timedelta(days=10)).strftime("%Y-%m-%d")
+        self.test_workflow_args["selectedDate"] = selected_date
+        
         self.run_workflow()
 
     @pytest.mark.order(3)
@@ -65,6 +71,7 @@ class TestWorkflowsObservabilityWorkflow(unittest.TestCase, BaseTest):
         """
         Test configuration retrieval
         """
+        from datetime import date, timedelta
         from application_sdk.test_utils.e2e.conftest import workflow_details
 
         response = self.client._get(
@@ -78,14 +85,20 @@ class TestWorkflowsObservabilityWorkflow(unittest.TestCase, BaseTest):
             response_data["message"], "Workflow configuration fetched successfully"
         )
 
+        # Calculate expected date (10 days ago from today)
+        expected_date = (date.today() - timedelta(days=10)).strftime("%Y-%m-%d")
+
         # Verify that response data contains the expected workflow args
-        self.assertEqual(
-            response_data["data"]["selectedDate"],
-            self.test_workflow_args["selectedDate"],
-        )
+        # Check that selectedDate exists and is a valid date (should be 10 days ago)
+        self.assertIn("selectedDate", response_data["data"])
+        selected_date = response_data["data"]["selectedDate"]
+        self.assertEqual(selected_date, expected_date)
+        
+        # Verify outputPrefix is "test"
+        self.assertIn("outputPrefix", response_data["data"])
         self.assertEqual(
             response_data["data"]["outputPrefix"],
-            self.test_workflow_args["outputPrefix"],
+            "test",
         )
 
     # Override BaseTest methods that don't apply to workflows_observability - all skipped

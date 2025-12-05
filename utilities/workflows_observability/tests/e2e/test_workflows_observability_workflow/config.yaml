@@ -1,6 +1,6 @@
 test_workflow_args:
   workflow_id: "workflows-observability-test"
-  selectedDate: "2025-01-01"
+  selectedDate: ""  # Will be calculated dynamically in test (10 days ago)
   outputPrefix: "test"
 test_name: "test_workflows_observability_workflow"
 server_config:
