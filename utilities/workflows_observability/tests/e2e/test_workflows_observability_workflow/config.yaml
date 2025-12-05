@@ -1,0 +1,13 @@
+test_workflow_args:
+  workflow_id: "workflows-observability-test"
+  selectedDate: "2025-01-01"
+  outputPrefix: "test"
+test_name: "test_workflows_observability_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  workflow:
+    success: true
+    message: "Workflow started successfully"
+
