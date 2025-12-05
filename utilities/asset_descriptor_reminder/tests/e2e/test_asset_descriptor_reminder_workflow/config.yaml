@@ -1,0 +1,19 @@
+test_workflow_args:
+  workflow_id: "asset-description-reminder-test"
+  config:
+    base_url: $ATLAN_BASE_URL
+    atlan_token: $ATLAN_API_KEY
+  user_username: "test-user"
+  asset_limit: 100
+  connection:
+    connection_name: "asset-description-reminder-test"
+    connection_qualified_name: "default/asset-description-reminder/test"
+test_name: "test_asset_descriptor_reminder_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  workflow:
+    success: true
+    message: "Workflow started successfully"
+

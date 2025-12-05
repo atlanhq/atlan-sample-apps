@@ -1,0 +1,148 @@
+name: E2E Application Test
+permissions:
+  contents: read
+  pull-requests: write
+on:
+  push:
+    branches:
+      - main
+      - e2e
+  pull_request:
+    types: [labeled, reopened, synchronize, opened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app.name }}
+      cancel-in-progress: false
+    timeout-minutes: 30
+    if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        app:
+          - name: hello_world
+            path: quickstart/hello_world
+            application_name: hello-world
+          - name: polyglot
+            path: quickstart/polyglot
+            application_name: polyglot
+          - name: mysql
+            path: connectors/mysql
+            application_name: mysql
+          - name: workflows_observability
+            path: utilities/workflows_observability
+            application_name: workflows-observability
+          - name: giphy
+            path: quickstart/giphy
+            application_name: giphy
+          # - name: ai_giphy
+          #   path: quickstart/ai_giphy
+          #   application_name: ai-giphy
+
+    steps:
+      - uses: actions/checkout@v4.0.0
+
+      # Install Dapr
+      - name: Install Dapr CLI
+        run: |
+          wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash -s 1.16.2
+          dapr init --runtime-version 1.16.0 --slim
+
+      # Install Temporal
+      - name: Install Temporal CLI and Start Server
+        run: |
+          curl -sSf https://temporal.download/cli.sh | sh
+          export PATH="$HOME/.temporalio/bin:$PATH"
+          temporal server start-dev --db-filename /tmp/temporal-${{ matrix.app.name }}.db &
+          sleep 5
+
+      # Setup Python and uv
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.7.3"
+
+      # Sync dependencies in app directory
+      - name: Sync dependencies
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          uv sync --all-extras --all-groups
+
+      # Build Java JAR for polyglot (if needed)
+      - name: Build Java JAR for polyglot
+        if: matrix.app.name == 'polyglot'
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          uv run poe build-java || echo "Java build not required or failed"
+
+      # Download components and start dapr and temporal services
+      - name: Start Platform Services
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          uv run poe download-components
+          uv run poe start-deps
+          # Wait for Dapr sidecar to be ready
+          sleep 5
+
+      # Start the application
+      - name: Start the application
+        id: start_app
+        working-directory: ${{ matrix.app.path }}
+        env:
+          ATLAN_LOCAL_DEVELOPMENT: true
+          ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
+          ATLAN_API_KEY: ${{ secrets.ATLAN_API_KEY }}
+          ATLAN_BASE_URL: ${{ secrets.ATLAN_BASE_URL }}
+          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+        run: |
+          uv run python main.py &
+          sleep 20
+
+      - name: Run the end-to-end integration tests
+        working-directory: ${{ matrix.app.path }}
+        env:
+          ATLAN_LOCAL_DEVELOPMENT: true
+          ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
+          ATLAN_API_KEY: ${{ secrets.ATLAN_API_KEY }}
+          ATLAN_BASE_URL: ${{ secrets.ATLAN_BASE_URL }}
+          E2E_MYSQL_BASIC_AUTH_HOST: ${{ secrets.E2E_MYSQL_BASIC_AUTH_HOST }}
+          E2E_MYSQL_BASIC_AUTH_PASSWORD: ${{ secrets.E2E_MYSQL_BASIC_AUTH_PASSWORD }}
+          E2E_MYSQL_BASIC_AUTH_PORT: ${{ secrets.E2E_MYSQL_BASIC_AUTH_PORT }}
+          E2E_MYSQL_BASIC_AUTH_USERNAME: ${{ secrets.E2E_MYSQL_BASIC_AUTH_USERNAME }}
+          E2E_MYSQL_BASIC_DATABASE: ${{ secrets.E2E_MYSQL_BASIC_DATABASE }}
+          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+        run: |
+          uv run coverage run -m pytest tests/e2e --capture=no --log-cli-level=INFO -v --full-trace
+
+      # Stop all services
+      - name: Stop all services
+        if: always()
+        working-directory: ${{ matrix.app.path }}
+        run: |
+          export PATH="$HOME/.temporalio/bin:$PATH"
+          kill $(lsof -t -i :8000) || true
+          uv run poe stop-deps || true

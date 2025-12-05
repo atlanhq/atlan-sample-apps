@@ -6,6 +6,7 @@ from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.workflows import WorkflowInterface
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 logger = get_logger(__name__)
 workflow.logger = logger
@@ -24,10 +25,16 @@ class WorkflowClass(WorkflowInterface):
         """
         activities_instance = ActivitiesClass()
 
+        retry_policy = RetryPolicy(
+            maximum_attempts=6,  # 1 initial attempt + 5 retries
+            backoff_coefficient=2,
+        )
+
         # Merge any provided args (from frontend POST body or server config)
         _workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             workflow_config,
+            retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
 
