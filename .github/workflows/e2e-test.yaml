@@ -138,35 +138,6 @@ jobs:
         run: |
           uv run coverage run -m pytest tests/e2e --capture=no --log-cli-level=INFO -v --full-trace
 
-      # Generate test results report
-      - name: Generate test results report
-        working-directory: ${{ matrix.app.path }}
-        run: |
-          echo "## 📊 ${{ matrix.app.name }} App E2E Test Results" > metrics.md
-          echo "" >> metrics.md
-          echo "### 🎯 Test Summary" >> metrics.md
-          echo "| Metric | Value |" >> metrics.md
-          echo "|--------|-------|" >> metrics.md
-          echo "| App | ${{ matrix.app.name }} |" >> metrics.md
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "| Branch | \`${{ github.head_ref }}\` |" >> metrics.md
-          else
-            echo "| Branch | \`${{ github.ref_name }}\` |" >> metrics.md
-          fi
-          echo "" >> metrics.md
-          echo "### 📝 Test Details" >> metrics.md
-          echo "E2E tests completed for the \`${{ matrix.app.name }}\` application." >> metrics.md
-          echo "" >> metrics.md
-          echo "---" >> metrics.md
-
-      - name: Post PR comment
-        if: github.event_name == 'pull_request'
-        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2 https://github.com/mshick/add-pr-comment/releases/tag/v2.8.2
-        with:
-          message-id: "workflow_status_${{ matrix.app.name }}"
-          message-path: ${{ matrix.app.path }}/metrics.md
-        continue-on-error: true
-
       # Stop all services
       - name: Stop all services
         if: always()
