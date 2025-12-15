@@ -1,4 +1,4 @@
-from app.handler.handler import HandlerClass
+from app.handler import HandlerClass
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity

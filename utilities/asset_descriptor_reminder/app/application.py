@@ -32,30 +32,24 @@ class AssetDescriptionServer(APIServer):
         logger.info("get_users handler method called")
         credentials = body.model_dump()
         client = AssetDescriptionClient()
-        await client.load(credentials)
+        try:
+            await client.load(credentials)
+            atlan_client = await client.get_atlan_client()
+            users = await atlan_client.user.get_all(limit=100, sort="firstName")
 
-        response = await client.get(
-            url=f"{credentials['base_url']}/api/service/users",
-            params={
-                "limit": 100,
-                "offset": 0,
-                "sort": "firstName",
-                "columns": ["firstName", "lastName", "username", "email"],
-            },
-            bearer=credentials["atlan_token"],
-        )
-
-        users = [
-            {
-                "username": user.get("username", ""),
-                "email": user.get("email", ""),
-                "firstName": user.get("firstName", ""),
-                "lastName": user.get("lastName", ""),
-                "displayName": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
-            }
-            for user in response.get("records", [])
-            if user.get("username")
-        ]
+            users = [
+                {
+                    "username": user.username,
+                    "email": user.email,
+                    "firstName": user.first_name,
+                    "lastName": user.last_name,
+                    "displayName": f"{user.first_name} {user.last_name}".strip(),
+                }
+                async for user in users
+            ]
+        except Exception as e:
+            logger.error(e)
+            return {"error": str(e)}
 
         return {"success": True, "users": users}
 

@@ -1,0 +1,39 @@
+schema_type: dataframe
+version: 1.0
+columns:
+  typeName:
+    type: string
+    nullable: false
+  status:
+    type: string
+    nullable: false
+  attributes.name:
+    type: string
+    nullable: false
+  attributes.qualifiedName:
+    type: string
+    nullable: false
+  attributes.anaplanSourceId:
+    type: string
+    nullable: false
+  attributes.connectorName:
+    type: string
+    nullable: false
+  attributes.connectionName:
+    type: string
+    nullable: false
+  attributes.connectionQualifiedName:
+    type: string
+    nullable: false
+  attributes.lastSyncRunAt:
+    type: int
+    nullable: true
+  attributes.lastSyncWorkflowName:
+    type: string
+    nullable: true
+  attributes.lastSyncRun:
+    type: string
+    nullable: true
+  attributes.tenantId:
+    type: string
+    nullable: false

@@ -1,0 +1,104 @@
+{
+    "id": "anaplan",
+    "name": "Anaplan",
+    "logo": "https://assets.atlan.com/assets/anaplan.svg",
+    "config": {
+        "properties": {
+            "connection": {
+                "type": "string",
+                "required": false,
+                "ui": {
+                    "widget": "connection",
+                    "label": "",
+                    "placeholder": "Connection Name"
+                }
+            },
+            "credential-guid": {
+                "type": "string",
+                "ui": {
+                    "widget": "credential",
+                    "label": "",
+                    "credentialType": "atlan-connectors-anaplan",
+                    "placeholder": "Credential Guid",
+                    "hidden": false
+                }
+            },
+            "include-metadata": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "array"
+                },
+                "default": "{}",
+                "ui": {
+                    "widget": "apitree",
+                    "connectorConfigName": "atlan-connectors-anaplan",
+                    "credential": "credential-guid",
+                    "label": "Include Metadata",
+                    "description": "Selected projects will be processed.",
+                    "help": "Selected projects will be processed.",
+                    "grid": 4
+                }
+            },
+            "exclude-metadata": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "array"
+                },
+                "default": "{}",
+                "ui": {
+                    "widget": "apitree",
+                    "connectorConfigName": "atlan-connectors-anaplan",
+                    "credential": "credential-guid",
+                    "label": "Exclude Metadata",
+                    "description": "Selected projects will not be processed.",
+                    "help": "Selected projects will not be processed.",
+                    "grid": 4
+                }
+            },
+            "preflight-check": {
+                "type": "string",
+                "ui": {
+                    "widget": "sage",
+                    "config": [
+                        {
+                            "id": 1,
+                            "name": "preflightCheck",
+                            "extraUrlParam": "",
+                            "optional": false,
+                            "title": "Anaplan instance preflight check",
+                            "loaderText": "Checking Anaplan instance accessibility"
+                        }
+                    ]
+                }
+            }
+        },
+        "steps": [
+            {
+                "id": "credential",
+                "title": "Credential",
+                "description": "Credential Details",
+                "properties": [
+                    "credential-guid"
+                ]
+            },
+            {
+                "id": "connection",
+                "title": "Connection",
+                "description": "Connection Details",
+                "properties": [
+                    "connection"
+                ]
+            },
+            {
+                "id": "metadata",
+                "title": "Metadata",
+                "description": "Metadata Filters",
+                "properties": [
+                    "include-metadata",
+                    "exclude-metadata",
+                    "preflight-check"
+                ]
+            }
+        ]
+    }
+}
