@@ -91,32 +91,3 @@ jobs:
         env:
           DOCKER_CLIENT_TIMEOUT: 600
           COMPOSE_HTTP_TIMEOUT: 600
-
-      # Login to Docker Hub
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: atlanhq
-          password: ${{ secrets.DOCKER_HUB_PAT_RW }}
-
-      - name: Build and push docker image to Docker Hub
-        id: docker_build
-        uses: ./.github/actions/secure_build_push_apps
-        with:
-          branch: ${{ github.ref_name }}
-          snyk-token: ${{ secrets.SNYK_TOKEN_BU_APPS }}
-          snyk-ghcr-integration-id: ${{ secrets.SNYK_GHCR_INTEGRATION_ID }}
-          snyk-docker-integration-id: ${{ secrets.SNYK_DOCKER_INTEGRATION_ID }}
-          snyk-integration-id: ${{ secrets.SNYK_INTEGRATION_ID }}
-          snyk-org-id: ${{ secrets.SNYK_ORG_ID }}
-          context: ./${{ matrix.app }}
-          file: ./${{ matrix.app }}/Dockerfile
-          push: true
-          pull: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            registry-1.docker.io/atlanhq/${{ github.event.repository.name }}-${{ steps.get_app_name.outputs.app_name }}:${{ steps.get_branch.outputs.branch }}-${{ steps.get_version.outputs.version }}
-            registry-1.docker.io/atlanhq/${{ github.event.repository.name }}-${{ steps.get_app_name.outputs.app_name }}:${{ steps.get_branch.outputs.branch }}-latest
-        env:
-          DOCKER_CLIENT_TIMEOUT: 300
-          COMPOSE_HTTP_TIMEOUT: 300
