@@ -1,17 +1,8 @@
-# Wolfi base image with Python
-FROM ghcr.io/atlanhq/application-sdk-chainguard:latest
+# Application SDK Chainguard Image
+FROM ghcr.io/atlanhq/application-sdk-chainguard-image:latest
 
 # Switch back to root for system installations
 USER root
-# Install system dependencies
-RUN apk add --no-cache \
-    curl \
-    bash \
-    libstdc++ \
-    git \
-    gcc \
-    python3-dev \
-    && rm -rf /var/cache/apk/*
 
 # Copy uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
