@@ -29,6 +29,9 @@ COPY --chown=appuser:appuser . .
 # Switch back to root for system installations
 USER root
 
+# Install curl and bash for Dapr CLI installation
+RUN apk add --no-cache curl bash
+
 # Install Dapr CLI
 RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | DAPR_INSTALL_DIR="/usr/local/bin" /bin/bash -s 1.16.3
 
