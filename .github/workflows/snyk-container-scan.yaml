@@ -151,7 +151,7 @@ jobs:
         run: |
           # Run Snyk scan and save results
           snyk container test $DOCKER_IMAGE --json > snyk_results_${{ matrix.dockerfile_name }}.json || true
-          
+
           # Check if scan failed
           if jq -e .error snyk_results_${{ matrix.dockerfile_name }}.json > /dev/null 2>&1; then
             echo "scan_failed=true" >> $GITHUB_OUTPUT
@@ -164,7 +164,7 @@ jobs:
         id: check_results
         run: |
           result_file="snyk_results_${{ matrix.dockerfile_name }}.json"
-          
+
           if [ ! -f "$result_file" ]; then
             echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
             echo "No scan results file found"
@@ -193,7 +193,7 @@ jobs:
         id: snyk_report
         run: |
           result_file="snyk_results_${{ matrix.dockerfile_name }}.json"
-          
+
           # Handle cases where the scan itself failed
           if jq -e .error "$result_file" > /dev/null 2>&1; then
             ERROR_MESSAGE=$(jq -r '.error' "$result_file")
@@ -335,20 +335,20 @@ jobs:
           total_vulnerabilities=0
           failed_scans=0
           all_reports=""
-          
+
           for result_file in snyk-results-*/snyk_results_*.json; do
             if [ ! -f "$result_file" ]; then
               continue
             fi
-            
+
             dockerfile_name=$(basename "$result_file" | sed 's/snyk_results_\(.*\)\.json/\1/')
-            
+
             # Check for errors
             if jq -e .error "$result_file" > /dev/null 2>&1; then
               failed_scans=$((failed_scans + 1))
               continue
             fi
-            
+
             # Count vulnerabilities
             OS_HIGH_CRITICAL=$(jq '[.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file" 2>/dev/null || echo "0")
             APP_HIGH_CRITICAL=0
@@ -356,22 +356,22 @@ jobs:
               APP_HIGH_CRITICAL=$(jq '[.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file" 2>/dev/null || echo "0")
             fi
             VULN_COUNT=$((OS_HIGH_CRITICAL + APP_HIGH_CRITICAL))
-            
+
             if [ "$VULN_COUNT" -gt 0 ]; then
               total_vulnerabilities=$((total_vulnerabilities + VULN_COUNT))
               all_reports+="\n📦 **$dockerfile_name**: $VULN_COUNT high/critical vulnerabilities\n"
             fi
           done
-          
+
           echo "total_vulnerabilities=$total_vulnerabilities" >> $GITHUB_OUTPUT
           echo "failed_scans=$failed_scans" >> $GITHUB_OUTPUT
-          
+
           if [ "$total_vulnerabilities" -gt 0 ] || [ "$failed_scans" -gt 0 ]; then
             echo "has_issues=true" >> $GITHUB_OUTPUT
           else
             echo "has_issues=false" >> $GITHUB_OUTPUT
           fi
-          
+
           {
             echo "aggregated_report<<EOF"
             echo "$all_reports"
@@ -386,13 +386,13 @@ jobs:
           SLACK_COLOR: 'danger'
           SLACK_MESSAGE: |
             🚨 **Snyk Security Scan Alert**
-            
+
             **Summary:**
             • Total high/critical vulnerabilities found: ${{ steps.aggregate.outputs.total_vulnerabilities }}
             • Failed scans: ${{ steps.aggregate.outputs.failed_scans }}
-            
+
             ${{ steps.aggregate.outputs.aggregated_report }}
-            
+
             **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SLACK_TITLE: 'Snyk Security Scan Alert - Multiple Images'
           SLACK_USERNAME: 'Snyk Security Scanner'
