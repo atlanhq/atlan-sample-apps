@@ -16,3 +16,4 @@ jobs:
     uses: atlanhq/.github/.github/workflows/reusable-verify-snyk-scans.yml@main
     # Allows the reusable workflow to use the GITHUB_TOKEN from this repository.
     secrets: inherit
+  
