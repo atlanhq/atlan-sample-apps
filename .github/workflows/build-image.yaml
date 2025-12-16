@@ -49,7 +49,7 @@ jobs:
         shell: bash
 
       - name: Get version tag
-        run: echo "version=$(echo `git ls-remote https://${{ secrets.ORG_PAT_GITHUB }}@github.com/atlanhq/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)" >> $GITHUB_OUTPUT
+        run: echo "version=$(echo `git ls-remote https://${{ secrets.ORG_PAT_GITHUB }}@github.com/atlanhq/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)abcd" >> $GITHUB_OUTPUT
         id: get_version
 
       - name: Lowercase branch name
