@@ -5,16 +5,17 @@ Note:
 - The DB_CONFIG is overriden from the base class to setup the connection string for the MySQL database.
 """
 
-from application_sdk.clients.sql import BaseSQLClient
+from application_sdk.clients.models import DatabaseConfig
+from application_sdk.clients.sql import AsyncBaseSQLClient
 
 
-class SQLClient(BaseSQLClient):
+class SQLClient(AsyncBaseSQLClient):
     """
     This client handles connection string generation based on authentication
     type and manages database connectivity using SQLAlchemy.
     """
 
-    DB_CONFIG = {
-        "template": "mysql+pymysql://{user}:{password}@{host}:{port}/{database}",
-        "required": ["user", "password", "host", "port", "database"],
-    }
+    DB_CONFIG = DatabaseConfig(
+        template="mysql+aiomysql://{user}:{password}@{host}:{port}/{database}",
+        required=["user", "password", "host", "port", "database"],
+    )

@@ -38,8 +38,10 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
 
         :param workflow_args: The workflow arguments.
         """
+        activities_instance = SQLMetadataExtractionActivities()
+
         workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
-            self.activities_cls.get_workflow_args,
+            activities_instance.get_workflow_args,
             workflow_config,
             start_to_close_timeout=timedelta(seconds=10),
         )
@@ -50,7 +52,15 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
         )
 
         await workflow.execute_activity_method(
-            self.activities_cls.preflight_check,
+            activities_instance.preflight_check,
+            workflow_args,
+            retry_policy=retry_policy,
+            start_to_close_timeout=self.default_start_to_close_timeout,
+            heartbeat_timeout=self.default_heartbeat_timeout,
+        )
+
+        await workflow.execute_activity_method(
+            activities_instance.credential_extraction_demo_activity,
             workflow_args,
             retry_policy=retry_policy,
             start_to_close_timeout=self.default_start_to_close_timeout,
@@ -59,22 +69,22 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
 
         fetch_and_transforms = [
             self.fetch_and_transform(
-                self.activities_cls.fetch_databases,
+                activities_instance.fetch_databases,
                 workflow_args,
                 retry_policy,
             ),
             self.fetch_and_transform(
-                self.activities_cls.fetch_schemas,
+                activities_instance.fetch_schemas,
                 workflow_args,
                 retry_policy,
             ),
             self.fetch_and_transform(
-                self.activities_cls.fetch_tables,
+                activities_instance.fetch_tables,
                 workflow_args,
                 retry_policy,
             ),
             self.fetch_and_transform(
-                self.activities_cls.fetch_columns,
+                activities_instance.fetch_columns,
                 workflow_args,
                 retry_policy,
             ),
@@ -100,5 +110,6 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
             activities.fetch_schemas,
             activities.fetch_tables,
             activities.fetch_columns,
+            activities.credential_extraction_demo_activity,
             activities.transform_data,
         ]

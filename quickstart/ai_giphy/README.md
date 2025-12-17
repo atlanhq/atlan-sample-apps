@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 - [Temporal CLI](https://docs.temporal.io/cli)
 - Giphy API key
 - SMTP credentials (e.g., SendGrid)
-- Azure OpenAI API credentials
+- OpenAI API key
 
 ### Installation Guides
 - [macOS Setup Guide](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
@@ -43,6 +43,9 @@ https://github.com/user-attachments/assets/fd23ce3b-d63d-480d-a4fe-4258fc5de5c7
 - **Web Interface**: http://localhost:8000
 - **Temporal UI**: http://localhost:8233
 
+> [!TIP]
+> Want to containerize this app? See the [Build Docker images](https://github.com/atlanhq/atlan-sample-apps/tree/main/README.md#build-docker-images) section in the repository root README for unified build and run instructions.
+
 ## Features
 
 - **AI-Powered GIF Selection**: Describe the GIF you want (e.g., "a happy cat dancing") and the AI agent will find a suitable one.
@@ -67,11 +70,10 @@ SMTP_USERNAME=your_smtp_username (e.g., apikey for SendGrid)
 SMTP_PASSWORD=your_smtp_password_or_api_key
 SMTP_SENDER=your_sender_email (e.g., support@yourdomain.com)
 
-# Azure OpenAI Configuration (used by the AI agent)
-APP_AZURE_OPENAI_API_KEY=your_azure_openai_api_key
-APP_AZURE_OPENAI_API_VERSION=your_azure_openai_api_version
-APP_AZURE_OPENAI_ENDPOINT=your_azure_openai_endpoint
-APP_AZURE_OPENAI_DEPLOYMENT_NAME=your_azure_openai_deployment_name
+# OpenAI Configuration (used by the AI agent)
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL_NAME=your_model_name (optional, defaults to gpt-4.1-mini)
+OPENAI_BASE_URL=your_custom_base_url (optional, for custom gateways)
 
 ```
 

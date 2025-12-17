@@ -1,0 +1,13 @@
+{
+    "entityDefs": [
+      {
+        "name": "AnaplanApp",
+        "category": "ENTITY",
+        "description": "Instances of an AnaplanApp in Atlan.",
+        "serviceType": "atlan",
+        "typeVersion": "1.0",
+        "attributeDefs": [],
+        "superTypes": ["Anaplan"]
+      }
+    ]
+}

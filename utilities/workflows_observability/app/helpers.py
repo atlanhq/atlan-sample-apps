@@ -1,41 +1,17 @@
 import os
 
+from application_sdk.constants import TEMPORARY_PATH
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.objectstore import ObjectStoreOutput
-from pyatlan.client.atlan import AtlanClient
+from application_sdk.services import ObjectStore
 from pyatlan.model.enums import AtlanWorkflowPhase
+from pyatlan.model.workflow import WorkflowSearchResult
 from temporalio import activity
 
 logger = get_logger(__name__)
 activity.logger = logger
 
 
-def get_atlan_client() -> AtlanClient:
-    """
-    Initialize and return an authenticated AtlanClient instance.
-
-    This function retrieves the Atlan base URL and API key from environment variables
-    (`ATLAN_BASE_URL` and `ATLAN_API_KEY`) and uses them to create an instance of
-    `AtlanClient` for interacting with the Atlan API.
-
-    Returns:
-        AtlanClient: An authenticated client for making API requests to Atlan.
-
-    Raises:
-        ValueError: If either environment variable is missing or empty.
-    """
-    base_url = os.getenv("ATLAN_BASE_URL")
-    api_key = os.getenv("ATLAN_API_KEY")
-
-    if not base_url or not api_key:
-        raise ValueError(
-            "Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY"
-        )
-
-    return AtlanClient(base_url=base_url, api_key=api_key)
-
-
-def save_result_locally(result, local_directory: str) -> None:
+def save_result_locally(result: WorkflowSearchResult, local_directory: str) -> None:
     """
     Save a workflow run result to a local directory, structured by date and status.
 
@@ -57,7 +33,7 @@ def save_result_locally(result, local_directory: str) -> None:
             "SUCCESS" if result.status == AtlanWorkflowPhase.SUCCESS else "FAILED"
         )
         output_path = os.path.join(
-            local_directory, date_str, status_dir, result.id + ".json"
+            local_directory, date_str, status_dir, f"{result.id}.json"
         )
 
         with open(output_path, "w") as f:
@@ -87,13 +63,38 @@ async def save_result_object_storage(output_prefix: str, local_directory: str) -
         Exception: For any other errors during the upload process.
     """
     try:
-        await ObjectStoreOutput.push_files_to_object_store(
-            output_prefix=output_prefix, input_files_path=local_directory
+        await ObjectStore.upload_prefix(
+            destination=output_prefix, source=local_directory, retain_local_copy=False
         )
-        logger.info("Files pushed to object storage.")
+        logger.info(f"{local_directory} pushed to object storage.")
 
     except Exception as e:
         logger.error(
             f"Error saving workflow result on object storage: {str(e)}", exc_info=e
         )
         raise e
+
+
+def create_local_directory(output_prefix: str) -> str:
+    """
+    Creates a local directory for storing workflow results, using the given output prefix.
+
+    This function ensures the directory exists, creating it if necessary, and logs its status.
+
+    Args:
+        output_prefix (str): The prefix to append to the base temporary path for the directory.
+
+    Returns:
+        str: The full path to the created or existing local directory.
+    """
+    if output_prefix:
+        local_directory = f"{TEMPORARY_PATH}/{output_prefix}"
+    else:
+        local_directory = TEMPORARY_PATH
+    if os.path.exists(local_directory):
+        logger.info(f"Local directory {local_directory} already exists.")
+    else:
+        logger.info(f"Local directory {local_directory} does not exist.")
+    os.makedirs(local_directory, exist_ok=True)
+    logger.info(f"local directory created: {local_directory}")
+    return local_directory

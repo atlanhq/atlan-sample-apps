@@ -9,16 +9,21 @@ from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.tools import StructuredTool
-from langchain_openai import AzureChatOpenAI
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 logger = get_logger(__name__)
 
-SMTP_HOST = os.environ["SMTP_HOST"]
-SMTP_PORT = os.environ["SMTP_PORT"]
-SMTP_USERNAME = os.environ["SMTP_USERNAME"]
-SMTP_PASSWORD = os.environ["SMTP_PASSWORD"]
-GIPHY_API_KEY = os.environ["GIPHY_API_KEY"]
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.sendgrid.net")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "apikey")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_SENDER = os.getenv("SMTP_SENDER", "support@atlan.app")
+GIPHY_API_KEY = os.getenv("GIPHY_API_KEY")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL_NAME = os.getenv("OPENAI_MODEL_NAME", "gpt-4.1-mini")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 
 
 def fetch_gif(search_term: str) -> str:
@@ -31,6 +36,12 @@ def fetch_gif(search_term: str) -> str:
     Returns:
         str: URL of the fetched GIF. Returns a fallback GIF URL if the fetch fails.
     """
+    if not GIPHY_API_KEY:
+        raise ValueError(
+            "GIPHY_API_KEY is not set, please set it in the environment variables for the application. "
+            "For reference, please refer to the README.md file and .env.example file."
+        )
+
     url = f"https://api.giphy.com/v1/gifs/random?api_key={GIPHY_API_KEY}&tag={search_term}&rating=pg"
     try:
         response = requests.get(url, timeout=5)
@@ -40,14 +51,21 @@ def fetch_gif(search_term: str) -> str:
         return gif_url
     except Exception as e:
         logger.error(f"Failed to fetch GIF: {e}")
+        # Fallback GIF
         return "https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif"
 
 
 def send_email_with_gify(to: str, gify_url: str):
     """
-    Send an email to the given recipient with the specified subject and body
+    Send an email to the given recipient with the specified subject and body.
     """
-    sender = "support@atlan.app"
+    if not SMTP_PASSWORD:
+        raise ValueError(
+            "SMTP_PASSWORD is not set, please set it in the environment variables for the application. "
+            "For reference, please refer to the README.md file and .env.example file."
+        )
+
+    sender = SMTP_SENDER
     subject = "Your Surprise GIF!"
     body = f"""
         <html>
@@ -57,39 +75,45 @@ def send_email_with_gify(to: str, gify_url: str):
                 <p>Enjoy!</p>
             </body>
         </html>
-        """
+    """
+
     msg = MIMEText(body, "html")
     msg["Subject"] = subject
     msg["From"] = sender
     msg["To"] = to
 
     try:
-        host = SMTP_HOST
-        port = SMTP_PORT
-        username = SMTP_USERNAME
-        password = SMTP_PASSWORD
-        with smtplib.SMTP(host, port) as server:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.starttls()
-            server.login(username, password)  # pyright: ignore[reportArgumentType]
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)  # pyright: ignore[reportArgumentType]
             server.send_message(msg)
-            return "Email sent successfully"
+        return "Email sent successfully"
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
         return "Failed to send email"
 
 
 def get_chain():
-    local_llm = AzureChatOpenAI(
-        api_key=os.environ["APP_AZURE_OPENAI_API_KEY"],
-        api_version=os.environ["APP_AZURE_OPENAI_API_VERSION"],
-        azure_endpoint=os.environ["APP_AZURE_OPENAI_ENDPOINT"],
-        azure_deployment=os.environ["APP_AZURE_OPENAI_DEPLOYMENT_NAME"],
+    # Only API key is required. Base URL is optional.
+    if not os.getenv("OPENAI_API_KEY"):
+        raise ValueError(
+            "OPENAI_API_KEY is not set, please set it in the environment variables for the application."
+        )
+
+    # Optional: Only used if someone is using a proxy / Azure / custom gateway
+    openai_base_url = os.getenv("OPENAI_BASE_URL", None)
+
+    local_llm = ChatOpenAI(
+        api_key=OPENAI_API_KEY,
+        model=OPENAI_MODEL_NAME,
+        base_url=openai_base_url,  # Passing None is allowed and simply ignored
     )
 
     local_tools = [
         StructuredTool.from_function(fetch_gif),
         StructuredTool.from_function(send_email_with_gify),
     ]
+
     try:
         prompt = hub.pull("hwchase17/openai-tools-agent")
         agent = create_tool_calling_agent(local_llm, local_tools, prompt)

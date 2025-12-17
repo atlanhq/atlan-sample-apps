@@ -1,75 +1,87 @@
 import os
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.clients.atlan import get_async_client
 from application_sdk.observability.logger_adaptor import get_logger
-from pyatlan.client.atlan import AtlanClient
-from pyatlan.model.assets import Table
+from pyatlan.client.aio import AsyncAtlanClient
+from pyatlan.model.assets import Asset, Table
 from pyatlan.model.core import Announcement
 from pyatlan.model.enums import AnnouncementType
-from pyatlan.model.search import IndexSearchRequest
+from pyatlan.model.fluent_search import FluentSearch
 from temporalio import activity
 
 logger = get_logger(__name__)
 
 
+@dataclass
+class FetchTablesMetadataInput:
+    """Input data for fetching tables metadata.
+
+    Contains pagination information for retrieving table metadata in batches.
+    """
+
+    start: int = 0
+    page_size: int = 300
+
+    def increment_start(self):
+        """Increment the start index by the page size.
+
+        Updates the start attribute to point to the next page of results.
+        """
+        self.start += self.page_size
+
+
+@dataclass
+class TagStaleTablesOutput:
+    """Represents the output of tagging stale tables.
+
+    Tracks the number of tables successfully tagged and the number of failures.
+    """
+
+    tagged_count: int = 0
+    failed_count: int = 0
+
+
 class FreshnessMonitorActivities(ActivitiesInterface):
     def __init__(self):
-        # Initialize AtlanClient immediately
-        base_url = os.getenv("ATLAN_BASE_URL")
-        api_key = os.getenv("ATLAN_API_KEY")
+        super().__init__()
+        self.atlan_client = None
 
-        if not base_url or not api_key:
-            raise ValueError(
-                "Missing required environment variables: ATLAN_BASE_URL and/or ATLAN_API_KEY"
-            )
-
-        # Create the client and set it as current immediately
-        self.atlan_client = AtlanClient(base_url=base_url, api_key=api_key)
-
-    async def _get_atlan_client(self) -> AtlanClient:
+    async def _get_atlan_client(self) -> AsyncAtlanClient:
         """Return the initialized Atlan client"""
+        if self.atlan_client is None:
+            self.atlan_client = await get_async_client()
         return self.atlan_client
 
     @activity.defn
     async def fetch_tables_metadata(
-        self, workflow_args: Dict[str, Any]
+        self, input: FetchTablesMetadataInput
     ) -> List[Dict[str, Any]]:
         """Activity 1: Fetch table metadata from Atlan"""
         client = await self._get_atlan_client()
-
         # Build search request for tables
         logger.info("Fetching tables metadata...")
-        search_request = IndexSearchRequest(
-            dsl={
-                "query": {
-                    "bool": {
-                        "must": [
-                            {"term": {"__typeName.keyword": "Table"}},
-                            {"term": {"__state": "ACTIVE"}},
-                        ]
-                    }
-                },
-                "from": 0,
-                "size": 30,
-                "attributes": [
-                    "qualifiedName",
-                    "name",
-                    "lastUpdatedAt",
-                ],
-            }
+        search_request = (
+            FluentSearch()
+            .select()
+            .where(Asset.TYPE_NAME.eq("Table"))
+            .include_on_results(Asset.QUALIFIED_NAME)
+            .include_on_results(Asset.NAME)
+            .include_on_results(Asset.UPDATE_TIME)
+            .include_on_results(Asset.CREATE_TIME)
+            .page_size(input.page_size)
+            .to_request()
         )
-
-        logger.info("search_request", search_request)
-        logger.info("search_request", type(search_request))
-
+        # Start retrieving results at the given start
+        search_request.dsl.from_ = input.start
+        search_results = await client.asset.search(search_request)
         tables_data = []
-        max_tables = 30  # Limit the number of tables to process
         count = 0
-
-        # Iterate directly over search results with limit
-        for asset in client.asset.search(search_request):
+        # Iterate over one page of search results
+        for asset in search_results.current_page():
             if isinstance(asset, Table):
                 table_info = {
                     "qualified_name": asset.attributes.qualified_name,
@@ -80,23 +92,16 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                 }
                 tables_data.append(table_info)
                 count += 1
-                logger.info(
-                    f"Processed table {count}: {table_info['name']} {table_info}"
+                logger.debug(
+                    f"Processed table {input.start + count}: {table_info['name']} {table_info}"
                 )
 
-                # Break after processing the desired number of tables
-                if count >= max_tables:
-                    logger.info(
-                        f"Reached maximum limit of {max_tables} tables. Stopping."
-                    )
-                    break
-
-        logger.info(f"Total tables processed: {count}")
+        logger.info(f"Total additional tables processed: {count}")
         return tables_data
 
     @activity.defn
-    async def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Activity 2: Filter and identify stale tables based on threshold"""
+    def identify_stale_tables(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Activity 2: Filter and identify stale tables based on the threshold days"""
         tables_data = args["tables_data"]
         threshold_days = args["threshold_days"] or os.getenv("THRESHOLD_DAYS")
 
@@ -104,9 +109,7 @@ class FreshnessMonitorActivities(ActivitiesInterface):
         threshold_date = datetime.now() - timedelta(days=threshold_days)
 
         for table in tables_data:
-            # Check if table is stale based on update_time
-            update_time = table.get("update_time")
-            if update_time:
+            if update_time := table.get("update_time"):
                 # Convert timestamp to datetime if needed
                 if isinstance(update_time, (int, float)):
                     update_datetime = datetime.fromtimestamp(
@@ -123,18 +126,16 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     stale_tables.append(table)
             else:
                 logger.info(f"Table {table['name']} has no update_time")
+        logger.info(f"Found {len(stale_tables)} additional stale tables.")
 
         return stale_tables
 
     @activity.defn
-    async def tag_stale_tables(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """Activity 3: Add announcement to mark stale tables"""
+    async def tag_stale_tables(self, args: Dict[str, Any]) -> TagStaleTablesOutput:
+        """Activity 3: Add an announcement to mark stale tables"""
         stale_tables = args["stale_tables"]
-
+        output = TagStaleTablesOutput()
         client = await self._get_atlan_client()
-
-        tagged_count = 0
-        failed_count = 0
 
         for table_info in stale_tables:
             try:
@@ -149,16 +150,14 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                     f"Data freshness check performed on {table_info.get('check_date', 'unknown')}.",
                 )
 
-                table = client.asset.update_announcement(
+                await client.asset.update_announcement(
                     asset_type=Table,
                     qualified_name=table_info["qualified_name"],
                     name=table_info["name"],
                     announcement=announcement,
                 )
 
-                # Save the announcement
-                client.asset.save(table)
-                tagged_count += 1
+                output.tagged_count += 1
                 logger.info(
                     f"✓ Stale data announcement added for {table_info['qualified_name']}"
                 )
@@ -167,11 +166,6 @@ class FreshnessMonitorActivities(ActivitiesInterface):
                 logger.info(
                     f"Failed to add announcement to table {table_info['qualified_name']}: {str(e)}"
                 )
-                failed_count += 1
+                output.failed_count += 1
 
-        return {
-            "tagged_count": tagged_count,
-            "failed_count": failed_count,
-            "total_stale_tables": len(stale_tables),
-            "approach_used": "announcement_only",
-        }
+        return output

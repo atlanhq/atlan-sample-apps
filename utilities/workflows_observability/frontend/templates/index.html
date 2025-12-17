@@ -27,28 +27,14 @@
             required
           />
 
-          <label for="output_option">Output Option</label>
-          <div id="output_option" style="text-align: left;">
-            <label style="display: block; margin-bottom: 5px;">
-              <input type="radio" name="outputOption" value="Local" checked /> Local
-            </label>
-            <label style="display: block;">
-              <input type="radio" name="outputOption" value="Object Storage" /> Object Storage
-            </label>
-          </div>
-
-          <div id="outputPrefixContainer" style="display: none; margin-top: 10px;">
-            <div style="display: flex; flex-direction: column;">
-              <label for="outputPrefix" style="margin-bottom: 4px;">Output Prefix</label>
-              <input
-                type="text"
-                id="outputPrefix"
-                name="outputPrefix"
-                placeholder="Enter output prefix for the object storage"
-                style="padding: 6px; font-size: 14px;"
-              />
-            </div>
-          </div>
+          <label for="outputPrefix" style="margin-bottom: 4px;">Output Prefix</label>
+          <input
+            type="text"
+            id="outputPrefix"
+            name="outputPrefix"
+            placeholder="Enter output prefix for the object storage"
+            style="padding: 6px; font-size: 14px;"
+          />
 
           <button id="runWorkflowButton" type="submit">Run Workflow</button>
         </form>
@@ -86,21 +72,7 @@
 
         // Bind form submission
         const form = document.getElementById("nameForm");
-        const outputRadios = document.querySelectorAll('input[name="outputOption"]');
-        const outputPrefixContainer = document.getElementById("outputPrefixContainer");
         const outputPrefixInput = document.getElementById("outputPrefix");
-
-        // Toggle Output Prefix visibility
-        outputRadios.forEach((radio) => {
-          radio.addEventListener("change", () => {
-            if (radio.value === "Object Storage" && radio.checked) {
-              outputPrefixContainer.style.display = "block";
-            } else if (radio.value === "Local" && radio.checked) {
-              outputPrefixContainer.style.display = "none";
-              outputPrefixInput.value = "";
-            }
-          });
-        });
 
         if (form) {
           form.addEventListener("submit", async function handleSubmit(event) {
@@ -108,7 +80,6 @@
             console.log("Form submitted!");
 
             const dateInput = document.getElementById("workflow_date").value;
-            const outputType = document.querySelector('input[name="outputOption"]:checked')?.value;
             const outputPrefix = outputPrefixInput.value || "";
             const runButton = document.getElementById("runWorkflowButton");
             const resultDiv = document.getElementById("successModal");
@@ -127,7 +98,6 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   selectedDate: dateInput,
-                  outputType,
                   outputPrefix
                 }),
               });
