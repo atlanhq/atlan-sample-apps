@@ -7,6 +7,7 @@ WORKDIR /app
 # Install dependencies first (better caching)
 COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,target=/home/appuser/.cache/uv,uid=1000,gid=1000 \
+    uv venv .venv && \
     uv sync --locked --no-install-project
 
 # Copy application code
