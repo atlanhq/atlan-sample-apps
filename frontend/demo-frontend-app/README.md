@@ -8,7 +8,7 @@ A simple app that renders a frontend experience with no Temporal worker(s) invol
 
 - While the app uses the BaseApplication abstraction, it provides a no-frills APIServer instance to avoid having to define Workflows and Activities.
 
-## Features
+## Quick Start
 
 - Create a frontend app as per your requirements using any modern JavaScript framework (React, Vue, Angular, etc.). Source code for a sample React app, **data-sla-monitor-default**, has been provided as a reference.
 
