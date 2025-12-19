@@ -1,7 +1,7 @@
 [project]
-name = "hello-world-app"
+name = "demo-frontend-app"
 version = "0.1.0"
-description = "Hello World sample app built using Atlan Application SDK"
+description = "Demo Frontend sample app built using Atlan Application SDK"
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
 requires-python = ">=3.11"
 license = "Apache-2.0"
