@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <div class="card">
+      <h2>Hello World Application</h2>
+      <form id="nameForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="name">Enter your name:</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <button id="runWorkflowButton" type="submit">Submit</button>
+      </form>
+    </div>
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <div class="success-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+        <h2>Workflow Started Successfully!</h2>
+        <p>Your workflow has been initiated and is now running.</p>
+        <div class="modal-actions">
+          <a
+            id="dashboard-link"
+            class="btn btn-primary"
+            target="_blank"
+            href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows"
+            >Go to Temporal UI</a
+          >
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+  </body>
+</html>
