@@ -98,6 +98,12 @@ class DaprMessagePublisher:
                     data=json.dumps(message),
                     data_content_type="application/json",
                 )
+                client.publish_event(
+                    pubsub_name=self.pubsub_name,
+                    topic_name=self.topic + "-bulk",
+                    data=json.dumps(message),
+                    data_content_type="application/json",
+                )
                 self.message_count += 1
                 print(
                     f"[{datetime.now().strftime('%H:%M:%S')}] "
