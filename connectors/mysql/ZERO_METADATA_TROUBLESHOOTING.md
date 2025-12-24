@@ -42,7 +42,7 @@ Please review your filter configuration.
 Each extraction activity now validates its results:
 
 - `fetch_databases()` - Warns if zero databases extracted
-- `fetch_schemas()` - Warns if zero schemas extracted  
+- `fetch_schemas()` - Warns if zero schemas extracted
 - `fetch_tables()` - Warns if zero tables extracted
 - `fetch_columns()` - Warns if zero columns extracted
 

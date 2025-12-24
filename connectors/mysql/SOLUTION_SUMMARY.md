@@ -1,7 +1,7 @@
 # MySQL Connector - Zero Metadata Records Solution
 
 ## Issue Summary
-**Linear Issue:** LINTEST-172  
+**Linear Issue:** LINTEST-172
 **Title:** MySQL workflow failed during extraction due to zero metadata records returned
 
 ## Problem

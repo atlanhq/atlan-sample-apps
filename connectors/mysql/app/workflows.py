@@ -91,13 +91,12 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
             ),
         ]
         results = await asyncio.gather(*fetch_and_transforms)
-        
+
         # Check if all extractions returned zero records
         total_records = sum(
-            result.get("records", 0) if result else 0 
-            for result in results
+            result.get("records", 0) if result else 0 for result in results
         )
-        
+
         if total_records == 0:
             logger.error(
                 "EXTRACTION FAILED: Zero metadata records extracted across all activities. "
@@ -108,25 +107,33 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
                 "3) Incorrect database connection or credentials pointing to wrong instance. "
                 "Please review your configuration and filters.",
                 extra={
-                    "include_filter": workflow_args.get("metadata", {}).get("include_filter"),
-                    "exclude_filter": workflow_args.get("metadata", {}).get("exclude_filter"),
-                    "temp_table_regex": workflow_args.get("metadata", {}).get("temp-table-regex"),
+                    "include_filter": workflow_args.get("metadata", {}).get(
+                        "include_filter"
+                    ),
+                    "exclude_filter": workflow_args.get("metadata", {}).get(
+                        "exclude_filter"
+                    ),
+                    "temp_table_regex": workflow_args.get("metadata", {}).get(
+                        "temp-table-regex"
+                    ),
                     "database_statistics": results[0] if len(results) > 0 else None,
                     "schema_statistics": results[1] if len(results) > 1 else None,
                     "table_statistics": results[2] if len(results) > 2 else None,
                     "column_statistics": results[3] if len(results) > 3 else None,
-                }
+                },
             )
         else:
             logger.info(
                 "Extraction completed successfully",
                 extra={
                     "total_records": total_records,
-                    "database_records": results[0].get("records", 0) if results[0] else 0,
+                    "database_records": results[0].get("records", 0)
+                    if results[0]
+                    else 0,
                     "schema_records": results[1].get("records", 0) if results[1] else 0,
                     "table_records": results[2].get("records", 0) if results[2] else 0,
                     "column_records": results[3].get("records", 0) if results[3] else 0,
-                }
+                },
             )
 
     @staticmethod
