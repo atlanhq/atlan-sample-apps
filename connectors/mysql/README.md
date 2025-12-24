@@ -98,7 +98,7 @@ uv run pytest
 ## Workflow Process
 
 1. **Initialization**: The application sets up the SQL client and workflow components
-2. **Preflight Check**: Validates database connectivity and permissions
+2. **Preflight Check**: Validates database connectivity, permissions, and filter configuration
 3. **Metadata Extraction**:
    - Fetches database information
    - Extracts schema details
@@ -106,6 +106,24 @@ uv run pytest
    - Gathers column information
 4. **Transformation**: Converts raw metadata into standardized format
 5. **Output**: Saves the transformed metadata to specified location
+
+## Troubleshooting
+
+### Zero Metadata Records
+
+If your extraction returns zero metadata records, this is typically a **configuration issue**. The connector now includes comprehensive diagnostics:
+
+- **Preflight Warnings**: Validates filters before extraction starts
+- **Activity Warnings**: Logs when individual activities return zero records
+- **Workflow Errors**: Provides detailed diagnostics when total extraction is zero
+
+For detailed troubleshooting steps, see [ZERO_METADATA_TROUBLESHOOTING.md](./ZERO_METADATA_TROUBLESHOOTING.md).
+
+Common causes:
+- Include/exclude filters don't match any schemas in the source
+- Source database only contains system schemas (which are auto-excluded)
+- Incorrect database connection pointing to wrong instance
+- Over-restrictive temp-table-regex filters
 
 
 ## Learning Resources
