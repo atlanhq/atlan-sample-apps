@@ -12,9 +12,9 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app.name }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}-${{ matrix.app.name }}
       cancel-in-progress: false
     timeout-minutes: 30
     if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
@@ -22,6 +22,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
+        os: [ubuntu-latest, windows-latest]
         app:
           - name: hello_world
             path: quickstart/hello_world
@@ -46,18 +47,47 @@ jobs:
       - uses: actions/checkout@v4.0.0
 
       # Install Dapr
-      - name: Install Dapr CLI
+      - name: Install Dapr CLI (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash -s 1.16.2
           dapr init --runtime-version 1.16.0 --slim
 
+      - name: Install Dapr CLI (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $script=iwr -useb https://raw.githubusercontent.com/dapr/cli/master/install/install.ps1; $block=[ScriptBlock]::Create($script); invoke-command -ScriptBlock $block -ArgumentList 1.16.2, "$env:USERPROFILE\.dapr\bin\"
+          $env:Path += ";$env:USERPROFILE\.dapr\bin\"
+          dapr init --runtime-version 1.16.0 --slim
+
       # Install Temporal
-      - name: Install Temporal CLI and Start Server
+      - name: Install Temporal CLI and Start Server (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           curl -sSf https://temporal.download/cli.sh | sh
           export PATH="$HOME/.temporalio/bin:$PATH"
           temporal server start-dev --db-filename /tmp/temporal-${{ matrix.app.name }}.db &
           sleep 5
+
+      - name: Install Temporal CLI and Start Server (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Create a directory for Temporal CLI
+          New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.temporalio\bin"
+          # Download Temporal CLI
+          Invoke-WebRequest -Uri "https://temporal.download/cli/archive/latest?platform=windows&arch=amd64" -OutFile "$env:USERPROFILE\.temporalio\temporal.zip"
+          # Extract and install
+          Expand-Archive -Path "$env:USERPROFILE\.temporalio\temporal.zip" -DestinationPath "$env:USERPROFILE\.temporalio\bin" -Force
+          # Add to PATH
+          $env:Path += ";$env:USERPROFILE\.temporalio\bin"
+          # Start Temporal server
+          $dbPath = "$env:TEMP\temporal-${{ matrix.app.name }}.db"
+          Start-Process -FilePath "temporal" -ArgumentList "server", "start-dev", "--db-filename", $dbPath -NoNewWindow
+          Start-Sleep -Seconds 5
 
       # Setup Python and uv
       - name: Setup Python
@@ -70,9 +100,25 @@ jobs:
         with:
           version: "0.7.3"
 
+      # Set up PATH for DAPR and Temporal globally
+      - name: Setup PATH for DAPR and Temporal (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          echo "$HOME/.dapr/bin" >> $GITHUB_PATH
+          echo "$HOME/.temporalio/bin" >> $GITHUB_PATH
+
+      - name: Setup PATH for DAPR and Temporal (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          echo "$env:USERPROFILE\.dapr\bin" >> $env:GITHUB_PATH
+          echo "$env:USERPROFILE\.temporalio\bin" >> $env:GITHUB_PATH
+
       # Sync dependencies in app directory
       - name: Sync dependencies
         working-directory: ${{ matrix.app.path }}
+        shell: bash
         run: |
           uv sync --all-extras --all-groups
 
@@ -80,12 +126,14 @@ jobs:
       - name: Build Java JAR for polyglot
         if: matrix.app.name == 'polyglot'
         working-directory: ${{ matrix.app.path }}
+        shell: bash
         run: |
           uv run poe build-java || echo "Java build not required or failed"
 
       # Download components and start dapr and temporal services
       - name: Start Platform Services
         working-directory: ${{ matrix.app.path }}
+        shell: bash
         run: |
           uv run poe download-components
           uv run poe start-deps
@@ -96,6 +144,7 @@ jobs:
       - name: Start the application
         id: start_app
         working-directory: ${{ matrix.app.path }}
+        shell: bash
         env:
           ATLAN_LOCAL_DEVELOPMENT: true
           ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
@@ -116,6 +165,7 @@ jobs:
 
       - name: Run the end-to-end integration tests
         working-directory: ${{ matrix.app.path }}
+        shell: bash
         env:
           ATLAN_LOCAL_DEVELOPMENT: true
           ATLAN_APPLICATION_NAME: ${{ matrix.app.application_name }}
@@ -139,10 +189,22 @@ jobs:
           uv run coverage run -m pytest tests/e2e --capture=no --log-cli-level=INFO -v --full-trace
 
       # Stop all services
-      - name: Stop all services
-        if: always()
+      - name: Stop all services (Linux/macOS)
+        if: always() && runner.os != 'Windows'
         working-directory: ${{ matrix.app.path }}
+        shell: bash
         run: |
           export PATH="$HOME/.temporalio/bin:$PATH"
           kill $(lsof -t -i :8000) || true
+          uv run poe stop-deps || true
+
+      - name: Stop all services (Windows)
+        if: always() && runner.os == 'Windows'
+        working-directory: ${{ matrix.app.path }}
+        shell: pwsh
+        run: |
+          $env:Path += ";$env:USERPROFILE\.temporalio\bin"
+          # Stop process on port 8000
+          $process = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
+          if ($process) { Stop-Process -Id $process -Force -ErrorAction SilentlyContinue }
           uv run poe stop-deps || true
