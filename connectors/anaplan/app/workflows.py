@@ -8,7 +8,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 # Constants for activity retry policies
-ACTIVITY_RETRY_MAX_ATTEMPTS = 3
+ACTIVITY_RETRY_MAX_ATTEMPTS = 6  # 1 initial attempt + 5 retries
 ACTIVITY_RETRY_BACKOFF_COEFFICIENT = 2
 
 logger = get_logger(__name__)

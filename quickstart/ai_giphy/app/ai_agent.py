@@ -103,6 +103,11 @@ def get_chain():
     # Optional: Only used if someone is using a proxy / Azure / custom gateway
     openai_base_url = os.getenv("OPENAI_BASE_URL", None)
 
+    # Add https:// protocol if base_url is provided but doesn't have a protocol
+    if openai_base_url and not openai_base_url.startswith(("http://", "https://")):
+        logger.info(f"Adding https:// protocol to OPENAI_BASE_URL: {openai_base_url}")
+        openai_base_url = f"https://{openai_base_url}"
+
     local_llm = ChatOpenAI(
         api_key=OPENAI_API_KEY,
         model=OPENAI_MODEL_NAME,
