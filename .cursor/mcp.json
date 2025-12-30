@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "deepwiki": {
+      "serverUrl": "https://mcp.deepwiki.com/sse"
+    }
+  }
+}

@@ -125,7 +125,7 @@ uv run pytest
 
 ### Run Tests with Coverage
 ```bash
-uv run coverage run -m pytest tests/
+uv run coverage run -m pytest tests/unit/
 uv run coverage report
 ```
 
