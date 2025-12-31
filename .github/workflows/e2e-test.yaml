@@ -44,7 +44,7 @@ jobs:
           #   application_name: ai-giphy
 
     steps:
-      - uses: actions/checkout@v4.0.0
+      - uses: actions/checkout@v6.0.1
 
       # Install Dapr
       - name: Install Dapr CLI (Linux/macOS)
