@@ -1,7 +1,7 @@
 import asyncio
 
+from app import register_routes
 from app.activities import DqPocActivities
-from app.custom_server import DqPocServer
 from app.workflow import DqPocWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.decorators.observability_decorator import (
@@ -32,13 +32,13 @@ async def main():
     # start worker
     await app.start_worker()
 
-    # Setup the application server (custom endpoint + default SDK endpoints)
-    server = DqPocServer(
-        workflow_client=app.workflow_client,
-        handler=app.handler_class(client=app.client_class()),
+    # Setup the application server (default SDK server)
+    await app.setup_server(workflow_class=DqPocWorkflow)
+
+    # Add custom routes onto the default server
+    register_routes.register_custom_routes(  # type: ignore[arg-type]
+        app.server
     )
-    server.register_default_workflow_start(workflow_class=DqPocWorkflow)
-    app.server = server
 
     # start server
     await app.start_server()

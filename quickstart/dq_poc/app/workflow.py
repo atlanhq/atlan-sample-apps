@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, Sequence
 
 from app.activities import DqPocActivities
-from app.models import DqPocResult
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
@@ -23,7 +22,7 @@ traces = get_traces()
 class DqPocWorkflow(WorkflowInterface):
     @observability(logger=logger, metrics=metrics, traces=traces)
     @workflow.run
-    async def run(self, workflow_config: Dict[str, Any]) -> DqPocResult:
+    async def run(self, workflow_config: Dict[str, Any]) -> Dict[str, Any]:
         """
         This workflow is used to run a dq poc sample application.
 
@@ -31,19 +30,29 @@ class DqPocWorkflow(WorkflowInterface):
             workflow_config (Dict[str, Any]): The workflow configuration
 
         Returns:
-            DqPocResult: The result of the dq poc sample application
+            Dict[str, Any]: Dummy result payload returned from the activity
         """
         activities_instance = DqPocActivities()
 
         logger.info("Starting dq poc sample application")
 
-        await workflow.execute_activity(
+        # Fetch the full request payload from the SDK state store.
+        # The HTTP API starts the workflow with {"workflow_id": ...} only.
+        # The SDK stores the full request body under that workflow_id.
+        workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
+            activities_instance.get_workflow_args,
+            workflow_config,
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+        logger.info(f"Workflow args is as follows: {workflow_args}")
+        # Pass the full request payload into the activity and get its dummy
+        # result.
+        result: Dict[str, Any] = await workflow.execute_activity(
             activities_instance.run_dq_poc_sync,
-            start_to_close_timeout=timedelta(seconds=5),
+            workflow_args,
+            start_to_close_timeout=timedelta(seconds=10),
         )
 
-        result = DqPocResult()
-        result.result = 1
         logger.info(f"Dq poc sample application result: {result}")
         logger.info("Dq poc sample application completed")
         return result
@@ -65,4 +74,7 @@ class DqPocWorkflow(WorkflowInterface):
         if not isinstance(activities, DqPocActivities):
             raise TypeError("Activities must be an instance of DqPocActivities")
 
-        return [activities.run_dq_poc_sync]
+        return [
+            activities.get_workflow_args,
+            activities.run_dq_poc_sync,
+        ]
