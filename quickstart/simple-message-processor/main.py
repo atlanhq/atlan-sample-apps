@@ -6,7 +6,6 @@ to process messages from Kafka in batches without Temporal workflows.
 
 import asyncio
 import random
-import time
 from typing import Any, Dict
 
 from application_sdk.observability.logger_adaptor import get_logger
@@ -22,7 +21,7 @@ message_counts: Dict[str, int] = {}
 total_messages = 0
 
 
-async def process_message(message: Dict[str, Any]):
+def process_message(message: Dict[str, Any]):
     """Process a single CloudEvent message from Dapr pubsub.
     
     Dapr pubsub sends one CloudEvent per HTTP request.
@@ -76,7 +75,7 @@ async def bulk_process_message(request: Dict[str, Any]):
     This handler supports both formats.
     """
     global total_messages
-    time.sleep(5)
+    await asyncio.sleep(5)
     
     # Check if this is bulk format (has "entries") or single CloudEvent format
     if "entries" in request:
@@ -122,7 +121,7 @@ async def bulk_process_message(request: Dict[str, Any]):
         if total_messages % 10 == 0:
             logger.info(f"Processed {total_messages} messages (single-mode on bulk topic)")
             logger.info(f"Event Counts: {message_counts}")
-        time.sleep(2)
+        await asyncio.sleep(2)
         
         # Return RETRY for inventory_events
         if event_type == "inventory_events":
@@ -161,7 +160,7 @@ async def main():
             maxAwaitDurationMs=1000,
         ),
         dead_letter_topic="events-topic-bulk-dlq",
-        message_handler=bulk_process_message,  # Callback for bulk messages
+        message_handler=bulk_process_message,  # Callback for bulk messages async function
     )
 
     # SDK automatically registers routes based on message_handler in subscriptions
