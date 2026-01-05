@@ -170,6 +170,9 @@ async def main():
     """Main entry point."""
     # Get defaults from environment variables
     default_dapr_port = int(os.getenv("DAPR_HTTP_PORT", "3500"))
+    default_pubsub_name = os.getenv("PUBSUB_NAME", "eventstore")
+    default_topic = os.getenv("KAFKA_TOPIC", "events-topic")
+    default_rate = int(os.getenv("MESSAGE_PUBLISH_RATE", "5"))
     
     parser = argparse.ArgumentParser(
         description="Publish messages to Kafka via Dapr pubsub"
@@ -183,7 +186,7 @@ async def main():
     parser.add_argument(
         "--pubsub-name",
         default="messaging",
-        help="Dapr pubsub component name (default: messaging)",
+        help="Dapr pubsub component name (default: eventstore)",
     )
     parser.add_argument(
         "--topic",
