@@ -138,7 +138,7 @@ bulk_subscription = PubSubSubscription(
 |-------|------|---------|-------------|
 | `enabled` | bool | False | Enable bulk subscribe |
 | `maxMessagesCount` | int | 100 | Max messages per batch |
-| `maxAwaitDurationMs` | int | 40 | Max wait time in ms |
+| `maxAwaitDurationMs` | int | 100 | Max wait time in ms |
 
 ## Dapr Subscriptions
 
