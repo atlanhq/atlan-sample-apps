@@ -1,0 +1,15 @@
+test_workflow_args:
+  search_term: "funny cat"
+  recipients: "test@example.com"
+  connection:
+    connection_name: "giphy-test"
+    connection_qualified_name: "default/giphy/test"
+test_name: "test_giphy_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  workflow:
+    success: true
+    message: "Workflow started successfully"
+
