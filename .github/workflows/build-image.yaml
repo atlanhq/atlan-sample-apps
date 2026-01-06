@@ -7,12 +7,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '**'
-      - '!kurl-installer.yaml'
-      - '!**.md'
-      - '!images/**'
-      - '!**.png'
+      - dockerfile
 
 jobs:
   build:
