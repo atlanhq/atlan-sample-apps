@@ -22,16 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         app:
-          - quickstart/ai_giphy
-          - quickstart/giphy
-          - quickstart/hello_world
-          - quickstart/polyglot
           - connectors/mysql
-          - connectors/anaplan
-          - templates/generic
-          - utilities/asset_descriptor_reminder
-          - utilities/freshness_monitor
-          - utilities/workflows_observability
 
     steps:
       # Checkout current repo (your app)
@@ -77,7 +68,7 @@ jobs:
           snyk-integration-id: ${{ secrets.SNYK_INTEGRATION_ID }}
           snyk-org-id: ${{ secrets.SNYK_ORG_ID }}
           context: ./${{ matrix.app }}
-          file: ./${{ matrix.app }}/Dockerfile
+          file: ./${{ matrix.app }}/../../Dockerfile
           push: true
           pull: true
           platforms: linux/amd64,linux/arm64
