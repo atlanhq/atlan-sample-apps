@@ -1,6 +1,9 @@
 name: Publish App Docker Image
 
 on:
+  pull_request:
+    branches:
+      - dockerfile
   push:
     branches:
       - main
