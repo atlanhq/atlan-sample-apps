@@ -7,7 +7,7 @@ from app.utils import setup_parquet_output, should_include_asset
 class TestUtils:
     """Test cases for utils functions."""
 
-    @patch("app.utils.ParquetOutput")
+    @patch("app.utils.ParquetFileWriter")
     def test_setup_parquet_output_success(self, mock_parquet_output):
         """Test successful parquet output setup."""
         # Arrange

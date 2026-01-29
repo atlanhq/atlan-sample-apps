@@ -10,7 +10,7 @@ import pandas as pd
 from app.utils.processor import FactorialProcessor
 from application_sdk.activities import ActivitiesInterface
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.json import JsonOutput
+from application_sdk.io.json import JsonFileWriter
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -73,7 +73,7 @@ class PolyglotActivities(ActivitiesInterface):
     ) -> Dict[str, Any]:
         """Save factorial calculation result to a JSON file.
 
-        This activity demonstrates using the SDK's JsonOutput to write
+        This activity demonstrates using the SDK's JsonFileWriter to write
         results to a JSON file on disk.
 
         Args:
@@ -102,8 +102,8 @@ class PolyglotActivities(ActivitiesInterface):
             # Create a DataFrame from the result
             df = pd.DataFrame([calculation_result])
             output_path = calculation_result["output_path"]
-            # Initialize JsonOutput
-            json_output = JsonOutput(
+            # Initialize JsonFileWriter
+            json_output = JsonFileWriter(
                 output_suffix="results",
                 output_path=output_path,
                 typename="factorial_result",
