@@ -15,11 +15,11 @@ from application_sdk.activities.metadata_extraction.base import (
     BaseMetadataExtractionActivities,
     BaseMetadataExtractionActivitiesState,
 )
-from application_sdk.inputs.parquet import ParquetInput
+from application_sdk.io.json import JsonFileWriter
+from application_sdk.io.parquet import ParquetFileReader
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from application_sdk.outputs.json import JsonOutput
 from application_sdk.transformers import TransformerInterface
 from temporalio import activity
 
@@ -335,13 +335,13 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
             # Setup input for reading raw parquet files
             # Use the typename to construct the correct path
-            raw_input = ParquetInput(
+            raw_input = ParquetFileReader(
                 path=os.path.join(output_path, "raw", typename),
             )
             raw_input = raw_input.get_batched_daft_dataframe()
 
             # Setup output for writing transformed JSON files
-            transformed_output = JsonOutput(
+            transformed_output = JsonFileWriter(
                 output_path=output_path,
                 output_suffix="transformed",
                 typename=typename,
