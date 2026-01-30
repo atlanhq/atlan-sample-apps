@@ -9,8 +9,8 @@ from typing import Any, Dict
 import pandas as pd
 from app.utils.processor import FactorialProcessor
 from application_sdk.activities import ActivitiesInterface
-from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.io.json import JsonFileWriter
+from application_sdk.observability.logger_adaptor import get_logger
 from temporalio import activity
 
 logger = get_logger(__name__)

@@ -15,11 +15,11 @@ from application_sdk.activities.metadata_extraction.base import (
     BaseMetadataExtractionActivities,
     BaseMetadataExtractionActivitiesState,
 )
+from application_sdk.io.json import JsonFileWriter
 from application_sdk.io.parquet import ParquetFileReader
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from application_sdk.io.json import JsonFileWriter
 from application_sdk.transformers import TransformerInterface
 from temporalio import activity
 
