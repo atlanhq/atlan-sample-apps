@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessibility Audit</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4"></path>
+            <path d="M12 8h.01"></path>
+          </svg>
+          <h1>Accessibility Audit</h1>
+          <p class="subtitle">Test your Atlan web apps for WCAG compliance using axe-core and WAVE</p>
+        </div>
+
+        <form id="auditForm" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label for="url">Target URL</label>
+            <input
+              type="url"
+              id="url"
+              name="url"
+              placeholder="https://your-atlan-app.example.com"
+              required
+            />
+            <span class="hint">Enter the full URL of the page you want to audit</span>
+          </div>
+
+          <div class="form-group">
+            <label for="wcag_level">WCAG Conformance Level</label>
+            <select id="wcag_level" name="wcag_level">
+              <option value="A">Level A (Minimum)</option>
+              <option value="AA" selected>Level AA (Recommended)</option>
+              <option value="AAA">Level AAA (Enhanced)</option>
+            </select>
+            <span class="hint">AA is the most commonly required level for compliance</span>
+          </div>
+
+          <div class="form-group">
+            <label for="wave_api_key">WAVE API Key (Optional)</label>
+            <input
+              type="password"
+              id="wave_api_key"
+              name="wave_api_key"
+              placeholder="Enter your WAVE API key"
+            />
+            <span class="hint">
+              Get a free API key at
+              <a href="https://wave.webaim.org/api/" target="_blank" rel="noopener">wave.webaim.org/api</a>
+            </span>
+          </div>
+
+          <div class="tools-info">
+            <h3>Audit Tools</h3>
+            <div class="tools-grid">
+              <div class="tool">
+                <div class="tool-icon axe">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                  </svg>
+                </div>
+                <div class="tool-info">
+                  <strong>axe-core</strong>
+                  <span>Automated WCAG testing</span>
+                </div>
+                <span class="badge enabled">Always Enabled</span>
+              </div>
+              <div class="tool">
+                <div class="tool-icon wave">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 12h4l3-9 4 18 3-9h4"></path>
+                  </svg>
+                </div>
+                <div class="tool-info">
+                  <strong>WAVE</strong>
+                  <span>WebAIM accessibility evaluation</span>
+                </div>
+                <span class="badge" id="waveBadge">Requires API Key</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="runAuditButton" type="submit">
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4"></path>
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span>Start Accessibility Audit</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="info-card">
+        <h3>What This Tool Checks</h3>
+        <ul>
+          <li><strong>Color Contrast</strong> - Ensures text is readable against backgrounds</li>
+          <li><strong>Alt Text</strong> - Verifies images have descriptive alternatives</li>
+          <li><strong>Form Labels</strong> - Checks that inputs are properly labeled</li>
+          <li><strong>Keyboard Navigation</strong> - Tests for keyboard accessibility</li>
+          <li><strong>ARIA Usage</strong> - Validates proper use of ARIA attributes</li>
+          <li><strong>Heading Structure</strong> - Ensures logical heading hierarchy</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <div class="success-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+        <h2>Audit Started Successfully!</h2>
+        <p>Your accessibility audit is now running. This may take a few moments depending on the page complexity.</p>
+        <div class="modal-actions">
+          <a
+            id="dashboard-link"
+            class="btn btn-primary"
+            target="_blank"
+            href="http://{{ workflow_ui_host }}:{{ workflow_ui_port }}/namespaces/default/workflows"
+          >View in Temporal UI</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+  </body>
+</html>
