@@ -61,12 +61,12 @@ class TestPolyglotActivities:
             "output_path": "/tmp/test",
         }
 
-        # Mock JsonOutput with AsyncMock for async methods
+        # Mock JsonFileWriter with AsyncMock for async methods
         mock_stats = MagicMock()
         mock_stats.total_record_count = 1
         mock_stats.chunk_count = 1
 
-        with patch("app.activities.JsonOutput") as mock_json_output:
+        with patch("app.activities.JsonFileWriter") as mock_json_output:
             mock_instance = MagicMock()
             mock_instance.write_dataframe = AsyncMock()
             mock_instance.get_statistics = AsyncMock(return_value=mock_stats)
