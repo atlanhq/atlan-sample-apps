@@ -4,13 +4,12 @@ import argparse
 import dataclasses
 import hashlib
 import json
-import os
 import re
 import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 
 @dataclasses.dataclass(frozen=True)
@@ -105,7 +104,9 @@ def parse_trivy_findings(
 
             installed_version = str(vuln.get("InstalledVersion") or "")
             fixed_version = str(vuln.get("FixedVersion") or "")
-            vulnerability_id = str(vuln.get("VulnerabilityID") or vuln.get("VulnID") or "")
+            vulnerability_id = str(
+                vuln.get("VulnerabilityID") or vuln.get("VulnID") or ""
+            )
             title = str(vuln.get("Title") or vuln.get("Description") or "")
 
             finding = Finding(
@@ -143,7 +144,9 @@ def write_unfixable_issue(
 
     for project_dir in sorted(by_project.keys()):
         lines.append(f"\n### `{project_dir}`\n")
-        lines.append("| Severity | Package | Installed | Fixed | Vulnerability | Title |\n")
+        lines.append(
+            "| Severity | Package | Installed | Fixed | Vulnerability | Title |\n"
+        )
         lines.append("| --- | --- | --- | --- | --- | --- |\n")
         for finding in sorted(
             by_project[project_dir],
@@ -185,7 +188,9 @@ def relax_pins(pyproject_path: Path, findings: Sequence[Finding]) -> List[str]:
     return sorted(set(updated))
 
 
-def run_uv_lock(project_dir: Path, packages: Sequence[str]) -> subprocess.CompletedProcess[str]:
+def run_uv_lock(
+    project_dir: Path, packages: Sequence[str]
+) -> subprocess.CompletedProcess[str]:
     cmd: List[str] = ["uv", "lock"]
     for pkg in packages:
         cmd.extend(["-P", pkg])
@@ -200,7 +205,9 @@ def run_uv_lock(project_dir: Path, packages: Sequence[str]) -> subprocess.Comple
 
 
 def project_test_info(project_dir: Path) -> Tuple[bool, bool]:
-    return (project_dir / "tests" / "unit").is_dir(), (project_dir / "tests" / "e2e").is_dir()
+    return (project_dir / "tests" / "unit").is_dir(), (
+        project_dir / "tests" / "e2e"
+    ).is_dir()
 
 
 def write_summary(
@@ -223,7 +230,9 @@ def write_summary(
         summary_path.write_text("".join(lines), encoding="utf-8")
         return
 
-    lines.append("| Project | Packages (fixable) | Unit tests | E2E tests | Actions |\n")
+    lines.append(
+        "| Project | Packages (fixable) | Unit tests | E2E tests | Actions |\n"
+    )
     lines.append("| --- | --- | --- | --- | --- |\n")
 
     for project_dir in sorted(by_project.keys()):
@@ -247,7 +256,9 @@ def write_summary(
         )
 
     lines.append("\n### Notes\n")
-    lines.append("- This PR is intended to only touch `pyproject.toml` and `uv.lock`.\n")
+    lines.append(
+        "- This PR is intended to only touch `pyproject.toml` and `uv.lock`.\n"
+    )
     lines.append("- E2E tests are not run by the autofix workflow (unit tests only).\n")
 
     summary_path.write_text("".join(lines), encoding="utf-8")
@@ -257,7 +268,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Deterministically remediate fixable Trivy HIGH/CRITICAL vulnerabilities for uv projects."
     )
-    parser.add_argument("--trivy-json", required=True, help="Path to Trivy vulnerability JSON output.")
+    parser.add_argument(
+        "--trivy-json", required=True, help="Path to Trivy vulnerability JSON output."
+    )
     parser.add_argument(
         "--severity",
         default="CRITICAL,HIGH",
