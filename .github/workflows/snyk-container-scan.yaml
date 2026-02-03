@@ -1,0 +1,399 @@
+name: Snyk check for Docker Image
+
+on:
+  push:
+    branches:
+      - main
+      - dockerfile
+    paths:
+      - '**'
+      - '!kurl-installer.yaml'
+      - '!**.md'
+      - '!images/**'
+      - '!**.png'
+
+jobs:
+  find-dockerfiles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Find all Dockerfiles (excluding root)
+        id: find-dockerfiles
+        run: |
+          # Find all Dockerfiles except the root one
+          dockerfiles=$(find . -name "Dockerfile" -not -path "./Dockerfile" -type f | sed 's|^\./||' | jq -R -s -c 'split("\n")[:-1]')
+          echo "dockerfiles=$dockerfiles" >> $GITHUB_OUTPUT
+          echo "Found Dockerfiles:"
+          echo "$dockerfiles" | jq -r '.[]'
+
+      - name: Set matrix output
+        id: set-matrix
+        run: |
+          if [ -z "${{ steps.find-dockerfiles.outputs.dockerfiles }}" ] || [ "${{ steps.find-dockerfiles.outputs.dockerfiles }}" == "[]" ]; then
+            # If no Dockerfiles found, create a dummy matrix entry to prevent job failure
+            echo 'matrix={"include":[{"dockerfile":"","dockerfile_path":"","dockerfile_name":""}]}' >> $GITHUB_OUTPUT
+          else
+            # Create matrix with dockerfile path and sanitized name for image tags
+            matrix_json=$(echo "${{ steps.find-dockerfiles.outputs.dockerfiles }}" | jq -c '
+              map({
+                dockerfile: .,
+                dockerfile_path: .,
+                dockerfile_name: (. | gsub("/"; "-") | gsub("_"; "-") | ascii_downcase)
+              })
+            ' | jq -c '{include: .}')
+            echo "matrix<<EOF" >> $GITHUB_OUTPUT
+            echo "$matrix_json" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "Generated matrix:"
+            echo "$matrix_json" | jq .
+          fi
+
+  scan:
+    needs: find-dockerfiles
+    if: needs.find-dockerfiles.outputs.matrix != '{"include":[{"dockerfile":"","dockerfile_path":"","dockerfile_name":""}]}' && needs.find-dockerfiles.outputs.matrix != ''
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+    timeout-minutes: 30  # Increased to handle multiple scans
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.find-dockerfiles.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Get branch name
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: get_branch
+
+      - run: echo "REPOSITORY_NAME=`echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//"`" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Get version tag
+        run: echo "version=$(echo `git ls-remote https://${{ secrets.ORG_PAT_GITHUB }}@github.com/atlanhq/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)abcd" >> $GITHUB_OUTPUT
+        id: get_version
+
+      - name: Lowercase branch name
+        run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        id: get_lowercase_branch
+
+      - name: Set up Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0 https://github.com/docker/setup-buildx-action/releases/tag/v3.10.0
+
+      - name: Login to GitHub Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0 https://github.com/docker/login-action/releases/tag/v3.4.0
+        with:
+          registry: ghcr.io
+          username: $GITHUB_ACTOR
+          password: ${{ secrets.ORG_PAT_GITHUB }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: atlanhq
+          password: ${{ secrets.DOCKER_HUB_PAT_RW }}
+
+      - name: Set up Snyk CLI
+        uses: snyk/actions/setup@master
+
+      - name: Determine Dockerfile context directory
+        id: dockerfile_context
+        run: |
+          dockerfile_path="${{ matrix.dockerfile_path }}"
+          # Get the directory containing the Dockerfile
+          context_dir=$(dirname "$dockerfile_path")
+          if [ "$context_dir" == "." ]; then
+            context_dir=""
+          fi
+          echo "context_dir=$context_dir" >> $GITHUB_OUTPUT
+          echo "Dockerfile: $dockerfile_path"
+          echo "Context: ${context_dir:-.}"
+
+      - name: Build and load docker image
+        id: docker_build
+        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # v6.17.0 https://github.com/docker/build-push-action/releases/tag/v6.17.0
+        with:
+          context: ${{ steps.dockerfile_context.outputs.context_dir || '.' }}
+          file: ./${{ matrix.dockerfile_path }}
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ matrix.dockerfile_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ matrix.dockerfile_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+          build-args: |
+            ACCESS_TOKEN_USR=$GITHUB_ACTOR
+            ACCESS_TOKEN_PWD=${{ secrets.ORG_PAT_GITHUB }}
+        env:
+          DOCKER_CLIENT_TIMEOUT: 600
+          COMPOSE_HTTP_TIMEOUT: 600
+
+      - name: Run Snyk to check for vulnerabilities
+        id: snyk_scan
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_API: https://api.us.snyk.io
+          DOCKER_IMAGE: ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ matrix.dockerfile_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+        run: |
+          # Run Snyk scan and save results
+          snyk container test $DOCKER_IMAGE --json > snyk_results_${{ matrix.dockerfile_name }}.json || true
+
+          # Check if scan failed
+          if jq -e .error snyk_results_${{ matrix.dockerfile_name }}.json > /dev/null 2>&1; then
+            echo "scan_failed=true" >> $GITHUB_OUTPUT
+            echo "error_message=$(jq -r '.error' snyk_results_${{ matrix.dockerfile_name }}.json)" >> $GITHUB_OUTPUT
+          else
+            echo "scan_failed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Scan Results
+        id: check_results
+        run: |
+          result_file="snyk_results_${{ matrix.dockerfile_name }}.json"
+
+          if [ ! -f "$result_file" ]; then
+            echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
+            echo "No scan results file found"
+            exit 0
+          fi
+
+          # Check for high/critical vulnerabilities
+          OS_HIGH_CRITICAL=$(jq '[.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file" 2>/dev/null || echo "0")
+          APP_HIGH_CRITICAL=0
+          if jq -e '.applications' "$result_file" > /dev/null 2>&1; then
+            APP_HIGH_CRITICAL=$(jq '[.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file" 2>/dev/null || echo "0")
+          fi
+          TOTAL_HIGH_CRITICAL=$((OS_HIGH_CRITICAL + APP_HIGH_CRITICAL))
+
+          if [ "$TOTAL_HIGH_CRITICAL" -gt 0 ]; then
+            echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
+            echo "os_high_critical=$OS_HIGH_CRITICAL" >> $GITHUB_OUTPUT
+            echo "app_high_critical=$APP_HIGH_CRITICAL" >> $GITHUB_OUTPUT
+            echo "total_high_critical=$TOTAL_HIGH_CRITICAL" >> $GITHUB_OUTPUT
+          else
+            echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Partner-Friendly Report
+        if: steps.check_results.outputs.vulnerabilities_found == 'true'
+        id: snyk_report
+        run: |
+          result_file="snyk_results_${{ matrix.dockerfile_name }}.json"
+
+          # Handle cases where the scan itself failed
+          if jq -e .error "$result_file" > /dev/null 2>&1; then
+            ERROR_MESSAGE=$(jq -r '.error' "$result_file")
+            REPORT="*Snyk scan failed for ${{ matrix.dockerfile_path }}:* ${ERROR_MESSAGE}"
+          else
+            # Get high/critical vulnerability counts
+            OS_HIGH_CRITICAL=$(jq '[.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file")
+            APP_HIGH_CRITICAL=0
+            if jq -e '.applications' "$result_file" > /dev/null; then
+              APP_HIGH_CRITICAL=$(jq '[.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file")
+            fi
+            TOTAL_HIGH_CRITICAL=$((OS_HIGH_CRITICAL + APP_HIGH_CRITICAL))
+
+            PATH_TO_IMAGE=$(jq -r '.path // "'"$DOCKER_IMAGE"'"' "$result_file")
+
+            # Get top 3 UNIQUE critical vulnerabilities with detailed info and path counts
+            TOP_VULNS=""
+            if [ "$APP_HIGH_CRITICAL" -gt 0 ]; then
+              TOP_VULNS=$(jq -r '
+                [.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")]
+                | group_by(.id + .moduleName + .version)
+                | map({
+                    id: .[0].id,
+                    title: .[0].title,
+                    severity: .[0].severity,
+                    moduleName: .[0].moduleName,
+                    version: .[0].version,
+                    fixedIn: .[0].fixedIn,
+                    pathCount: length
+                  })
+                | sort_by(.severity == "critical" | not)
+                | .[0:3]
+                | .[] |
+                "• **\(.title)** (\(.severity | ascii_upcase))\n" +
+                "  📦 Package: `\(.moduleName)@\(.version)`\n" +
+                "  🔗 ID: \(.id)\n" +
+                "  🛤️  Paths: \(.pathCount) dependency path(s)\n" +
+                "  ✅ Fixed in: \(if .fixedIn and (.fixedIn | length > 0) then (.fixedIn | join(", ")) else "No fix available" end)"
+              ' "$result_file")
+            fi
+
+            if [ "$OS_HIGH_CRITICAL" -gt 0 ] && [ -z "$TOP_VULNS" ]; then
+              TOP_VULNS=$(jq -r '
+                [.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")]
+                | group_by(.id + .moduleName + .version)
+                | map({
+                    id: .[0].id,
+                    title: .[0].title,
+                    severity: .[0].severity,
+                    moduleName: .[0].moduleName,
+                    version: .[0].version,
+                    fixedIn: .[0].fixedIn,
+                    pathCount: length
+                  })
+                | sort_by(.severity == "critical" | not)
+                | .[0:3]
+                | .[] |
+                "• **\(.title)** (\(.severity | ascii_upcase))\n" +
+                "  📦 Package: `\(.moduleName)@\(.version)`\n" +
+                "  🔗 ID: \(.id)\n" +
+                "  🛤️  Paths: \(.pathCount) dependency path(s)\n" +
+                "  ✅ Fixed in: \(if .fixedIn and (.fixedIn | length > 0) then (.fixedIn | join(", ")) else "No fix available" end)"
+              ' "$result_file")
+            fi
+
+            # Get unique affected packages for summary
+            AFFECTED_PACKAGES=$(jq -r '
+              [.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical") | .moduleName]
+              | unique
+              | .[0:5]
+              | join(", ")
+            ' "$result_file" 2>/dev/null || echo "")
+
+            # Get unique vulnerability count (not total occurrences)
+            UNIQUE_VULNS=$(jq -r '
+              [.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")]
+              | group_by(.id + .moduleName + .version)
+              | length
+            ' "$result_file" 2>/dev/null || echo "0")
+
+            # Build detailed report
+            REPORT="🚨 **High/Critical Vulnerabilities Found in ${{ matrix.dockerfile_path }}**"$'\n'
+            REPORT+="📦 **Image:** ${PATH_TO_IMAGE}"$'\n'
+            REPORT+="📊 **Summary:** ${UNIQUE_VULNS} unique high/critical vulnerabilities (${TOTAL_HIGH_CRITICAL} total occurrences)"$'\n'
+
+            if [ "$OS_HIGH_CRITICAL" -gt 0 ]; then
+              REPORT+="🔧 **OS Vulnerabilities:** ${OS_HIGH_CRITICAL}"$'\n'
+            fi
+
+            if [ "$APP_HIGH_CRITICAL" -gt 0 ]; then
+              REPORT+="📦 **Application Vulnerabilities:** ${APP_HIGH_CRITICAL} occurrences"$'\n'
+            fi
+
+            if [ -n "$AFFECTED_PACKAGES" ] && [ "$AFFECTED_PACKAGES" != "" ]; then
+              REPORT+="🎯 **Affected Packages:** \`${AFFECTED_PACKAGES}\`"$'\n'
+            fi
+
+            if [ -n "$TOP_VULNS" ]; then
+              REPORT+=$'\n'"**🔍 Top Critical Issues:**"$'\n'"$TOP_VULNS"$'\n'
+            fi
+
+            REPORT+=$'\n'"**⚠️ Action Required:** This image cannot be promoted due to high/critical security vulnerabilities."$'\n'
+            REPORT+="**💡 Next Steps:** Update dependencies to the fixed versions above or choose a different base image."
+          fi
+
+          # Set output
+          {
+            echo "report_text<<EOF"
+            echo "$REPORT"
+            echo "EOF"
+            echo "dockerfile_path=${{ matrix.dockerfile_path }}" >> $GITHUB_OUTPUT
+          } >> $GITHUB_OUTPUT
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-results-${{ matrix.dockerfile_name }}
+          path: snyk_results_${{ matrix.dockerfile_name }}.json
+          retention-days: 7
+
+  aggregate-results:
+    needs: scan
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Download all scan results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: snyk-results-*
+          merge-multiple: false
+
+      - name: Aggregate vulnerabilities
+        id: aggregate
+        run: |
+          total_vulnerabilities=0
+          failed_scans=0
+          all_reports=""
+
+          for result_file in snyk-results-*/snyk_results_*.json; do
+            if [ ! -f "$result_file" ]; then
+              continue
+            fi
+
+            dockerfile_name=$(basename "$result_file" | sed 's/snyk_results_\(.*\)\.json/\1/')
+
+            # Check for errors
+            if jq -e .error "$result_file" > /dev/null 2>&1; then
+              failed_scans=$((failed_scans + 1))
+              continue
+            fi
+
+            # Count vulnerabilities
+            OS_HIGH_CRITICAL=$(jq '[.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file" 2>/dev/null || echo "0")
+            APP_HIGH_CRITICAL=0
+            if jq -e '.applications' "$result_file" > /dev/null 2>&1; then
+              APP_HIGH_CRITICAL=$(jq '[.applications[]?.vulnerabilities[]? | select(.severity == "high" or .severity == "critical")] | length' "$result_file" 2>/dev/null || echo "0")
+            fi
+            VULN_COUNT=$((OS_HIGH_CRITICAL + APP_HIGH_CRITICAL))
+
+            if [ "$VULN_COUNT" -gt 0 ]; then
+              total_vulnerabilities=$((total_vulnerabilities + VULN_COUNT))
+              all_reports+="\n📦 **$dockerfile_name**: $VULN_COUNT high/critical vulnerabilities\n"
+            fi
+          done
+
+          echo "total_vulnerabilities=$total_vulnerabilities" >> $GITHUB_OUTPUT
+          echo "failed_scans=$failed_scans" >> $GITHUB_OUTPUT
+
+          if [ "$total_vulnerabilities" -gt 0 ] || [ "$failed_scans" -gt 0 ]; then
+            echo "has_issues=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_issues=false" >> $GITHUB_OUTPUT
+          fi
+
+          {
+            echo "aggregated_report<<EOF"
+            echo "$all_reports"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification on failure
+        if: steps.aggregate.outputs.has_issues == 'true'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: 'danger'
+          SLACK_MESSAGE: |
+            🚨 **Snyk Security Scan Alert**
+
+            **Summary:**
+            • Total high/critical vulnerabilities found: ${{ steps.aggregate.outputs.total_vulnerabilities }}
+            • Failed scans: ${{ steps.aggregate.outputs.failed_scans }}
+
+            ${{ steps.aggregate.outputs.aggregated_report }}
+
+            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SLACK_TITLE: 'Snyk Security Scan Alert - Multiple Images'
+          SLACK_USERNAME: 'Snyk Security Scanner'
+          SLACK_ICON_EMOJI: ':warning:'

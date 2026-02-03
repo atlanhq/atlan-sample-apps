@@ -1,0 +1,95 @@
+name: Pre-commit Checks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  discover-apps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover app directories
+        id: set-matrix
+        run: |
+          app_paths=()
+
+          # Find all subdirectories in quickstart, connectors, utilities, and templates
+          for root_dir in quickstart connectors utilities templates; do
+            if [ -d "$root_dir" ]; then
+              for dir in "$root_dir"/*; do
+                if [ -d "$dir" ] && [ -f "$dir/pyproject.toml" ]; then
+                  app_paths+=("$dir")
+                fi
+              done
+            fi
+          done
+
+          # Convert to compact JSON array format for matrix
+          json_paths=$(printf '%s\n' "${app_paths[@]}" | jq -R . | jq -s -c .)
+          matrix_json="{\"app_path\":$json_paths}"
+          echo "matrix<<EOF" >> $GITHUB_OUTPUT
+          echo "$matrix_json" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Discovered app paths:"
+          printf '%s\n' "${app_paths[@]}"
+
+  pre-commit:
+    needs: discover-apps
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app_path }}
+      cancel-in-progress: false
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover-apps.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.7.3"
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+      - name: Run pre-commit for ${{ matrix.app_path }}
+        run: |
+          cd ${{ github.workspace }}
+          # Get all tracked files in the app directory (recursively includes tests directory)
+          # The trailing slash ensures we get all files in subdirectories including tests/
+          app_files=$(git ls-files ${{ matrix.app_path }}/)
+          if [ -n "$app_files" ]; then
+            echo "Running pre-commit on files in ${{ matrix.app_path }} (including tests if present)..."
+            echo "Files to check:"
+            echo "$app_files" | head -10
+            # Run pre-commit and capture exit code
+            # Exit code 1 means files were modified (need fixing) - this is expected in CI
+            echo "$app_files" | xargs pre-commit run --config ${{ github.workspace }}/.pre-commit-config.yaml --files || {
+              exit_code=$?
+              if [ $exit_code -eq 1 ]; then
+                echo "::error::Pre-commit found issues that need to be fixed. Please run 'pre-commit run --all-files' locally and commit the fixes."
+                exit 1
+              else
+                echo "::error::Pre-commit failed with exit code $exit_code"
+                exit $exit_code
+              fi
+            }
+          else
+            echo "No tracked files found in ${{ matrix.app_path }}"
+          fi
+        env:
+          SKIP: ""

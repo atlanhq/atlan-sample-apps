@@ -1,0 +1,81 @@
+name: Publish App Docker Image
+
+on:
+  pull_request:
+    branches:
+      - dockerfile
+  push:
+    branches:
+      - main
+      - dockerfile
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.app }}
+      cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - connectors/mysql
+
+    steps:
+      # Checkout current repo (your app)
+      - uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ORG_PAT_GITHUB }}
+
+      - name: Get branch name
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: get_branch
+
+      - run: echo "REPOSITORY_NAME=`echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//"`" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Get version tag
+        run: echo "version=$(echo `git ls-remote https://${{ secrets.ORG_PAT_GITHUB }}@github.com/atlanhq/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)abcd" >> $GITHUB_OUTPUT
+        id: get_version
+
+      - name: Lowercase branch name
+        run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        id: get_lowercase_branch
+
+      - name: Normalize app name for image tags
+        run: echo "app_name=$(echo '${{ matrix.app }}' | tr '/' '-')" >> $GITHUB_OUTPUT
+        id: get_app_name
+
+      - name: Login to GitHub Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
+        with:
+          registry: ghcr.io
+          username: $GITHUB_ACTOR
+          password: ${{ secrets.ORG_PAT_GITHUB }}
+
+      - name: Build and push docker image to GHCR
+        id: ghcr_docker_build
+        uses: ./.github/actions/secure_build_push_apps
+        with:
+          branch: ${{ github.ref_name }}
+          snyk-token: ${{ secrets.SNYK_TOKEN_BU_APPS }}
+          snyk-ghcr-integration-id: ${{ secrets.SNYK_GHCR_INTEGRATION_ID }}
+          snyk-docker-integration-id: ${{ secrets.SNYK_DOCKER_INTEGRATION_ID }}
+          snyk-integration-id: ${{ secrets.SNYK_INTEGRATION_ID }}
+          snyk-org-id: ${{ secrets.SNYK_ORG_ID }}
+          context: ./${{ matrix.app }}
+          file: ./${{ matrix.app }}/../../Dockerfile
+          push: true
+          pull: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ steps.get_app_name.outputs.app_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
+            ghcr.io/atlanhq/${{ github.event.repository.name }}-${{ steps.get_app_name.outputs.app_name }}-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+          build-args: |
+            ACCESS_TOKEN_USR=$GITHUB_ACTOR
+            ACCESS_TOKEN_PWD=${{ secrets.ORG_PAT_GITHUB }}
+        env:
+          DOCKER_CLIENT_TIMEOUT: 600
+          COMPOSE_HTTP_TIMEOUT: 600
