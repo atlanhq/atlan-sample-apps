@@ -7,9 +7,10 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[tests,workflows]==1.0.1",
+    "atlan-application-sdk[pandas,tests,workflows]==2.3.1",
     "jpype1>=1.5.0",
     "poethepoet",
+    "pyarrow>=23.0.0",
 ]
 
 [dependency-groups]
@@ -33,7 +34,7 @@ build-java.shell = "cd app/libs && chmod +x build.sh && ./build.sh"
 # Download SDK components
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v0.1.1rc51" }
+env = { SDK_VERSION = "v2.3.1" }
 shell = """
 import pathlib, requests, os
 

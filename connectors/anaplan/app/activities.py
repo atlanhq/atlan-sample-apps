@@ -15,11 +15,11 @@ from application_sdk.activities.metadata_extraction.base import (
     BaseMetadataExtractionActivities,
     BaseMetadataExtractionActivitiesState,
 )
-from application_sdk.inputs.parquet import ParquetInput
+from application_sdk.io.json import JsonFileWriter
+from application_sdk.io.parquet import ParquetFileReader
 from application_sdk.observability.logger_adaptor import get_logger
 from application_sdk.observability.metrics_adaptor import get_metrics
 from application_sdk.observability.traces_adaptor import get_traces
-from application_sdk.outputs.json import JsonOutput
 from application_sdk.transformers import TransformerInterface
 from temporalio import activity
 
@@ -217,7 +217,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             if filtered_app_data:
                 # Use pandas instead of daft : avoid nested directory structure
                 pandas_df = pd.DataFrame(filtered_app_data)
-                await parquet_output.write_dataframe(pandas_df)
+                await parquet_output.write(pandas_df)
 
                 logger.info(
                     f"Successfully wrote {len(app_data)} apps to: {parquet_output.get_full_path()}"
@@ -228,7 +228,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     f"No apps found, skipping write: {parquet_output.get_full_path()}"
                 )
 
-            return await parquet_output.get_statistics(typename="app")
+            return parquet_output.statistics
 
         except Exception as e:
             logger.error(f"Failed to extract apps: {str(e)}")
@@ -283,7 +283,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             if detailed_page_data:
                 # Use pandas instead of daft : avoid nested directory structure
                 pandas_df = pd.DataFrame(detailed_page_data)
-                await parquet_output.write_dataframe(pandas_df)
+                await parquet_output.write(pandas_df)
 
                 logger.info(
                     f"Successfully wrote {len(detailed_page_data)} pages to: {parquet_output.get_full_path()}"
@@ -294,7 +294,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     f"No pages found, skipping write: {parquet_output.get_full_path()}"
                 )
 
-            return await parquet_output.get_statistics(typename="page")
+            return parquet_output.statistics
 
         except Exception as e:
             logger.error(f"Failed to extract pages: {str(e)}")
@@ -335,15 +335,14 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
             # Setup input for reading raw parquet files
             # Use the typename to construct the correct path
-            raw_input = ParquetInput(
+            raw_input = ParquetFileReader(
                 path=os.path.join(output_path, "raw", typename),
             )
             raw_input = raw_input.get_batched_daft_dataframe()
 
             # Setup output for writing transformed JSON files
-            transformed_output = JsonOutput(
-                output_path=output_path,
-                output_suffix="transformed",
+            transformed_output = JsonFileWriter(
+                path=os.path.join(output_path, "transformed", typename),
                 typename=typename,
                 chunk_start=workflow_args.get("chunk_start"),
             )
@@ -365,10 +364,10 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                     )
 
                     # Write transformed data to JSON output
-                    await transformed_output.write_daft_dataframe(transform_metadata)
+                    await transformed_output.write(transform_metadata)
 
             # Return transformation statistics
-            return await transformed_output.get_statistics(typename=typename)
+            return transformed_output.statistics
 
         except Exception as e:
             logger.error(f"Failed to transform data: {str(e)}")

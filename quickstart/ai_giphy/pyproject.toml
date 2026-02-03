@@ -7,9 +7,10 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[tests,workflows]==0.1.1rc51",
+    "atlan-application-sdk[tests,workflows]==2.3.1",
     "poethepoet",
-    "langchain>=0.3.25",
+    "langchain>=0.3.25,<1.0.0",
+    "langchain-core>=0.3.81,<1.0.0",
     "langchain-openai>=0.3.16",
     "langchainhub>=0.1.21",
 ]
@@ -30,7 +31,7 @@ stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || 
 
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v0.1.1rc51" }
+env = { SDK_VERSION = "v2.3.1" }
 shell = """
 import pathlib, requests, os
 

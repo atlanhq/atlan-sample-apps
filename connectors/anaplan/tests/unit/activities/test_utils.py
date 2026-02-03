@@ -7,7 +7,7 @@ from app.utils import setup_parquet_output, should_include_asset
 class TestUtils:
     """Test cases for utils functions."""
 
-    @patch("app.utils.ParquetOutput")
+    @patch("app.utils.ParquetFileWriter")
     def test_setup_parquet_output_success(self, mock_parquet_output):
         """Test successful parquet output setup."""
         # Arrange
@@ -25,8 +25,7 @@ class TestUtils:
         # Assert
         assert result == mock_output_instance
         mock_parquet_output.assert_called_once_with(
-            output_path="/test/path",
-            output_suffix="test_suffix",
+            path="/test/path/test_suffix",
         )
 
     def test_setup_parquet_output_missing_path(self):

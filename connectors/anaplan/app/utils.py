@@ -1,16 +1,15 @@
 import os
 from typing import Any, Dict, Set
 
-from application_sdk.inputs.parquet import ParquetInput
+from application_sdk.io.parquet import ParquetFileReader, ParquetFileWriter
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.parquet import ParquetOutput
 
 logger = get_logger(__name__)
 
 
 def setup_parquet_output(
     workflow_args: Dict[str, Any], output_suffix: str
-) -> ParquetOutput:
+) -> ParquetFileWriter:
     """Setup parquet output for extract activities.
 
     Args:
@@ -18,7 +17,7 @@ def setup_parquet_output(
         output_suffix: Suffix for the output path (e.g., "raw/app").
 
     Returns:
-        ParquetOutput: Configured parquet output instance.
+        ParquetFileWriter: Configured parquet output instance.
 
     Raises:
         ValueError: If output path is not provided in workflow_args.
@@ -31,9 +30,8 @@ def setup_parquet_output(
         raise ValueError("Output path must be specified in workflow_args.")
 
     # Create parquet output object
-    parquet_output = ParquetOutput(
-        output_path=output_path,
-        output_suffix=output_suffix,
+    parquet_output = ParquetFileWriter(
+        path=os.path.join(output_path, output_suffix),
     )
 
     return parquet_output
@@ -61,7 +59,7 @@ async def get_app_guids(workflow_args: Dict[str, Any]) -> Set[str]:
         raise ValueError("Output path must be specified in workflow_args")
 
     # Read app parquet files to get valid app GUIDs
-    app_parquet_input = ParquetInput(
+    app_parquet_input = ParquetFileReader(
         path=os.path.join(output_path, "raw", "app"),
     )
     app_parquet_input = app_parquet_input.get_batched_daft_dataframe()

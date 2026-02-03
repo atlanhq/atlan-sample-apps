@@ -4,13 +4,14 @@ This module defines Temporal activities that demonstrate calling Java code
 from Python using JPype for cross-language integration.
 """
 
+import os
 from typing import Any, Dict
 
 import pandas as pd
 from app.utils.processor import FactorialProcessor
 from application_sdk.activities import ActivitiesInterface
+from application_sdk.io.json import JsonFileWriter
 from application_sdk.observability.logger_adaptor import get_logger
-from application_sdk.outputs.json import JsonOutput
 from temporalio import activity
 
 logger = get_logger(__name__)
@@ -73,7 +74,7 @@ class PolyglotActivities(ActivitiesInterface):
     ) -> Dict[str, Any]:
         """Save factorial calculation result to a JSON file.
 
-        This activity demonstrates using the SDK's JsonOutput to write
+        This activity demonstrates using the SDK's JsonFileWriter to write
         results to a JSON file on disk.
 
         Args:
@@ -102,18 +103,17 @@ class PolyglotActivities(ActivitiesInterface):
             # Create a DataFrame from the result
             df = pd.DataFrame([calculation_result])
             output_path = calculation_result["output_path"]
-            # Initialize JsonOutput
-            json_output = JsonOutput(
-                output_suffix="results",
-                output_path=output_path,
+            # Initialize JsonFileWriter
+            json_output = JsonFileWriter(
+                path=os.path.join(output_path, "results"),
                 typename="factorial_result",
             )
 
             # Write the DataFrame to JSON
-            await json_output.write_dataframe(df)
+            await json_output.write(df)
 
             # Get statistics
-            stats = await json_output.get_statistics(typename="factorial_result")
+            stats = json_output.statistics
 
             result = {
                 "file_path": f"{output_path}/results/factorial_result",

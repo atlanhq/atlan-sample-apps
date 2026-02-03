@@ -5,6 +5,7 @@ Note:
 - The fetch_columns activity fetches the columns from the source database it is overridden from the base class for demonstration purposes.
 """
 
+import os
 from typing import Any, Dict, Optional, cast
 
 from application_sdk.activities.common.models import ActivityStatistics
@@ -79,11 +80,12 @@ class SQLMetadataExtractionActivities(BaseSQLMetadataExtractionActivities):
         prepared_query = prepare_query(
             query=self.fetch_column_sql, workflow_args=workflow_args
         )
+        base_output_path = workflow_args.get("output_path", "")
         statistics = await self.query_executor(
-            sql_engine=state.sql_client.engine,
+            sql_client=state.sql_client,
             sql_query=prepared_query,
             workflow_args=workflow_args,
-            output_suffix="raw/column",
+            output_path=os.path.join(base_output_path, "raw"),
             typename="column",
         )
 
