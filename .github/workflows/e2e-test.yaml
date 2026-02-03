@@ -11,13 +11,65 @@ on:
     types: [labeled, reopened, synchronize, opened]
 
 jobs:
+  download-components:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get SDK version from pyproject.toml
+        id: sdk-version
+        run: |
+          VERSION=$(grep -oP 'atlan-application-sdk.*==\K[0-9.]+' quickstart/hello_world/pyproject.toml | head -1)
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Using SDK version: v$VERSION"
+
+      - name: Download SDK components
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SDK_VERSION: ${{ steps.sdk-version.outputs.version }}
+        run: |
+          set -e
+          mkdir -p components
+
+          # Fetch file list from GitHub API with authentication
+          response=$(curl -sf -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/atlanhq/application-sdk/contents/components?ref=$SDK_VERSION")
+
+          # Extract download URLs for YAML files
+          urls=$(echo "$response" | jq -r '.[] | select(.type == "file" and (.name | endswith(".yaml"))) | .download_url')
+
+          # Download each file
+          for url in $urls; do
+            filename=$(basename "$url")
+            curl -sf -L "$url" -o "components/$filename"
+            echo "Downloaded: $filename"
+          done
+
+          # Verify at least one component was downloaded
+          file_count=$(ls -1 components/*.yaml 2>/dev/null | wc -l)
+          if [ "$file_count" -eq 0 ]; then
+            echo "Error: No component files downloaded"
+            exit 1
+          fi
+          echo "Total components downloaded: $file_count"
+
+      - name: Upload components artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-components
+          path: components/
+          retention-days: 1
+
   test:
+    needs: download-components
     runs-on: ${{ matrix.os }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}-${{ matrix.app.name }}
       cancel-in-progress: false
     timeout-minutes: 30
-    if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
     strategy:
       fail-fast: false
       max-parallel: 3
@@ -130,12 +182,18 @@ jobs:
         run: |
           uv run poe build-java || echo "Java build not required or failed"
 
-      # Download components and start dapr and temporal services
+      # Download pre-fetched components artifact
+      - name: Download SDK components
+        uses: actions/download-artifact@v4
+        with:
+          name: sdk-components
+          path: ${{ matrix.app.path }}/components
+
+      # Start dapr and temporal services
       - name: Start Platform Services
         working-directory: ${{ matrix.app.path }}
         shell: bash
         run: |
-          uv run poe download-components
           uv run poe start-deps
           # Wait for Dapr sidecar to be ready
           sleep 5
