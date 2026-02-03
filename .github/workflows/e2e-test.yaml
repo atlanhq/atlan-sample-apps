@@ -10,25 +10,33 @@ on:
   pull_request:
     types: [labeled, reopened, synchronize, opened]
 
-env:
-  SDK_VERSION: v2.3.1
-
 jobs:
   download-components:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get SDK version from pyproject.toml
+        id: sdk-version
+        run: |
+          VERSION=$(grep -oP 'atlan-application-sdk.*==\K[0-9.]+' quickstart/hello_world/pyproject.toml | head -1)
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Using SDK version: v$VERSION"
+
       - name: Download SDK components
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SDK_VERSION: ${{ steps.sdk-version.outputs.version }}
         run: |
           set -e
           mkdir -p components
 
           # Fetch file list from GitHub API with authentication
           response=$(curl -sf -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/atlanhq/application-sdk/contents/components?ref=${{ env.SDK_VERSION }}")
+            "https://api.github.com/repos/atlanhq/application-sdk/contents/components?ref=$SDK_VERSION")
 
           # Extract download URLs for YAML files
           urls=$(echo "$response" | jq -r '.[] | select(.type == "file" and (.name | endswith(".yaml"))) | .download_url')
