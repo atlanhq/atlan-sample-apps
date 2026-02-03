@@ -31,12 +31,13 @@ class WorkflowClass(WorkflowInterface):
         )
 
         # Merge any provided args (from frontend POST body or server config)
-        _workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
+        workflow_args: Dict[str, Any] = await workflow.execute_activity_method(
             activities_instance.get_workflow_args,
             workflow_config,
             retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
+        _ = workflow_args
 
         # Call other activities here
         pass
