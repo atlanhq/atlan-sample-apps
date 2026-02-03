@@ -4,6 +4,7 @@ This module defines Temporal activities that demonstrate calling Java code
 from Python using JPype for cross-language integration.
 """
 
+import os
 from typing import Any, Dict
 
 import pandas as pd
@@ -104,16 +105,15 @@ class PolyglotActivities(ActivitiesInterface):
             output_path = calculation_result["output_path"]
             # Initialize JsonFileWriter
             json_output = JsonFileWriter(
-                output_suffix="results",
-                output_path=output_path,
+                path=os.path.join(output_path, "results"),
                 typename="factorial_result",
             )
 
             # Write the DataFrame to JSON
-            await json_output.write_dataframe(df)
+            await json_output.write(df)
 
             # Get statistics
-            stats = await json_output.get_statistics(typename="factorial_result")
+            stats = json_output.statistics
 
             result = {
                 "file_path": f"{output_path}/results/factorial_result",
