@@ -34,9 +34,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy vulnerability scanner
-        uses: ./.github/actions/trivy-scan
+        uses: atlanhq/application-sdk/.github/actions/trivy@main
         with:
           add-report-comment-to-pr: "true"
-          scan_secrets: "true"
         env:
           GITHUB_TOKEN: ${{ secrets.ORG_PAT_GITHUB }}
