@@ -31,8 +31,7 @@ def setup_parquet_output(
 
     # Create parquet output object
     parquet_output = ParquetFileWriter(
-        output_path=output_path,
-        output_suffix=output_suffix,
+        path=os.path.join(output_path, output_suffix),
     )
 
     return parquet_output

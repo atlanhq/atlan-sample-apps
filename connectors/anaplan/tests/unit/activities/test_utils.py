@@ -25,8 +25,7 @@ class TestUtils:
         # Assert
         assert result == mock_output_instance
         mock_parquet_output.assert_called_once_with(
-            output_path="/test/path",
-            output_suffix="test_suffix",
+            path="/test/path/test_suffix",
         )
 
     def test_setup_parquet_output_missing_path(self):

@@ -68,8 +68,8 @@ class TestPolyglotActivities:
 
         with patch("app.activities.JsonFileWriter") as mock_json_output:
             mock_instance = MagicMock()
-            mock_instance.write_dataframe = AsyncMock()
-            mock_instance.get_statistics = AsyncMock(return_value=mock_stats)
+            mock_instance.write = AsyncMock()
+            mock_instance.statistics = mock_stats
             mock_json_output.return_value = mock_instance
 
             result = await activities.save_result_to_json(calculation_result)

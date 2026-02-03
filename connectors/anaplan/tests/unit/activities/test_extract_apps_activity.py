@@ -61,8 +61,8 @@ class TestExtractAppsActivity:
 
         mock_parquet_output = MagicMock()
         mock_parquet_output.get_full_path.return_value = "./test_output/raw/app"
-        mock_parquet_output.get_statistics = AsyncMock(return_value={"records": 2})
-        mock_parquet_output.write_dataframe = AsyncMock()
+        mock_parquet_output.statistics = {"records": 2}
+        mock_parquet_output.write = AsyncMock()
 
         with (
             patch.object(mock_activities, "_get_state", return_value=mock_state),
@@ -82,8 +82,8 @@ class TestExtractAppsActivity:
 
             # Assert
             assert result == {"records": 2}
-            mock_parquet_output.write_dataframe.assert_called_once()
-            mock_parquet_output.get_statistics.assert_called_once_with(typename="app")
+            mock_parquet_output.write.assert_called_once()
+            # statistics is now a property, verified via result assertion
 
     async def test_extract_apps_no_client(self, mock_activities, workflow_args):
         """Test app extraction when client is not found in state."""
@@ -103,8 +103,8 @@ class TestExtractAppsActivity:
         # Arrange
         mock_parquet_output = MagicMock()
         mock_parquet_output.get_full_path.return_value = "./test_output/raw/app"
-        mock_parquet_output.get_statistics = AsyncMock(return_value={"records": 0})
-        mock_parquet_output.write_dataframe = AsyncMock()
+        mock_parquet_output.statistics = {"records": 0}
+        mock_parquet_output.write = AsyncMock()
 
         with (
             patch.object(mock_activities, "_get_state", return_value=mock_state),
@@ -123,8 +123,8 @@ class TestExtractAppsActivity:
 
             # Assert
             assert result == {"records": 0}
-            mock_parquet_output.write_dataframe.assert_not_called()
-            mock_parquet_output.get_statistics.assert_called_once_with(typename="app")
+            mock_parquet_output.write.assert_not_called()
+            # statistics is now a property, verified via result assertion
 
     async def test_extract_apps_extraction_error(
         self, mock_activities, mock_state, workflow_args
@@ -170,8 +170,8 @@ class TestExtractAppsActivity:
 
         mock_parquet_output = MagicMock()
         mock_parquet_output.get_full_path.return_value = "./test_output/raw/app"
-        mock_parquet_output.get_statistics = AsyncMock(return_value={"records": 1})
-        mock_parquet_output.write_dataframe = AsyncMock()
+        mock_parquet_output.statistics = {"records": 1}
+        mock_parquet_output.write = AsyncMock()
 
         with (
             patch.object(mock_activities, "_get_state", return_value=mock_state),
@@ -191,7 +191,7 @@ class TestExtractAppsActivity:
 
             # Assert
             assert result == {"records": 1}
-            mock_parquet_output.write_dataframe.assert_called_once()
+            mock_parquet_output.write.assert_called_once()
             # Verify that the DataFrame was created with the app data
             # Note: DataFrame may be called multiple times due to logging, so we check it was called at least once
             assert mock_df.call_count >= 1
