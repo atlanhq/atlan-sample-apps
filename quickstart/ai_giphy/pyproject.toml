@@ -9,7 +9,8 @@ readme = "README.md"
 dependencies = [
     "atlan-application-sdk[tests,workflows]==2.3.1",
     "poethepoet",
-    "langchain>=0.3.25",
+    "langchain>=0.3.25,<1.0.0",
+    "langchain-core>=0.3.81,<1.0.0",
     "langchain-openai>=0.3.16",
     "langchainhub>=0.1.21",
 ]
