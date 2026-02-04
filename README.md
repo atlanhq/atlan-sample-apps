@@ -79,6 +79,9 @@ This will automatically handle the environment setup and app initialization for 
 
 You can build Docker images for any app in this repo using the provided `Dockerfile`.
 
+> [!NOTE]
+> The Dockerfile uses the [Application SDK base image](https://github.com/atlanhq/application-sdk) from Harbor registry (`registry.atlan.com/public/application-sdk:main-2.3.1`), which includes Python, uv, Dapr runtime, and all required dependencies.
+
 ### Setup the App Directory
 
 Copy the `Dockerfile` from the root directory to the app directory (example: `connectors/mysql`, `quickstart/ai_giphy`, etc.):
