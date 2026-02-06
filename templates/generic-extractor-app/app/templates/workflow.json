@@ -1,0 +1,62 @@
+{
+    "id": "template",
+    "name": "Connector Template",
+    "logo": "https://assets.atlan.com/assets/atlan-a-logo-blue-background.png",
+    "config": {
+        "properties": {
+            "connection": {
+                "type": "string",
+                "required": false,
+                "ui": {
+                    "widget": "connection",
+                    "label": "",
+                    "placeholder": "Connection Name"
+                }
+            },
+            "credential-guid": {
+                "type": "string",
+                "ui": {
+                    "widget": "credential",
+                    "label": "",
+                    "credentialType": "atlan-connectors-template",
+                    "placeholder": "Select Credential"
+                }
+            },
+            "preflight-check": {
+                "type": "string",
+                "ui": {
+                    "widget": "sage",
+                    "config": [
+                        {
+                            "id": 1,
+                            "name": "preflightCheck",
+                            "optional": false,
+                            "title": "Connection preflight check",
+                            "loaderText": "Verifying connection..."
+                        }
+                    ]
+                }
+            }
+        },
+        "steps": [
+            {
+                "id": "credential",
+                "title": "Credential",
+                "description": "Configure your data source credentials",
+                "properties": ["credential-guid"]
+            },
+            {
+                "id": "connection",
+                "title": "Connection",
+                "description": "Select or create an Atlan connection",
+                "properties": ["connection"]
+            },
+            {
+                "id": "metadata",
+                "title": "Verify",
+                "description": "Verify configuration",
+                "properties": ["preflight-check"]
+            }
+        ]
+    }
+}

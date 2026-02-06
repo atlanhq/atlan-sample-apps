@@ -1,0 +1,81 @@
+# =============================================================================
+# Transformation Template: Resource
+# =============================================================================
+# This YAML defines how to transform raw extracted data into Atlan entity format.
+#
+# Structure:
+#   - table: The Atlan entity type name
+#   - columns: Field mappings
+#     - typeName: The Atlan type (usually a literal string)
+#     - status: Entity status (ACTIVE/INACTIVE)
+#     - attributes: Map of attribute names to source queries
+#
+# Source Query Syntax:
+#   - Literal string: "'MyValue'" (note the inner quotes)
+#   - Column reference: column_name
+#   - SQL expression: concat(col1, '/', col2)
+#   - Conditional: CASE WHEN ... THEN ... ELSE ... END
+#
+# TODO: Customize this template for your entity type
+# =============================================================================
+
+table: TemplateResource
+columns:
+  typeName:
+    source_query: "'TemplateResource'"
+  status:
+    source_query: "'ACTIVE'"
+  attributes:
+    # -----------------------------------------------------------------
+    # Required Attributes
+    # -----------------------------------------------------------------
+    name:
+      source_query: name
+
+    qualifiedName:
+      # Format: {connection_qualified_name}/{source_id}
+      source_query: concat(connection_qualified_name, '/', id)
+      source_columns: [connection_qualified_name, id]
+
+    # -----------------------------------------------------------------
+    # Connection Attributes (standard for all entities)
+    # -----------------------------------------------------------------
+    connectorName:
+      source_query: connector_name
+    connectionName:
+      source_query: connection_name
+    connectionQualifiedName:
+      source_query: connection_qualified_name
+
+    # -----------------------------------------------------------------
+    # Custom Attributes
+    # TODO: Add mappings for your source fields
+    # -----------------------------------------------------------------
+    description:
+      source_query: |
+        CASE
+          WHEN description IS NOT NULL THEN description
+          ELSE NULL
+        END
+      source_columns: [description]
+
+    templateResourceId:
+      source_query: id
+
+    templateResourceType:
+      source_query: type
+
+    sourceCreatedAt:
+      source_query: created_at
+
+    # -----------------------------------------------------------------
+    # Sync Metadata (populated by SDK)
+    # -----------------------------------------------------------------
+    lastSyncRunAt:
+      source_query: last_sync_run_at
+    lastSyncWorkflowName:
+      source_query: last_sync_workflow_name
+    lastSyncRun:
+      source_query: last_sync_run
+    tenantId:
+      source_query: tenant_id
