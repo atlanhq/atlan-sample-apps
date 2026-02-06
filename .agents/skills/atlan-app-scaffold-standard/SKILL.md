@@ -11,19 +11,27 @@ When a user asks to create a new app, treat CLI bootstrap as implicit. Do not re
 1. Interpret user intent:
    - If request is "create/build/new app" (even without technical detail), trigger this skill first.
 2. Resolve app path and slug from user request.
-3. Enforce CLI-first bootstrap:
+3. Ask clarifying questions when high-impact requirements are missing:
+   - Ask 1-3 short questions for business behavior only (input source, expected output, critical constraints).
+   - Do not ask users to specify CLI commands or low-level scaffolding details.
+   - If unanswered, proceed with sane defaults and state the assumptions.
+4. Enforce CLI-first bootstrap:
    - Check `atlan` availability (`command -v atlan`).
    - If available: use `atlan app init -o <app_path> -t generic -y` (or `-s <sample>` when requested).
    - If missing: ask permission to install Atlan CLI using official setup docs.
    - If install is deferred but sibling `atlan-cli` source exists: use temporary shim from CLI repo (`go run main.go app ...`) for the same flow.
-4. Verify template/sample choices only when needed:
+5. Verify template/sample choices only when needed:
    - `atlan app template list`
    - `atlan app sample list`
-5. After scaffold, apply mode-specific structure from `references/scaffold-matrix.md`:
+6. After scaffold, apply mode-specific structure from `references/scaffold-matrix.md`:
    - `postgres-minimal` by default.
    - `redshift-custom` only when requirements demand custom auth/preflight/miner behavior.
-6. If behavior-critical decisions are unclear, run `atlan-fact-verification-gate`.
-7. Continue implementation on scaffolded project files; do not hand-create base tree.
+7. If behavior-critical decisions are unclear, run `atlan-fact-verification-gate`.
+8. Continue implementation on scaffolded project files; do not hand-create base tree.
+9. Before declaring completion, hand off to `atlan-cli-run-test-loop` to run at least:
+   - unit tests
+   - e2e tests (or record a concrete infrastructure blocker)
+   and summarize results.
 
 ## Hard Rules
 - Do not manually create baseline app skeleton when CLI scaffold is available.

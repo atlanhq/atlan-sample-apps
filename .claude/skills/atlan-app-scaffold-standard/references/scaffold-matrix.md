@@ -19,6 +19,10 @@ If `atlan` is missing:
 - Do not hand-create the baseline app tree (`mkdir` + manual file bootstrapping).
 - Do not copy an existing quickstart app as scaffold replacement.
 
+## Exit Contract
+- After scaffold + implementation, run `atlan-cli-run-test-loop`.
+- Do not mark the app complete without unit + e2e run evidence, unless blocked by infra; if blocked, record the blocker and workaround.
+
 ## postgres-minimal
 Use when source is standard SQL and no source-specific workflow overrides are required.
 

@@ -16,6 +16,8 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 - Run: `atlan app run -p <path>`
 - Test: `atlan app test -p <path> -t {unit|e2e|all}`
 - Dependency/bootstrap helpers: `atlan app init tools`, `atlan app init dependencies`
+- Dependency startup path: `uv run poe start-deps` behind CLI run/e2e
+- Dapr initialization behavior in CLI tools flow
 
 ## How to fetch
 - Use fast local search first (`rg`, `find`, `ls`).
@@ -27,3 +29,4 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 2. If SDK code and examples diverge, follow SDK code.
 3. If CLI docs and code diverge, follow CLI code and log a proposal in `cli-change-proposals.md`.
 4. Create `verification_manifest.json` for behavior-changing tasks.
+5. For dependency startup failures, verify both command flow and environment readiness (tool binaries + Dapr runtime state).

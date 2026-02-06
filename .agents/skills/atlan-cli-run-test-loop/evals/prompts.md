@@ -14,3 +14,6 @@ Expected: do not trigger this skill.
 
 5. Ambiguous: "I created a new app. Make sure it works end to end."
 Expected: trigger this skill after scaffold + verification.
+
+6. Positive: "The app test command says dependency startup failed. Diagnose and fix the environment, then rerun."
+Expected: trigger this skill and apply infra recovery workflow before rerun.
