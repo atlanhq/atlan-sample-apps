@@ -1,0 +1,30 @@
+{
+  "task_id": "replace-with-task-id",
+  "timestamp_utc": "2026-02-06T00:00:00Z",
+  "task_type": "build|modify|test|review|release",
+  "sdk_sources": [
+    "[local-checkout] application_sdk/io/__init__.py"
+  ],
+  "docs_sources": [
+    "[remote-doc] https://developer.atlan.com/sdks/cli/"
+  ],
+  "cli_sources": [
+    "[local-binary] atlan app test --help"
+  ],
+  "resolved_facts": [
+    {
+      "fact": "output path is built from application/workflow/run identifiers",
+      "evidence": "[local-checkout] application_sdk/activities/common/utils.py"
+    },
+    {
+      "fact": "CLI e2e flow starts dependencies before running tests",
+      "evidence": "[remote-source] atlan-cli/pkg/atlan/app_testing.go"
+    },
+    {
+      "fact": "Dapr runtime readiness requires config file in ~/.dapr/config.yaml",
+      "evidence": "[local-checkout] ~/.dapr/config.yaml and dependency startup logs"
+    }
+  ],
+  "unresolved_questions": [],
+  "status": "ready"
+}
