@@ -1,0 +1,43 @@
+test_workflow_args:
+  credentials:
+    username: $E2E_USERNAME
+    password: $E2E_PASSWORD
+    host: $E2E_HOST
+    port: $E2E_PORT
+    authType: basic
+  metadata:
+    include-filter: '{}'
+    exclude-filter: '{}'
+    extraction-method: direct
+  connection:
+    connection_name: dev
+    connection_qualified_name: default/source/1700000000
+
+server_config:
+  server_host: http://localhost:8000
+  server_version: workflows/v1
+
+expected_api_responses:
+  auth:
+    success: true
+  metadata:
+    success: true
+  preflight_check:
+    success: true
+
+expected_output_paths:
+  base_prefix: artifacts/apps/<application_name>/workflows
+  raw_subpath: raw
+  transformed_subpath: transformed
+
+schema_assertions:
+  raw:
+    - schema
+    - database
+    - table
+    - column
+  transformed:
+    - schema
+    - database
+    - table
+    - column
