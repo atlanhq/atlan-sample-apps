@@ -30,6 +30,19 @@ If `atlan` is missing:
 - After scaffold + implementation, run `atlan-cli-run-test-loop`.
 - Do not mark the app complete without unit + e2e run evidence, unless blocked by infra; if blocked, record the blocker and workaround.
 
+## Quality Tier Contract
+Choose and apply one tier before implementation:
+
+1. `quickstart-utility` (default)
+   - Keep scaffold simple.
+   - Workflow should orchestrate at least one dedicated business activity in addition to args retrieval.
+   - Avoid putting business file-write side effects entirely inside `get_workflow_args`.
+   - Minimum tests: two unit cases (happy + invalid input) and one e2e output assertion.
+
+2. `connector-standard`
+   - Use connector-oriented structure and coverage aligned with postgres/redshift patterns.
+   - Include appropriate client/handler/workflow/activity split and stronger e2e scenarios.
+
 ## postgres-minimal
 Use when source is standard SQL and no source-specific workflow overrides are required.
 

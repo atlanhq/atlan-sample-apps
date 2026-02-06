@@ -13,4 +13,4 @@
 - Source-specific config maps/templates required.
 
 ## Verification approach
-If uncertain, inspect existing postgres and redshift app implementations in sibling repos and follow the closest validated pattern.
+If uncertain, inspect existing postgres and redshift app implementations from available local checkouts first; otherwise use remote source/docs and follow the closest validated pattern.

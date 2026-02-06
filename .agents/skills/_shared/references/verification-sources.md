@@ -7,10 +7,23 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 2. Fetch source context only when behavior is unclear, risky, or command-specific.
 3. Do not assume machine-local sibling repositories exist.
 
-## Where to fetch from
-- SDK behavior: Atlan SDK docs and source (`https://github.com/atlanhq/application-sdk`) or an explicitly provided local checkout.
-- CLI behavior: Atlan CLI docs (`https://developer.atlan.com/sdks/cli/`) and source (`https://github.com/atlanhq/atlan-cli`) or an explicitly provided local checkout.
-- App patterns: current repo samples and public Atlan sample apps, unless user provides local references.
+## SDK source resolution order
+1. Local checkout if already present in current workspace or explicitly provided by the user.
+2. Installed package source via local Python environment:
+   - `python -c "import application_sdk,inspect; print(application_sdk.__file__)"`
+3. Remote source code: `https://github.com/atlanhq/application-sdk`
+4. Remote docs pages (for usage confirmation): `https://developer.atlan.com/` and SDK docs.
+
+## CLI source resolution order
+1. Local CLI binary behavior (`atlan --help`, `atlan app --help`, command-level help).
+2. Local checkout if already present in current workspace or explicitly provided by the user.
+3. Remote docs: `https://developer.atlan.com/sdks/cli/`
+4. Remote source code: `https://github.com/atlanhq/atlan-cli`
+
+## App pattern references
+- Prefer current repo sample patterns first.
+- For connector-standard work, compare against postgres/redshift patterns.
+- Use external sample repos only when current repo patterns are insufficient.
 
 ## CLI facts to verify when commands are involved
 - Scaffold: `atlan app init ...`
@@ -25,6 +38,14 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 - Use fast local search first (`rg`, `find`, `ls`) only for repositories already present in the current workspace.
 - Read only minimal files needed for current decision.
 - If required references are unavailable and network is blocked, ask user for path/context.
+
+## Evidence provenance tags
+When recording `sdk_sources`, `docs_sources`, `cli_sources`, or fact evidence, prefix entries with one of:
+- `[local-checkout]`
+- `[installed-package]`
+- `[local-binary]`
+- `[remote-source]`
+- `[remote-doc]`
 
 ## Rules
 1. Treat SDK and CLI repos as read-only.

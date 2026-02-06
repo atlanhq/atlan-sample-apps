@@ -13,11 +13,16 @@ Create a lightweight verification checkpoint before behavior-changing decisions.
 3. Verify only what is required for the current decision:
    - SDK behavior for runtime/data-path decisions.
    - CLI behavior for scaffold/run/test/release commands.
-4. Create `verification_manifest.json` using `../_shared/assets/verification_manifest.json` as template.
-5. Validate manifest:
+4. Resolve SDK evidence using portable fallback order:
+   - local checkout (if present)
+   - installed package source
+   - remote source/docs
+5. For build tasks, classify app quality tier (`quickstart-utility` or `connector-standard`) using `../_shared/references/app-quality-bar.md`.
+6. Create `verification_manifest.json` using `../_shared/assets/verification_manifest.json` as template.
+7. Validate manifest:
    `python ../_shared/scripts/validate_verification_manifest.py verification_manifest.json`
-6. Continue if status is `ready`; otherwise resolve unknowns or ask user.
-7. If CLI mismatch is found, append proposal entry to `../_shared/references/cli-change-proposals.md`.
+8. Continue if status is `ready`; otherwise resolve unknowns or ask user.
+9. If CLI mismatch is found, append proposal entry to `../_shared/references/cli-change-proposals.md`.
 
 ## Output Contract
 - Produce `verification_manifest.json` for non-trivial behavior changes.
@@ -27,4 +32,5 @@ Create a lightweight verification checkpoint before behavior-changing decisions.
 ## References
 - Checklist: `references/checklist.md`
 - Artifact schema: `../_shared/references/artifact-templates.md`
+- Quality bar: `../_shared/references/app-quality-bar.md`
 - Multi-agent compatibility: `../_shared/references/agent-surface-compatibility.md`

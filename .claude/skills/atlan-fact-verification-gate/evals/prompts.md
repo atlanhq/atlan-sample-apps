@@ -14,3 +14,6 @@ Expected: do not trigger this skill.
 
 5. Ambiguous: "Set up this new app and get tests running."
 Expected: trigger this skill first, then `atlan-app-scaffold-standard` and `atlan-cli-run-test-loop`.
+
+6. Positive: "Build this app on a machine that does not have a local SDK checkout."
+Expected: trigger this skill and use portable verification sources (installed package or remote source/docs).

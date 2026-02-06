@@ -15,7 +15,11 @@ When a user asks to create a new app, treat CLI bootstrap as implicit. Do not re
    - Ask 1-3 short questions for business behavior only (input source, expected output, critical constraints).
    - Do not ask users to specify CLI commands or low-level scaffolding details.
    - If unanswered, proceed with sane defaults and state the assumptions.
-4. Enforce CLI-first bootstrap:
+4. Choose quality tier before implementation:
+   - default: `quickstart-utility`
+   - use `connector-standard` when request requires connector behavior comparable to postgres/redshift patterns.
+   - follow `../_shared/references/app-quality-bar.md`.
+5. Enforce CLI-first bootstrap:
    - Check `atlan` availability (`command -v atlan`).
    - If available: use `atlan app init -o <app_path> -t generic -y` (or `-s <sample>` when requested).
    - If missing: install CLI before continuing.
@@ -26,15 +30,15 @@ When a user asks to create a new app, treat CLI bootstrap as implicit. Do not re
      - Do not begin by searching for a local `atlan-cli` repository.
    - Re-verify with `command -v atlan && atlan --help`.
    - If network/install is blocked, stop and ask the user to enable installation or provide an existing CLI binary path.
-5. Verify template/sample choices only when needed:
+6. Verify template/sample choices only when needed:
    - `atlan app template list`
    - `atlan app sample list`
-6. After scaffold, apply mode-specific structure from `references/scaffold-matrix.md`:
+7. After scaffold, apply mode-specific structure from `references/scaffold-matrix.md`:
    - `postgres-minimal` by default.
    - `redshift-custom` only when requirements demand custom auth/preflight/miner behavior.
-7. If behavior-critical decisions are unclear, run `atlan-fact-verification-gate`.
-8. Continue implementation on scaffolded project files; do not hand-create base tree.
-9. Before declaring completion, hand off to `atlan-cli-run-test-loop` to run at least:
+8. If behavior-critical decisions are unclear, run `atlan-fact-verification-gate`.
+9. Continue implementation on scaffolded project files; do not hand-create base tree.
+10. Before declaring completion, hand off to `atlan-cli-run-test-loop` to run at least:
    - unit tests
    - e2e tests (or record a concrete infrastructure blocker)
    and summarize results.
@@ -47,4 +51,5 @@ When a user asks to create a new app, treat CLI bootstrap as implicit. Do not re
 
 ## References
 - Scaffold matrix: `references/scaffold-matrix.md`
+- Quality bar: `../_shared/references/app-quality-bar.md`
 - Shared verification map: `../_shared/references/verification-sources.md`

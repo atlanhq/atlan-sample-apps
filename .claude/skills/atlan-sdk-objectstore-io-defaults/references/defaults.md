@@ -1,7 +1,10 @@
 # Objectstore Defaults
 
 ## Evidence approach
-When needed, inspect SDK objectstore/io modules and output path docs in the sibling SDK repo.
+When needed, inspect SDK objectstore/io modules and output path docs using this order:
+1. local SDK checkout (if present)
+2. installed package source
+3. remote SDK source/docs
 
 ## Required Conventions
 1. Keep base path under `artifacts/apps/<application_name>/workflows/<workflow_id>/<run_id>`.
