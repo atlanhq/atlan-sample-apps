@@ -1,0 +1,14 @@
+test_workflow_args:
+  input_file: "input/test_records.json"
+  output_file: "output/test_summary.json"
+  connection:
+    connection_name: "demo-file-summary-test"
+    connection_qualified_name: "default/demo-file-summary/test"
+test_name: "test_file_summary_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  workflow:
+    success: true
+    message: "Workflow started successfully"
