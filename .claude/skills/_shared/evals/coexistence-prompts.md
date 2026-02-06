@@ -2,7 +2,7 @@
 
 Use these prompts to verify that overlapping skills pick the right primary skill.
 
-1. Prompt: "Build a new Postgres connector app and create the baseline file tree."
+1. Prompt: "Create a new app that ingests query history and exposes a summary output."
 Expected primary skill: `atlan-app-scaffold-standard`
 Expected secondary skill: `atlan-fact-verification-gate`
 
@@ -10,15 +10,15 @@ Expected secondary skill: `atlan-fact-verification-gate`
 Expected primary skill: `atlan-workflow-args-secrets-state`
 Expected secondary skill: `atlan-fact-verification-gate`
 
-3. Prompt: "Write raw and transformed outputs to object store using SDK defaults only."
+3. Prompt: "Write raw and transformed outputs using SDK objectstore defaults."
 Expected primary skill: `atlan-sdk-objectstore-io-defaults`
 Expected secondary skill: `atlan-fact-verification-gate`
 
-4. Prompt: "Run deps, test e2e, summarize failures, and propose patches."
+4. Prompt: "Make this app runnable and get unit/e2e green, then summarize failures and fixes."
 Expected primary skill: `atlan-cli-run-test-loop`
 Expected secondary skill: `atlan-e2e-contract-validator`
 
-5. Prompt: "I need a Redshift app with miner query-history flow and IAM auth handling."
+5. Prompt: "Build a Redshift app with query-history miner flow and IAM auth handling."
 Expected primary skill: `atlan-sql-connector-patterns`
 Expected secondary skill: `atlan-workflow-args-secrets-state`
 

@@ -1,6 +1,6 @@
 ---
 name: atlan-fact-verification-gate
-description: Verify Atlan app behavior against SDK, docs, and CLI context only when behavior is unclear, risky, or changing. Use for build, modify, test, review, or release tasks that need evidence-backed decisions.
+description: Verify Atlan app behavior against SDK docs/code and CLI docs/code before behavior-changing decisions; use lightweight checks by default and deep checks when risk is high.
 ---
 
 # Atlan Fact Verification Gate
@@ -10,7 +10,9 @@ Create a lightweight verification checkpoint before behavior-changing decisions.
 ## Workflow
 1. Classify task as `build`, `modify`, `test`, `review`, or `release`.
 2. Read source guide: `../_shared/references/verification-sources.md`.
-3. Fetch only the minimal source context needed from available repos.
+3. Verify only what is required for the current decision:
+   - SDK behavior for runtime/data-path decisions.
+   - CLI behavior for scaffold/run/test/release commands.
 4. Create `verification_manifest.json` using `../_shared/assets/verification_manifest.json` as template.
 5. Validate manifest:
    `python ../_shared/scripts/validate_verification_manifest.py verification_manifest.json`
@@ -19,7 +21,7 @@ Create a lightweight verification checkpoint before behavior-changing decisions.
 
 ## Output Contract
 - Produce `verification_manifest.json` for non-trivial behavior changes.
-- Record what was inspected; do not hardcode workstation-specific paths.
+- Record what was inspected, including exact command/flag facts when command behavior matters.
 - Never edit SDK or CLI repositories.
 
 ## References

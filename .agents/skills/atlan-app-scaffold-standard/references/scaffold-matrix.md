@@ -1,9 +1,23 @@
 # Scaffold Matrix
 
-## Source discovery
-When patterns are unclear, inspect existing connector apps in the workspace:
-- postgres-like minimal implementations
-- redshift-like custom implementations
+## Default Bootstrap Contract
+For every new app request, scaffold through CLI first.
+
+1. Check CLI availability: `command -v atlan`
+2. Discover options when needed:
+   - `atlan app template list`
+   - `atlan app sample list`
+3. Scaffold:
+   - template path: `atlan app init -o <app_path> -t generic -y`
+   - sample path: `atlan app init -o <app_path> -s <sample> -y`
+
+If `atlan` is missing:
+- Ask permission to install CLI using official docs.
+- If installation is deferred and sibling `atlan-cli` repo exists, use temporary shim from that repo: `go run main.go app ...`.
+
+## Prohibited Path
+- Do not hand-create the baseline app tree (`mkdir` + manual file bootstrapping).
+- Do not copy an existing quickstart app as scaffold replacement.
 
 ## postgres-minimal
 Use when source is standard SQL and no source-specific workflow overrides are required.

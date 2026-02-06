@@ -1,24 +1,33 @@
 ---
 name: atlan-cli-run-test-loop
-description: Execute repeatable run/test/fix loops for Atlan apps using verified CLI commands or safe uv fallbacks. Use when running dependencies, app workers, unit tests, e2e tests, and triage iterations.
+description: Run Atlan app execution loops using CLI-first commands with automatic CLI availability checks and safe fallbacks.
 ---
 
 # Atlan CLI Run Test Loop
 
-Run deterministic execution loops and report outcomes.
+Execute run/test/fix loops that a developer would expect from a normal app request.
 
 ## Workflow
-1. Start with command defaults in `references/run-matrix.md`.
-2. If command behavior is unclear, inspect CLI docs/code before execution.
-3. Prefer CLI commands when available and behavior is verified.
-4. Use `uv` fallback commands when CLI command is hidden, missing, or mismatched.
-5. Record each cycle in `loop_report.md` using template from `../_shared/assets/loop_report.md`.
-6. If CLI mismatch appears, append proposal to `../_shared/references/cli-change-proposals.md`.
-7. Run `atlan-fact-verification-gate` for behavior-changing loop fixes.
+1. Resolve target app path.
+2. Verify CLI availability first:
+   - Check `command -v atlan`.
+   - If missing, ask permission to install CLI via official docs.
+   - If install is deferred and sibling `atlan-cli` source exists, use temporary shim (`go run main.go app ...`).
+3. Use CLI-first commands:
+   - `atlan app run -p <app_path>`
+   - `atlan app test -p <app_path> -t unit`
+   - `atlan app test -p <app_path> -t e2e`
+4. Use fallback commands only when CLI path is unavailable or mismatched:
+   - `uv run poe start-deps`
+   - `uv run main.py`
+   - `uv run pytest`
+5. Record each cycle in `loop_report.md` using `../_shared/assets/loop_report.md`.
+6. If command behavior is unclear or conflicting, verify against CLI docs/code and run `atlan-fact-verification-gate`.
+7. If a CLI mismatch appears, append proposal to `../_shared/references/cli-change-proposals.md`.
 
 ## Loop Contract
-- Always capture commands, failures, root cause, patch plan, and rerun result.
-- Do not run destructive commands.
+- Capture commands, failures, root cause, patch plan, and rerun result.
+- Prefer deterministic command sequences and explicit paths.
 - Do not imply or perform CLI repo edits.
 
 ## References

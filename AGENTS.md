@@ -1,38 +1,35 @@
 # AGENTS.md
 
-This repository contains self-contained Atlan sample apps (quickstart, connectors, utilities) built on the Atlan Application SDK.
+This repository contains Atlan sample apps built on the Atlan Application SDK.
 
 ## Essentials
-- Package manager: `uv` (run commands from the target app directory, not repo root).
-- Standard app loop: `uv sync` -> `uv run poe start-deps` -> `uv run main.py` -> `uv run pytest`.
+- Package manager: `uv` (run commands from target app directory).
+- Standard fallback loop: `uv sync` -> `uv run poe start-deps` -> `uv run main.py` -> `uv run pytest`.
 - Pre-commit: `uv run pre-commit run --files <file>` (or `--all-files`).
+
+## Developer-First Behavior
+Treat normal developer prompts as business intent, not command instructions.
+- If user asks to create a new app, automatically scaffold with Atlan CLI first.
+- Check CLI availability (`atlan`) and handle install/setup when missing.
+- Only use manual scaffolding when CLI path is unavailable and explicitly justified.
 
 ## Skills First
 - Codex skill root: `.agents/skills`
 - Claude Code skill root: `.claude/skills`
-- Keep both in sync after skill updates:
+- Sync after updates:
   - `python .agents/skills/_shared/scripts/sync_claude_skills.py`
 
-Use skills before ad-hoc instructions. Recommended default flow:
+Recommended flow:
 1. `atlan-app-scaffold-standard`
-2. `atlan-sql-connector-patterns`
-3. `atlan-workflow-args-secrets-state`
-4. `atlan-sdk-objectstore-io-defaults`
-5. `atlan-e2e-contract-validator`
-6. `atlan-cli-run-test-loop`
-7. `atlan-review-doc-sync`
-
-## Source Verification (Progressive Disclosure)
-Start with task defaults in each skill. When behavior is unclear or high-risk:
-- discover and fetch only the minimum needed context from sibling repos
-- if those repos are unavailable, ask the user for path/context
+2. `atlan-fact-verification-gate`
+3. `atlan-sql-connector-patterns`
+4. `atlan-workflow-args-secrets-state`
+5. `atlan-sdk-objectstore-io-defaults`
+6. `atlan-e2e-contract-validator`
+7. `atlan-cli-run-test-loop`
+8. `atlan-review-doc-sync`
 
 ## Constraints
-- Treat SDK and CLI repos as read-only references.
-- Log CLI improvement requests in:
-  - `.agents/skills/_shared/references/cli-change-proposals.md`
+- SDK and CLI repos are read-only references.
+- Log CLI improvement requests in `.agents/skills/_shared/references/cli-change-proposals.md`.
 - Never hardcode machine-local absolute paths.
-
-## More Context (Load Only If Needed)
-- `.agents/skills/_shared/references/agent-surface-compatibility.md`
-- `.agents/skills/_shared/references/verification-sources.md`

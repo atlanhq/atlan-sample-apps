@@ -1,18 +1,25 @@
 # Run Matrix
 
-## Verify when needed
-If command behavior is unclear, inspect available CLI docs/code and current app commands before executing.
+## Default Execution Contract
+For run/test loops, use CLI first and fallback only when necessary.
 
-## Preferred path (if available)
-- `atlan app run`
-- `atlan app test --test-type unit`
-- `atlan app test --test-type e2e`
+## Preflight
+1. Check CLI availability: `command -v atlan`
+2. If missing, ask permission to install CLI from official docs.
+3. If install is deferred and sibling `atlan-cli` exists, use temporary shim from that repo: `go run main.go app ...`.
 
-## Fallback path (sample-app workflow)
+## Preferred Commands
+- `atlan app run -p <app_path>`
+- `atlan app test -p <app_path> -t unit`
+- `atlan app test -p <app_path> -t e2e`
+- `atlan app test -p <app_path> -t all`
+
+## Fallback Commands
+Use only when CLI path is unavailable or mismatched.
 - `uv run poe start-deps`
 - `uv run main.py`
 - `uv run pytest`
 
 ## Reporting
-Write `loop_report.md` for each loop.
-Log CLI mismatches in `cli-change-proposals.md`.
+- Write `loop_report.md` for each loop.
+- Log CLI mismatches in `cli-change-proposals.md` with source evidence.
