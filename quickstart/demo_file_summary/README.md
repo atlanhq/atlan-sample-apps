@@ -85,7 +85,7 @@ When running the workflow, provide these parameters:
 ### E2E Tests
 
 1. **Prepare test data:**
-   
+
    Create a test input file at `./local/dapr/objectstore/artifacts/apps/default/workflows/input/test_records.json`:
 
    ```json

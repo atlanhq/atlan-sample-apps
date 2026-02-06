@@ -13,7 +13,9 @@ activity.logger = logger
 
 class FileSummaryActivities(ActivitiesInterface):
     @activity.defn
-    async def summarize_status_counts(self, workflow_config: Dict[str, Any]) -> Dict[str, int]:
+    async def summarize_status_counts(
+        self, workflow_config: Dict[str, Any]
+    ) -> Dict[str, int]:
         """
         Read JSON input from object store, count status occurrences,
         and write summary to object store.
