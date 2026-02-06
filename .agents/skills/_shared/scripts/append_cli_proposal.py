@@ -18,17 +18,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _validate_uri(values: list[str], label: str) -> None:
-    for value in values:
-        if not value.startswith("repo://"):
-            raise ValueError(f"{label} must use repo:// uri format: {value}")
-
-
 def main() -> int:
     args = parse_args()
-    _validate_uri(args.cli_evidence, "--cli-evidence")
-    _validate_uri(args.sdk_doc_evidence, "--sdk-doc-evidence")
-
     out = Path(args.file)
     out.parent.mkdir(parents=True, exist_ok=True)
 

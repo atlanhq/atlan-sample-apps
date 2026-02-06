@@ -1,27 +1,26 @@
 ---
 name: atlan-fact-verification-gate
-description: Verify Atlan app implementation facts against application-sdk code and docs plus atlan-cli usage before generating code. Use for any build, modify, test, review, or release request affecting app behavior.
+description: Verify Atlan app behavior against SDK, docs, and CLI context only when behavior is unclear, risky, or changing. Use for build, modify, test, review, or release tasks that need evidence-backed decisions.
 ---
 
 # Atlan Fact Verification Gate
 
-Create a verification checkpoint before generation, edits, or command execution.
+Create a lightweight verification checkpoint before behavior-changing decisions.
 
 ## Workflow
-1. Classify the task as `build`, `modify`, `test`, `review`, or `release`.
-2. Read source map: `../_shared/references/verification-sources.md`.
-3. Resolve required sources with `python ../_shared/scripts/resolve_source.py --source repo://...`.
-4. Collect task-specific facts from SDK code first, then SDK docs, then CLI usage files if command orchestration is involved.
-5. Create `verification_manifest.json` using `../_shared/assets/verification_manifest.json` as template.
-6. Validate manifest:
+1. Classify task as `build`, `modify`, `test`, `review`, or `release`.
+2. Read source guide: `../_shared/references/verification-sources.md`.
+3. Fetch only the minimal source context needed from available repos.
+4. Create `verification_manifest.json` using `../_shared/assets/verification_manifest.json` as template.
+5. Validate manifest:
    `python ../_shared/scripts/validate_verification_manifest.py verification_manifest.json`
-7. Continue only if manifest status is `ready`.
-8. If CLI mismatch is found, append a proposal entry to `../_shared/references/cli-change-proposals.md`.
+6. Continue if status is `ready`; otherwise resolve unknowns or ask user.
+7. If CLI mismatch is found, append proposal entry to `../_shared/references/cli-change-proposals.md`.
 
 ## Output Contract
-- Must produce `verification_manifest.json` for every non-trivial task.
-- Must list `repo://...` evidence URIs for SDK/docs/CLI.
-- Must never edit SDK or CLI repositories.
+- Produce `verification_manifest.json` for non-trivial behavior changes.
+- Record what was inspected; do not hardcode workstation-specific paths.
+- Never edit SDK or CLI repositories.
 
 ## References
 - Checklist: `references/checklist.md`

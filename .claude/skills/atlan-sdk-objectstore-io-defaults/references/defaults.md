@@ -1,13 +1,7 @@
 # Objectstore Defaults
 
-Source resolution:
-- Resolve any `repo://...` path with `python ../../_shared/scripts/resolve_source.py --source <repo-uri>`.
-
-## Evidence Sources
-- `repo://application-sdk/application_sdk/services/objectstore.py`
-- `repo://application-sdk/application_sdk/io/json.py`
-- `repo://application-sdk/application_sdk/io/parquet.py`
-- `repo://application-sdk/docs/concepts/output_paths.md`
+## Evidence approach
+When needed, inspect SDK objectstore/io modules and output path docs in the sibling SDK repo.
 
 ## Required Conventions
 1. Keep base path under `artifacts/apps/<application_name>/workflows/<workflow_id>/<run_id>`.

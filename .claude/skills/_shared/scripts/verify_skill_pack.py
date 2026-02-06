@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from pathlib import Path
 import re
 import sys
+from pathlib import Path
 
 SKILLS = [
     "atlan-fact-verification-gate",
@@ -30,7 +30,7 @@ def main() -> int:
 
     # Ensure no machine-local hardcoded paths in skill docs/templates
     home_path_pattern = re.compile(r"/" + "Users" + r"/|/" + "home" + r"/")
-    windows_path_pattern = re.compile(r"[A-Za-z]:\\\\")
+    windows_path_pattern = re.compile(r"[A-Za-z]:\\")
     for file in root.rglob("*"):
         if file.is_file() and file.suffix in {".md", ".py", ".json", ".yaml", ".yml"}:
             text = file.read_text(encoding="utf-8")
@@ -70,8 +70,6 @@ def main() -> int:
     required_shared = [
         root / "_shared" / "references" / "verification-sources.md",
         root / "_shared" / "references" / "cli-change-proposals.md",
-        root / "_shared" / "scripts" / "resolve_source.py",
-        root / "_shared" / "scripts" / "sync_source_mirrors.py",
         root / "_shared" / "scripts" / "sync_claude_skills.py",
     ]
     for file in required_shared:

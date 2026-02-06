@@ -12,12 +12,7 @@ Run after any update:
 
 ## Authoring rules for cross-agent compatibility
 1. Keep YAML frontmatter minimal: `name`, `description`.
-2. Use portable `repo://...` source URIs.
-3. Keep deterministic logic in scripts; keep SKILL.md concise.
-4. Use one-level reference links from SKILL.md.
-5. Avoid machine-local paths and environment-specific assumptions.
-
-## Standards references mirrored locally
-- `source-mirror/application-sdk/agent-skills-docs/codex.md`
-- `source-mirror/application-sdk/agent-skills-docs/open-agent.md`
-- `source-mirror/application-sdk/agent-skills-docs/best-practices.md`
+2. Keep deterministic logic in scripts; keep `SKILL.md` concise.
+3. Use one-level reference links from `SKILL.md`.
+4. Avoid machine-local absolute paths and hardcoded workstation assumptions.
+5. Fetch source context on demand from available repos.

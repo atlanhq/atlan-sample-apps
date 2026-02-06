@@ -3,18 +3,18 @@
   "timestamp_utc": "2026-02-06T00:00:00Z",
   "task_type": "build|modify|test|review|release",
   "sdk_sources": [
-    "repo://application-sdk/application_sdk/clients/temporal.py"
+    "application-sdk module(s) inspected"
   ],
   "docs_sources": [
-    "repo://application-sdk/docs/concepts/output_paths.md"
+    "docs page(s) inspected"
   ],
   "cli_sources": [
-    "repo://atlan-cli/docs/app-command.md"
+    "CLI command/doc/code inspected"
   ],
   "resolved_facts": [
     {
-      "fact": "output_path is built from application/workflow/run identifiers",
-      "evidence": "repo://application-sdk/application_sdk/activities/common/utils.py"
+      "fact": "output path is built from application/workflow/run identifiers",
+      "evidence": "module or file inspected"
     }
   ],
   "unresolved_questions": [],

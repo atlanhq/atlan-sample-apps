@@ -25,17 +25,16 @@ Use skills before ad-hoc instructions. Recommended default flow:
 7. `atlan-review-doc-sync`
 
 ## Source Verification (Progressive Disclosure)
-Start with task defaults in each skill. When behavior is unclear or high-risk, verify with:
-- `.claude/skills/_shared/references/verification-sources.md`
-- `python .claude/skills/_shared/scripts/resolve_source.py --source repo://...`
-- Optional reproducible mode: `--prefer-mirror`
+Start with task defaults in each skill. When behavior is unclear or high-risk:
+- discover and fetch only the minimum needed context from sibling repos
+- if those repos are unavailable, ask the user for path/context
 
 ## Constraints
 - Treat SDK and CLI repos as read-only references.
 - Log CLI improvement requests in:
   - `.claude/skills/_shared/references/cli-change-proposals.md`
-- Never hardcode machine-local paths; use `repo://<repo>/<path>` URIs.
+- Never hardcode machine-local absolute paths.
 
 ## More Context (Load Only If Needed)
 - `.claude/skills/_shared/references/agent-surface-compatibility.md`
-- `.claude/skills/_shared/references/source-mirror/README.md`
+- `.claude/skills/_shared/references/verification-sources.md`

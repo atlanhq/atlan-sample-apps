@@ -6,7 +6,7 @@
 - Date:
 
 ## Commands Executed
-1. 
+1.
 
 ## Failures
 - None
@@ -15,10 +15,10 @@
 - None
 
 ## Patch Plan
-1. 
+1.
 
 ## Re-run Result
-- 
+-
 
 ## Next Action
-- 
+-

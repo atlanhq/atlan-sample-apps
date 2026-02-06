@@ -9,7 +9,7 @@ Run deterministic execution loops and report outcomes.
 
 ## Workflow
 1. Start with command defaults in `references/run-matrix.md`.
-2. Use `python ../_shared/scripts/resolve_source.py --source repo://atlan-cli/docs/app-command.md` when command behavior is unclear.
+2. If command behavior is unclear, inspect CLI docs/code before execution.
 3. Prefer CLI commands when available and behavior is verified.
 4. Use `uv` fallback commands when CLI command is hidden, missing, or mismatched.
 5. Record each cycle in `loop_report.md` using template from `../_shared/assets/loop_report.md`.

@@ -1,6 +1,6 @@
 # Artifact Templates
 
-Create these artifacts for all major app-building loops.
+Create these artifacts for major app-building loops.
 
 ## 1) verification_manifest.json
 Required fields:
@@ -13,9 +13,6 @@ Required fields:
 - `resolved_facts`
 - `unresolved_questions`
 - `status`
-
-Source format:
-- Use portable `repo://<repo-name>/<relative-path>` for all source paths and evidence values.
 
 ## 2) loop_report.md
 Required sections:

@@ -1,14 +1,7 @@
 # Run Matrix
 
-Source resolution:
-- Resolve any `repo://...` path with `python ../../_shared/scripts/resolve_source.py --source <repo-uri>`.
-
-## Verify first
-Read:
-- `repo://atlan-cli/docs/app-command.md`
-- `repo://atlan-cli/cmd/atlan/app.go`
-- `repo://atlan-cli/cmd/atlan/app_run.go`
-- `repo://atlan-cli/cmd/atlan/app_test_cmd.go`
+## Verify when needed
+If command behavior is unclear, inspect available CLI docs/code and current app commands before executing.
 
 ## Preferred path (if available)
 - `atlan app run`
