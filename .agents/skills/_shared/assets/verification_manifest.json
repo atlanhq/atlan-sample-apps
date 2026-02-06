@@ -1,0 +1,22 @@
+{
+  "task_id": "replace-with-task-id",
+  "timestamp_utc": "2026-02-06T00:00:00Z",
+  "task_type": "build|modify|test|review|release",
+  "sdk_sources": [
+    "repo://application-sdk/application_sdk/clients/temporal.py"
+  ],
+  "docs_sources": [
+    "repo://application-sdk/docs/concepts/output_paths.md"
+  ],
+  "cli_sources": [
+    "repo://atlan-cli/docs/app-command.md"
+  ],
+  "resolved_facts": [
+    {
+      "fact": "output_path is built from application/workflow/run identifiers",
+      "evidence": "repo://application-sdk/application_sdk/activities/common/utils.py"
+    }
+  ],
+  "unresolved_questions": [],
+  "status": "ready"
+}

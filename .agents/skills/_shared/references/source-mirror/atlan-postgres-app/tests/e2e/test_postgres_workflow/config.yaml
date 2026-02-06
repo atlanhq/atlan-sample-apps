@@ -1,0 +1,66 @@
+test_workflow_args:
+  credentials:
+    username: $E2E_POSTGRES_USERNAME
+    password: $E2E_POSTGRES_PASSWORD
+    host: $E2E_POSTGRES_HOST
+    port: $E2E_POSTGRES_PORT
+    extra:
+      database: "assets_100k"
+    authType: "basic"
+    type: "all"
+    database: "assets_100k"
+  metadata:
+    exclude-filter: "{}"
+    include-filter: '{"^assets_100k$":["^schema_1$"]}'
+    temp-table-regex: ""
+    extraction-method: "direct"
+  connection:
+    connection_name: "dev"
+    connection_qualified_name: "default/postgres/1738930739"
+test_name: "test_postgres_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  auth:
+    success: true
+    message: "Authentication successful"
+  metadata:
+    success: true
+    data:
+      [
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "public" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_1" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_2" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_3" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_4" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_5" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_6" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_7" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_8" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_9" },
+        { "TABLE_CATALOG": "assets_100k", "TABLE_SCHEMA": "schema_10" },
+      ]
+  preflight_check:
+    success: true
+    data:
+      {
+        "databaseSchemaCheck":
+          {
+            "success": True,
+            "successMessage": "Schemas and Databases check successful",
+            "failureMessage": "",
+          },
+        "tablesCheck":
+          {
+            "success": True,
+            "successMessage": "Tables check successful. Table count: 100",
+            "failureMessage": "",
+          },
+        "versionCheck":
+          {
+            "success": true,
+            "successMessage": "Client version 15.12 meets minimum required version $ATLAN_SQL_SERVER_MIN_VERSION",
+            "failureMessage": "",
+          },
+      }
