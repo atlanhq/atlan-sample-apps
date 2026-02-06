@@ -22,14 +22,15 @@ Treat normal developer prompts as business intent, not command instructions.
   - `python .agents/skills/_shared/scripts/sync_claude_skills.py`
 
 Recommended flow:
-1. `atlan-app-scaffold-standard`
-2. `atlan-fact-verification-gate`
-3. `atlan-sql-connector-patterns`
-4. `atlan-workflow-args-secrets-state`
-5. `atlan-sdk-objectstore-io-defaults`
-6. `atlan-e2e-contract-validator`
-7. `atlan-cli-run-test-loop`
-8. `atlan-review-doc-sync`
+1. `atlan-cli-install-configure` (only when `atlan` is missing or reinstall is requested)
+2. `atlan-app-scaffold-standard`
+3. `atlan-fact-verification-gate`
+4. `atlan-sql-connector-patterns`
+5. `atlan-workflow-args-secrets-state`
+6. `atlan-sdk-objectstore-io-defaults`
+7. `atlan-e2e-contract-validator`
+8. `atlan-cli-run-test-loop`
+9. `atlan-review-doc-sync`
 
 ## Constraints
 - SDK and CLI repos are read-only references.

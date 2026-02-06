@@ -5,6 +5,7 @@ from pathlib import Path
 
 SKILLS = [
     "atlan-fact-verification-gate",
+    "atlan-cli-install-configure",
     "atlan-app-scaffold-standard",
     "atlan-sdk-objectstore-io-defaults",
     "atlan-workflow-args-secrets-state",

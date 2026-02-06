@@ -11,12 +11,8 @@ Execute run/test/fix loops that a developer would expect from a normal app reque
 1. Resolve target app path.
 2. Verify CLI availability first:
    - Check `command -v atlan`.
-   - If missing, install CLI before run/test:
-     - Preferred: fetch and run released install flow from Atlan docs (`https://developer.atlan.com/sdks/cli/#obtain-the-cli`).
-     - Fallback: `go install github.com/atlanhq/atlan-cli@latest`.
-     - Source fallback: clone from GitHub and run `make build && make install`.
-     - Do not use `go get` for CLI installation.
-     - Do not begin by searching for a local `atlan-cli` repository.
+   - If missing, invoke `atlan-cli-install-configure` before run/test.
+   - Do not begin by searching for a local `atlan-cli` repository.
    - Re-verify with `command -v atlan && atlan --help`.
    - If network/install is blocked, stop and ask the user to enable installation or provide an existing CLI binary path.
 3. Verify infra prerequisites before run/e2e:
@@ -44,3 +40,4 @@ Execute run/test/fix loops that a developer would expect from a normal app reque
 ## References
 - Run matrix: `references/run-matrix.md`
 - CLI proposal log: `../_shared/references/cli-change-proposals.md`
+- CLI install/config: `../atlan-cli-install-configure/SKILL.md`

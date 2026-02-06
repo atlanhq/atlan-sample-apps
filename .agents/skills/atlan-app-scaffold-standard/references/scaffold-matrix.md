@@ -5,9 +5,8 @@ For every new app request, scaffold through CLI first.
 
 1. Check CLI availability: `command -v atlan`
 2. If missing, install CLI before scaffold:
-   - preferred: fetch and run released install flow from `https://developer.atlan.com/sdks/cli/#obtain-the-cli`
-   - fallback: `go install github.com/atlanhq/atlan-cli@latest`
-   - source fallback: `git clone https://github.com/atlanhq/atlan-cli.git` then `make build && make install`
+   - invoke `../atlan-cli-install-configure/SKILL.md`
+   - use Homebrew or pre-built binaries based on OS/arch
    - never use `go get` for CLI installation
    - do not begin by searching for local `atlan-cli` clones
    - verify: `command -v atlan && atlan --help`

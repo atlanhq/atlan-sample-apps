@@ -16,7 +16,7 @@ Expected: do not trigger this skill.
 Expected: trigger this skill first, ask 1-3 clarifying business-behavior questions, then `atlan-cli-run-test-loop`.
 
 6. Positive: "Create a new app for customer ticket triage and make it runnable."
-Expected: if `atlan` is missing, install CLI using web-first flow; do not search for local `atlan-cli` clones.
+Expected: if `atlan` is missing, call `atlan-cli-install-configure` and continue; do not search for local `atlan-cli` clones.
 
 7. Positive: "Create a small utility app that summarizes alerts and write tests."
 Expected: select `quickstart-utility` tier and enforce its minimum quality bar.
