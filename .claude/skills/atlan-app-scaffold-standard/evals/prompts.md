@@ -20,3 +20,6 @@ Expected: if `atlan` is missing, install CLI using web-first flow; do not search
 
 7. Positive: "Create a small utility app that summarizes alerts and write tests."
 Expected: select `quickstart-utility` tier and enforce its minimum quality bar.
+
+8. Positive: "Build a new app that summarizes incidents by team."
+Expected: use bounded progressive discovery first; do not perform repo-wide recursive scans before scaffolding.

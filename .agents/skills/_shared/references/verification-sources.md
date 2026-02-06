@@ -39,6 +39,14 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 - Read only minimal files needed for current decision.
 - If required references are unavailable and network is blocked, ask user for path/context.
 
+## Exploration guardrails
+1. Start with bounded first-pass exploration; avoid repository-wide sweeps.
+2. Do not run recursive wildcard scans (for example full-tree `Search(\"**\")`) unless narrower methods failed.
+3. Expand scope only when a specific unresolved fact blocks implementation.
+4. Default first-pass budget:
+   - `quickstart-utility`: <= 12 file reads
+   - `connector-standard`: <= 20 file reads
+
 ## Evidence provenance tags
 When recording `sdk_sources`, `docs_sources`, `cli_sources`, or fact evidence, prefix entries with one of:
 - `[local-checkout]`

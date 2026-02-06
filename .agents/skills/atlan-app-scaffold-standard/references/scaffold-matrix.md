@@ -22,6 +22,15 @@ If `atlan` is missing:
 - If installation is blocked (network/policy), stop and ask the user to enable installation or provide an existing CLI binary path.
 - Report this as an environment-preparation blocker and keep install guidance in the summary.
 
+## Discovery Guardrail
+Before implementation, use progressive discovery:
+1. Start with skill references + minimal representative app files for selected tier.
+2. Avoid repo-wide recursive searches in first pass.
+3. Only expand when blocked by specific missing facts.
+4. Keep first-pass discovery budget:
+   - `quickstart-utility`: <= 12 file reads
+   - `connector-standard`: <= 20 file reads
+
 ## Prohibited Path
 - Do not hand-create the baseline app tree (`mkdir` + manual file bootstrapping).
 - Do not copy an existing quickstart app as scaffold replacement.
