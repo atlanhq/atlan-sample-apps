@@ -11,8 +11,14 @@ Execute run/test/fix loops that a developer would expect from a normal app reque
 1. Resolve target app path.
 2. Verify CLI availability first:
    - Check `command -v atlan`.
-   - If missing, ask permission to install CLI via official docs.
-   - If install is deferred and sibling `atlan-cli` source exists, use temporary shim (`go run main.go app ...`).
+   - If missing, install CLI before run/test:
+     - Preferred: fetch and run released install flow from Atlan docs (`https://developer.atlan.com/sdks/cli/#obtain-the-cli`).
+     - Fallback: `go install github.com/atlanhq/atlan-cli@latest`.
+     - Source fallback: clone from GitHub and run `make build && make install`.
+     - Do not use `go get` for CLI installation.
+     - Do not begin by searching for a local `atlan-cli` repository.
+   - Re-verify with `command -v atlan && atlan --help`.
+   - If network/install is blocked, stop and ask the user to enable installation or provide an existing CLI binary path.
 3. Verify infra prerequisites before run/e2e:
    - `uv`, `temporal`, `dapr` are available.
    - Dapr runtime initialization is present (config path exists and sidecar can start).

@@ -5,8 +5,14 @@ For run/test loops, use CLI first and fallback only when necessary.
 
 ## Preflight
 1. Check CLI availability: `command -v atlan`
-2. If missing, ask permission to install CLI from official docs.
-3. If install is deferred and sibling `atlan-cli` exists, use temporary shim from that repo: `go run main.go app ...`.
+2. If missing, install CLI before run/test:
+   - preferred: fetch and run released install flow from `https://developer.atlan.com/sdks/cli/#obtain-the-cli`
+   - fallback: `go install github.com/atlanhq/atlan-cli@latest`
+   - source fallback: `git clone https://github.com/atlanhq/atlan-cli.git` then `make build && make install`
+   - never use `go get` for CLI installation
+   - do not begin by searching for local `atlan-cli` clones
+   - verify: `command -v atlan && atlan --help`
+3. If installation is blocked (network/policy), stop and ask the user to enable installation or provide an existing CLI binary path.
 4. Verify runtime prerequisites:
    - `command -v uv`
    - `command -v temporal`

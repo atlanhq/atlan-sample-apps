@@ -17,3 +17,6 @@ Expected: trigger this skill after scaffold + verification.
 
 6. Positive: "The app test command says dependency startup failed. Diagnose and fix the environment, then rerun."
 Expected: trigger this skill and apply infra recovery workflow before rerun.
+
+7. Positive: "Run this app end-to-end on a fresh machine."
+Expected: if CLI is missing, perform web-first CLI install flow; do not assume a local `atlan-cli` checkout exists.

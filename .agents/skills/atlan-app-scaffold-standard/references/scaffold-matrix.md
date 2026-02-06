@@ -4,16 +4,23 @@
 For every new app request, scaffold through CLI first.
 
 1. Check CLI availability: `command -v atlan`
-2. Discover options when needed:
+2. If missing, install CLI before scaffold:
+   - preferred: fetch and run released install flow from `https://developer.atlan.com/sdks/cli/#obtain-the-cli`
+   - fallback: `go install github.com/atlanhq/atlan-cli@latest`
+   - source fallback: `git clone https://github.com/atlanhq/atlan-cli.git` then `make build && make install`
+   - never use `go get` for CLI installation
+   - do not begin by searching for local `atlan-cli` clones
+   - verify: `command -v atlan && atlan --help`
+3. Discover options when needed:
    - `atlan app template list`
    - `atlan app sample list`
-3. Scaffold:
+4. Scaffold:
    - template path: `atlan app init -o <app_path> -t generic -y`
    - sample path: `atlan app init -o <app_path> -s <sample> -y`
 
 If `atlan` is missing:
-- Ask permission to install CLI using official docs.
-- If installation is deferred and sibling `atlan-cli` repo exists, use temporary shim from that repo: `go run main.go app ...`.
+- If installation is blocked (network/policy), stop and ask the user to enable installation or provide an existing CLI binary path.
+- Report this as an environment-preparation blocker and keep install guidance in the summary.
 
 ## Prohibited Path
 - Do not hand-create the baseline app tree (`mkdir` + manual file bootstrapping).

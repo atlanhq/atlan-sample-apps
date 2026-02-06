@@ -14,3 +14,6 @@ Expected: do not trigger this skill.
 
 5. Ambiguous: "Set up a new app and get it runnable locally."
 Expected: trigger this skill first, ask 1-3 clarifying business-behavior questions, then `atlan-cli-run-test-loop`.
+
+6. Positive: "Create a new app for customer ticket triage and make it runnable."
+Expected: if `atlan` is missing, install CLI using web-first flow; do not search for local `atlan-cli` clones.

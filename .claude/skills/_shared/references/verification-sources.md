@@ -5,11 +5,12 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 ## Default behavior
 1. Start with skill defaults and verified CLI command patterns.
 2. Fetch source context only when behavior is unclear, risky, or command-specific.
+3. Do not assume machine-local sibling repositories exist.
 
 ## Where to fetch from
-- SDK behavior: inspect sibling `application-sdk` repo.
-- CLI behavior: inspect sibling `atlan-cli` repo (`docs/app-command.md`, `cmd/atlan/*`, `pkg/atlan/*`).
-- App patterns: inspect sibling `atlan-postgres-app` and `atlan-redshift-app` repos.
+- SDK behavior: Atlan SDK docs and source (`https://github.com/atlanhq/application-sdk`) or an explicitly provided local checkout.
+- CLI behavior: Atlan CLI docs (`https://developer.atlan.com/sdks/cli/`) and source (`https://github.com/atlanhq/atlan-cli`) or an explicitly provided local checkout.
+- App patterns: current repo samples and public Atlan sample apps, unless user provides local references.
 
 ## CLI facts to verify when commands are involved
 - Scaffold: `atlan app init ...`
@@ -20,9 +21,10 @@ Use this guide for on-demand verification. Do not keep static source snapshots i
 - Dapr initialization behavior in CLI tools flow
 
 ## How to fetch
-- Use fast local search first (`rg`, `find`, `ls`).
+- For install/setup facts, prefer official docs first.
+- Use fast local search first (`rg`, `find`, `ls`) only for repositories already present in the current workspace.
 - Read only minimal files needed for current decision.
-- If sibling repos are unavailable, ask user for path/context.
+- If required references are unavailable and network is blocked, ask user for path/context.
 
 ## Rules
 1. Treat SDK and CLI repos as read-only.

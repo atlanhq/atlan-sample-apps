@@ -18,8 +18,14 @@ When a user asks to create a new app, treat CLI bootstrap as implicit. Do not re
 4. Enforce CLI-first bootstrap:
    - Check `atlan` availability (`command -v atlan`).
    - If available: use `atlan app init -o <app_path> -t generic -y` (or `-s <sample>` when requested).
-   - If missing: ask permission to install Atlan CLI using official setup docs.
-   - If install is deferred but sibling `atlan-cli` source exists: use temporary shim from CLI repo (`go run main.go app ...`) for the same flow.
+   - If missing: install CLI before continuing.
+     - Preferred: fetch and run the released install flow from Atlan docs (`https://developer.atlan.com/sdks/cli/#obtain-the-cli`).
+     - Fallback: `go install github.com/atlanhq/atlan-cli@latest`.
+     - Source fallback: clone from GitHub and run `make build && make install`.
+     - Do not use `go get` for CLI installation.
+     - Do not begin by searching for a local `atlan-cli` repository.
+   - Re-verify with `command -v atlan && atlan --help`.
+   - If network/install is blocked, stop and ask the user to enable installation or provide an existing CLI binary path.
 5. Verify template/sample choices only when needed:
    - `atlan app template list`
    - `atlan app sample list`
