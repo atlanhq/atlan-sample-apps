@@ -84,7 +84,9 @@ class TestIncidentDigestWorkflow(unittest.TestCase, BaseTest):
         pass
 
     @pytest.mark.order(7)
-    @pytest.mark.skip(reason="Incident digest doesn't extract typed data for validation")
+    @pytest.mark.skip(
+        reason="Incident digest doesn't extract typed data for validation"
+    )
     def test_data_validation(self):
         pass
 

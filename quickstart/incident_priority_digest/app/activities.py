@@ -14,7 +14,9 @@ activity.logger = logger
 
 class IncidentDigestActivities(ActivitiesInterface):
     @activity.defn
-    async def parse_records(self, workflow_args: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def parse_records(
+        self, workflow_args: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Parse incident records from the workflow args ``records_json`` field.
 
         Accepts either a JSON string or a pre-parsed list.

@@ -15,12 +15,48 @@ from app.digest import (
 # ---------------------------------------------------------------------------
 
 SAMPLE_RECORDS = [
-    {"id": "INC-001", "severity": "critical", "status": "open", "owning_team": "platform", "title": "DB down"},
-    {"id": "INC-002", "severity": "high", "status": "investigating", "owning_team": "backend", "title": "Slow API"},
-    {"id": "INC-003", "severity": "medium", "status": "resolved", "owning_team": "platform", "title": "Disk warning"},
-    {"id": "INC-004", "severity": "low", "status": "closed", "owning_team": "frontend", "title": "UI glitch"},
-    {"id": "INC-005", "severity": "critical", "status": "open", "owning_team": "platform", "title": "Memory leak"},
-    {"id": "INC-006", "severity": "high", "status": "open", "owning_team": "backend", "title": "Auth timeout"},
+    {
+        "id": "INC-001",
+        "severity": "critical",
+        "status": "open",
+        "owning_team": "platform",
+        "title": "DB down",
+    },
+    {
+        "id": "INC-002",
+        "severity": "high",
+        "status": "investigating",
+        "owning_team": "backend",
+        "title": "Slow API",
+    },
+    {
+        "id": "INC-003",
+        "severity": "medium",
+        "status": "resolved",
+        "owning_team": "platform",
+        "title": "Disk warning",
+    },
+    {
+        "id": "INC-004",
+        "severity": "low",
+        "status": "closed",
+        "owning_team": "frontend",
+        "title": "UI glitch",
+    },
+    {
+        "id": "INC-005",
+        "severity": "critical",
+        "status": "open",
+        "owning_team": "platform",
+        "title": "Memory leak",
+    },
+    {
+        "id": "INC-006",
+        "severity": "high",
+        "status": "open",
+        "owning_team": "backend",
+        "title": "Auth timeout",
+    },
 ]
 
 
@@ -129,7 +165,9 @@ class TestParseRecordsActivity:
     @staticmethod
     @pytest.mark.asyncio
     async def test_parse_json_string(activities: IncidentDigestActivities):
-        result = await activities.parse_records({"records_json": json.dumps(SAMPLE_RECORDS)})
+        result = await activities.parse_records(
+            {"records_json": json.dumps(SAMPLE_RECORDS)}
+        )
         assert len(result) == 6
         assert result[0]["id"] == "INC-001"
 
