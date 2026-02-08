@@ -3,7 +3,7 @@ name = "extractor-app"
 version = "0.1.0"
 description = "Simple extractor app for Table assets built using Atlan Application SDK"
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [

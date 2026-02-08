@@ -3,7 +3,7 @@ name = "atlan-anaplan-app"
 version = "1.0.0"
 description = "Atlan Anaplan App: Built using Atlan Application SDK"
 authors = [{ name = "Atlan Apps Team", email = "apps@atlan.com" }]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
