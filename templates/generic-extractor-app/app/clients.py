@@ -41,13 +41,10 @@ class ConnectorClient(BaseClient):
         credentials = kwargs.get("credentials", {})
         self.credentials = credentials
 
-        # -----------------------------------------------------------------
-        # TODO: Extract your configuration from credentials
-        # Example:
-        #   self.base_url = credentials.get("base_url", "")
-        #   self.api_key = credentials.get("api_key", "")
-        # -----------------------------------------------------------------
-        self.source_name = credentials.get("source_name", "my-source")
+        # Extract configuration from credentials
+        self.host = credentials.get("host", "")
+        extra = credentials.get("extra", {})
+        self.source_name = extra.get("source_name", "my-source")
 
         # Set up HTTP headers for API calls
         self.http_headers = {
@@ -57,7 +54,7 @@ class ConnectorClient(BaseClient):
             # "Authorization": f"Bearer {self.api_key}",
         }
 
-        logger.info(f"Client initialized for source: {self.source_name}")
+        logger.info(f"Client initialized for source: {self.source_name}, host: {self.host}")
 
     async def fetch_metadata(self) -> List[Dict[str, Any]]:
         """

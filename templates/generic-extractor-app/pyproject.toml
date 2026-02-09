@@ -3,7 +3,7 @@ name = "atlan-connector-template"
 version = "1.0.0"
 description = "Atlan Connector Template - A starting point for building metadata connectors"
 authors = [{ name = "Atlan Apps Team", email = "apps@atlan.com" }]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
