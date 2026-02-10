@@ -16,7 +16,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e-test')) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Get SDK version from pyproject.toml
         id: sdk-version
@@ -96,7 +96,7 @@ jobs:
           #   application_name: ai-giphy
 
     steps:
-      - uses: actions/checkout@v4.0.0
+      - uses: actions/checkout@v6.0.2
 
       # Install Dapr
       - name: Install Dapr CLI (Linux/macOS)
