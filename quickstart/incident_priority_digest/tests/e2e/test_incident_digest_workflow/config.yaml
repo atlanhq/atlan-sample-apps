@@ -1,0 +1,19 @@
+test_workflow_args:
+  records_json: >
+    [
+      {"id": "INC-001", "severity": "critical", "status": "open", "owning_team": "platform", "title": "DB down"},
+      {"id": "INC-002", "severity": "high", "status": "investigating", "owning_team": "backend", "title": "Slow API"},
+      {"id": "INC-003", "severity": "medium", "status": "resolved", "owning_team": "platform", "title": "Disk warning"},
+      {"id": "INC-004", "severity": "low", "status": "closed", "owning_team": "frontend", "title": "UI glitch"}
+    ]
+  connection:
+    connection_name: "incident-digest-test"
+    connection_qualified_name: "default/incident-digest/test"
+test_name: "test_incident_digest_workflow"
+server_config:
+  server_host: "http://localhost:8000"
+  server_version: "workflows/v1"
+expected_api_responses:
+  workflow:
+    success: true
+    message: "Workflow started successfully"
