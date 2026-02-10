@@ -1,0 +1,166 @@
+name: Security Autofix (Trivy + uv)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Weekly run (Wednesday 21:55 UTC) to align near the existing Trivy schedule
+    - cron: "55 21 * * 3"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: security-autofix
+  cancel-in-progress: false
+
+jobs:
+  autofix:
+    name: Autofix HIGH/CRITICAL dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SECURITY_AUTOFIX_APP_ID }}
+          private-key: ${{ secrets.SECURITY_AUTOFIX_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Run Trivy vulnerability scan (JSON)
+        uses: ./.github/actions/trivy-scan
+        with:
+          add-report-comment-to-pr: "false"
+          scan_secrets: "false"
+
+      - name: Remediate fixable vulnerabilities (uv)
+        id: remediate
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUMMARY_PATH="$RUNNER_TEMP/security-autofix-summary.md"
+          ISSUE_PATH="$RUNNER_TEMP/security-unfixable-issue.md"
+
+          python .github/scripts/security_autofix.py \
+            --trivy-json trivy-vuln-results.json \
+            --severity CRITICAL,HIGH \
+            --summary-path "$SUMMARY_PATH" \
+            --issue-path "$ISSUE_PATH"
+
+          echo "summary_path=$SUMMARY_PATH" >> "$GITHUB_OUTPUT"
+          echo "issue_path=$ISSUE_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Detect unfixable vulnerabilities
+        id: unfixable
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "${{ steps.remediate.outputs.issue_path }}" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create issue for unfixable vulnerabilities
+        if: steps.unfixable.outputs.found == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          title: "security: unfixable Trivy HIGH/CRITICAL findings"
+          content-filepath: ${{ steps.remediate.outputs.issue_path }}
+          labels: security,trivy
+
+      - name: Detect changes
+        if: steps.unfixable.outputs.found != 'true'
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Guardrail - allowlisted changes only
+        if: steps.unfixable.outputs.found != 'true' && steps.changes.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad=""
+          while IFS= read -r file; do
+            case "$file" in
+              uv.lock|pyproject.toml|*/uv.lock|*/pyproject.toml) ;;
+              *) bad="${bad}\n- ${file}" ;;
+            esac
+          done < <(git diff --name-only)
+
+          if [ -n "$bad" ]; then
+            echo "Disallowed files changed:"
+            echo -e "$bad"
+            exit 1
+          fi
+
+      - name: Run unit tests for changed projects
+        if: steps.unfixable.outputs.found != 'true' && steps.changes.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git diff --name-only \
+            | { grep -E '(^|/)(uv\.lock|pyproject\.toml)$' || true; } \
+            | xargs -I{} dirname "{}" \
+            | sort -u \
+            | while read -r project; do
+                if [ "$project" = "." ]; then
+                  continue
+                fi
+                if [ -d "$project/tests/unit" ]; then
+                  echo "Running unit tests: $project"
+                  (cd "$project" && uv sync --dev && uv run pytest tests/unit -v --tb=short)
+                else
+                  echo "Skipping (no unit tests): $project"
+                fi
+              done
+
+      - name: Re-scan and fail if fixable HIGH/CRITICAL remain
+        if: steps.unfixable.outputs.found != 'true' && steps.changes.outputs.has_changes == 'true'
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: ./
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          scanners: vuln
+          ignore-unfixed: true
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
+
+      - name: Create or update autofix PR
+        if: steps.unfixable.outputs.found != 'true' && steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: bot/security-autofix
+          delete-branch: false
+          base: main
+          title: "chore(security): autofix Trivy HIGH/CRITICAL"
+          body-path: ${{ steps.remediate.outputs.summary_path }}
+          labels: security,dependencies,autofix
