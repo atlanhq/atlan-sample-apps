@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trigger Workflow</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background: #f7f9fb;
+        font-family: Arial, sans-serif;
+      }
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        color: #222;
+      }
+      .big-blue-btn {
+        padding: 1.2rem 3rem;
+        font-size: 1.3rem;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+      }
+      .big-blue-btn:hover {
+        background: #1d4ed8;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Start a workflow to trigger another one</h1>
+    <button class="big-blue-btn" onclick="startWorkflow()">Start Workflow</button>
+    <script>
+      function startWorkflow() {
+        fetch("/workflows/v1/start", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            search_term: 'test',
+            recipients: 'test'
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            alert('Workflow started!');
+          } else {
+            alert('Failed to start workflow.');
+          }
+        })
+        .catch(() => alert('Failed to start workflow.'));
+      }
+    </script>
+  </body>
+</html>
