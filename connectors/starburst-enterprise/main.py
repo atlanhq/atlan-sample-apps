@@ -8,6 +8,8 @@ This connector uses a hybrid extraction approach:
 
 import asyncio
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.activities import SEPMetadataExtractionActivities
 from app.handler import SEPHandler
 from app.workflows import SEPMetadataExtractionWorkflow
@@ -47,6 +49,15 @@ async def main():
         await application.setup_server(
             workflow_class=SEPMetadataExtractionWorkflow,
         )
+
+        # Enable CORS so the frontend served at localhost can make API calls
+        application.server.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
         await application.start_server()
 
     except ApiError:

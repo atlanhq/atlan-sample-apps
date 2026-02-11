@@ -223,6 +223,9 @@ dapr init
 ```
 No Docker Hub account is needed to pull the public images used by Dapr.
 
+### `OPTIONS /workflows/v1/test_auth` returns 405 Method Not Allowed
+This is a CORS issue — the browser sends a preflight `OPTIONS` request that the server doesn't handle. The fix is already applied in `main.py` via `CORSMiddleware`. If you see this error, make sure you're running the latest version of `main.py` that includes the CORS middleware setup.
+
 ### "Connection refused" on port 7233
 Temporal server hasn't started yet. Wait a few seconds after `poe start-deps`.
 
