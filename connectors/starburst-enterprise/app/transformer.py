@@ -33,7 +33,10 @@ class SEPDomain:
             "description": obj.get("description", ""),
             "schemaLocationUri": obj.get("schemaLocation", ""),
         }
-        return {"attributes": attributes, "custom_attributes": {}}
+        custom_attributes = {
+            "type": obj.get("type", ""),
+        }
+        return {"attributes": attributes, "custom_attributes": custom_attributes}
 
 
 class SEPDataProduct:
@@ -44,6 +47,13 @@ class SEPDataProduct:
 
     @classmethod
     def get_attributes(cls, obj: Dict[str, Any]) -> Dict[str, Any]:
+        # Build owners list as serializable value
+        owners = obj.get("owners", [])
+        owners_value = [
+            {"name": o.get("name", ""), "email": o.get("email", "")}
+            for o in owners
+        ] if owners else []
+
         attributes = {
             "name": obj.get("name", ""),
             "qualifiedName": build_atlas_qualified_name(
@@ -58,9 +68,17 @@ class SEPDataProduct:
             "schemaName": obj.get("schemaName", ""),
             "status": obj.get("status", ""),
             "domainId": obj.get("dataDomainId", ""),
+            "domainName": obj.get("domainName", ""),
+            "owners": owners_value,
+            "publishedAt": obj.get("publishedAt", ""),
+            "publishedBy": obj.get("publishedBy", ""),
         }
+        # Extract access metadata
+        access_metadata = obj.get("accessMetadata", {})
         custom_attributes = {
-            "visibility": obj.get("visibility", ""),
+            "visibility": obj.get("type", obj.get("visibility", "")),
+            "lastQueriedAt": access_metadata.get("lastQueriedAt", ""),
+            "lastQueriedBy": access_metadata.get("lastQueriedBy", ""),
         }
         return {"attributes": attributes, "custom_attributes": custom_attributes}
 
@@ -84,9 +102,17 @@ class SEPDataset:
             "schemaName": obj.get("schema_name", ""),
             "databaseName": obj.get("catalog_name", ""),
             "dataProductName": obj.get("data_product_name", ""),
+            "status": obj.get("status", ""),
         }
+        # Build custom attributes including MV-specific fields
+        definition_props = obj.get("definition_properties", {})
         custom_attributes = {
             "is_materialized": obj.get("is_materialized", False),
+            "viewSecurityMode": obj.get("view_security_mode", ""),
+            "refreshSchedule": definition_props.get("refresh_schedule", ""),
+            "refreshScheduleTimezone": definition_props.get(
+                "refresh_schedule_timezone", ""
+            ),
         }
         return {"attributes": attributes, "custom_attributes": custom_attributes}
 
@@ -200,6 +226,7 @@ class SEPColumn:
             "databaseName": obj.get("table_catalog", ""),
             "isNullable": obj.get("is_nullable", "YES") == "YES",
             "dataType": obj.get("data_type", ""),
+            "description": obj.get("comment", "") or "",
             "order": obj.get("ordinal_position", 1),
         }
         custom_attributes = {

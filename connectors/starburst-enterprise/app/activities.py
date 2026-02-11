@@ -198,6 +198,8 @@ class SEPMetadataExtractionActivities(ActivitiesInterface):
             "view_definition": view_obj.get("definitionQuery", ""),
             "is_materialized": is_materialized,
             "status": view_obj.get("status", ""),
+            "view_security_mode": view_obj.get("viewSecurityMode", ""),
+            "definition_properties": view_obj.get("definitionProperties", {}),
         }
         datasets.append(ds_record)
 

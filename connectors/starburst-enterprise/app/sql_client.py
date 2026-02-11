@@ -114,10 +114,14 @@ class SEPSQLClient:
         )
 
     async def fetch_columns(self, catalog: str) -> List[Dict[str, Any]]:
-        """Fetch columns from a specific catalog's information_schema."""
+        """Fetch columns from a specific catalog's information_schema.
+
+        Includes the comment field which captures column-level documentation
+        set via COMMENT ON COLUMN statements in Trino/SEP.
+        """
         return await self.execute(
             f"SELECT table_catalog, table_schema, table_name, column_name, "
-            f"ordinal_position, column_default, is_nullable, data_type "
+            f"ordinal_position, column_default, is_nullable, data_type, comment "
             f'FROM "{catalog}".information_schema.columns '
             f"WHERE table_schema != 'information_schema'",
             catalog=catalog,
