@@ -10,8 +10,6 @@ import asyncio
 
 from app.activities import SEPMetadataExtractionActivities
 from app.handler import SEPHandler
-from app.sql_client import SEPSQLClient
-from app.transformer import SEPAtlasTransformer
 from app.workflows import SEPMetadataExtractionWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.common.error_codes import ApiError
@@ -33,9 +31,7 @@ async def main():
     try:
         application = BaseApplication(
             name=APPLICATION_NAME,
-            client_class=SEPSQLClient,
             handler_class=SEPHandler,
-            transformer_class=SEPAtlasTransformer,
         )
 
         await application.setup_workflow(

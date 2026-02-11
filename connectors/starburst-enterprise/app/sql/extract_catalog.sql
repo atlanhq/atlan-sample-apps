@@ -11,7 +11,9 @@
  */
 SELECT
     catalog_name,
-    connector_name AS catalog_kind
+    connector_id,
+    connector_name,
+    state
 FROM
     system.metadata.catalogs
 WHERE

@@ -119,7 +119,7 @@ class SEPDatasetColumn:
 
 
 class SEPCatalog:
-    """Starburst Enterprise Catalog entity (from SQL INFORMATION_SCHEMA)."""
+    """Starburst Enterprise Catalog entity (from SQL system.metadata.catalogs)."""
 
     @classmethod
     def get_attributes(cls, obj: Dict[str, Any]) -> Dict[str, Any]:
@@ -132,7 +132,9 @@ class SEPCatalog:
             "connectionQualifiedName": obj.get("connection_qualified_name", ""),
         }
         custom_attributes = {
-            "catalog_kind": obj.get("catalog_kind", ""),
+            "connector_id": obj.get("connector_id", ""),
+            "connector_name": obj.get("connector_name", ""),
+            "state": obj.get("state", ""),
         }
         return {"attributes": attributes, "custom_attributes": custom_attributes}
 

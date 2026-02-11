@@ -2,8 +2,10 @@
 REST client for Starburst Enterprise (SEP) API.
 
 Handles communication with the SEP REST API to extract:
-- Domains
-- Data Products (with embedded Datasets and Dataset Columns)
+- Domains (with assignedDataProducts)
+- Data Products (list returns summary; detail returns views + materializedViews)
+- Datasets = views + materializedViews within each Data Product
+- Dataset Columns = columns within each view/materializedView
 """
 
 import base64
@@ -75,23 +77,26 @@ class SEPRestClient:
         """Fetch all data domains from SEP.
 
         Returns:
-            List of domain dictionaries with keys like:
-            - id, name, description, schemaLocation, etc.
+            List of domain dicts. Each contains:
+            - id, name, description, schemaLocation (optional),
+              assignedDataProducts [{id, name}],
+              createdBy, createdAt, updatedAt, updatedBy
         """
         client = await self._get_client()
         response = await client.get(f"{DATA_PRODUCT_API_BASE}/domains")
         response.raise_for_status()
         return response.json()
 
-    async def fetch_data_products(self) -> List[Dict[str, Any]]:
-        """Fetch all data products from SEP.
+    async def fetch_data_products_summary(self) -> List[Dict[str, Any]]:
+        """Fetch all data products (summary only, no datasets).
 
-        Each data product contains embedded datasets and their columns.
+        The list endpoint returns product metadata but NOT the embedded
+        views/materializedViews. Use fetch_data_product_detail() for those.
 
         Returns:
-            List of data product dictionaries with keys like:
-            - id, name, summary, description, catalogName, schemaName,
-              status, dataDomainId, datasets, owners, etc.
+            List of product summary dicts with:
+            - id, name, catalogName, schemaName, dataDomainId, summary,
+              description, createdBy, status, timestamps, ratingsCount
         """
         client = await self._get_client()
         response = await client.get(
@@ -101,16 +106,26 @@ class SEPRestClient:
         response.raise_for_status()
         return response.json()
 
-    async def fetch_data_product_by_id(
+    async def fetch_data_product_detail(
         self, product_id: str
     ) -> Dict[str, Any]:
-        """Fetch a single data product by its ID.
+        """Fetch a single data product with full details.
+
+        The detail endpoint includes:
+        - views[]: Regular view datasets with columns
+        - materializedViews[]: Materialized view datasets with columns and refresh schedule
+        - owners[]: Owner name/email pairs
+        - relevantLinks[], accessMetadata, etc.
+
+        Each view/materializedView contains:
+        - name, description, definitionQuery, status, columns[],
+          viewSecurityMode, markedForDeletion, timestamps
+
+        Each column contains:
+        - name, type, description
 
         Args:
-            product_id: The data product identifier.
-
-        Returns:
-            Data product dictionary with full details including datasets.
+            product_id: The data product UUID.
         """
         client = await self._get_client()
         response = await client.get(
@@ -118,3 +133,32 @@ class SEPRestClient:
         )
         response.raise_for_status()
         return response.json()
+
+    async def fetch_all_data_products_with_details(self) -> List[Dict[str, Any]]:
+        """Fetch all data products with full details (views, columns, owners).
+
+        First fetches the summary list to get IDs, then fetches each product's
+        detail endpoint to get the embedded views/materializedViews.
+
+        Returns:
+            List of fully detailed data product dicts.
+        """
+        summaries = await self.fetch_data_products_summary()
+        detailed_products: List[Dict[str, Any]] = []
+
+        for summary in summaries:
+            product_id = summary.get("id")
+            if not product_id:
+                continue
+            try:
+                detail = await self.fetch_data_product_detail(product_id)
+                detailed_products.append(detail)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to fetch detail for data product {product_id} "
+                    f"({summary.get('name', 'unknown')}): {e}"
+                )
+                # Fall back to summary (no views/columns)
+                detailed_products.append(summary)
+
+        return detailed_products

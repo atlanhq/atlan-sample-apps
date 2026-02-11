@@ -3,7 +3,7 @@ Handler for Starburst Enterprise (SEP) connector.
 
 This is a hybrid handler that uses:
 - REST client for Data Products, Domains, Datasets, and Dataset Columns
-- SQL client for Catalogs, Schemas, Tables, Views, and Table/View Columns
+- SQL client (trino DBAPI) for Catalogs, Schemas, Tables, Views, and Table/View Columns
 
 Both clients share the same SEP credentials (Basic/LDAP auth).
 """
@@ -12,19 +12,22 @@ from typing import Any, Dict, List, Optional
 
 from app.rest_client import SEPRestClient
 from app.sql_client import SEPSQLClient
-from application_sdk.handlers import HandlerInterface
+from application_sdk.handlers.base import BaseHandler
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
 
 
-class SEPHandler(HandlerInterface):
+class SEPHandler(BaseHandler):
     """Hybrid handler for Starburst Enterprise metadata extraction.
 
     Manages both REST and SQL clients against the same SEP instance.
+    The client param is accepted for BaseApplication compatibility but not
+    used; this hybrid handler creates its own REST + SQL clients in load().
     """
 
-    def __init__(self) -> None:
+    def __init__(self, client: Any = None) -> None:
+        super().__init__(client=client)
         self.rest_client: Optional[SEPRestClient] = None
         self.sql_client: Optional[SEPSQLClient] = None
         self._credentials: Dict[str, Any] = {}
@@ -39,7 +42,7 @@ class SEPHandler(HandlerInterface):
         self._credentials = credentials
 
         host = credentials["host"]
-        port = int(credentials.get("port", 8080))
+        port = int(credentials.get("port", 443))
         username = credentials["username"]
         password = credentials.get("password", "")
         http_scheme = credentials.get("http_scheme", "https")
@@ -56,16 +59,15 @@ class SEPHandler(HandlerInterface):
             role=role,
         )
 
-        # Initialize SQL client
-        self.sql_client = SEPSQLClient()
-        await self.sql_client.setup(
-            {
-                "user": username,
-                "password": password,
-                "host": host,
-                "port": str(port),
-                "catalog": catalog,
-            }
+        # Initialize SQL client (trino DBAPI - sync wrapped as async)
+        self.sql_client = SEPSQLClient(
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            http_scheme=http_scheme,
+            catalog=catalog,
+            role=role,
         )
 
         logger.info(
@@ -74,11 +76,7 @@ class SEPHandler(HandlerInterface):
         )
 
     async def test_auth(self, credentials: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Test authentication against both REST API and SQL endpoints.
-
-        Returns:
-            Dict with success status and messages for each client.
-        """
+        """Test authentication against both REST API and SQL endpoints."""
         creds = credentials or self._credentials
         if not self.rest_client or not self.sql_client:
             await self.load(creds)
@@ -92,33 +90,22 @@ class SEPHandler(HandlerInterface):
         except Exception as e:
             results["rest_api"] = {"success": False, "message": f"REST API connection failed: {e}"}
 
-        # Test SQL
+        # Test SQL via trino DBAPI
         try:
-            if self.sql_client and self.sql_client.engine:
-                async with self.sql_client.engine.connect() as conn:
-                    from sqlalchemy import text
-                    await conn.execute(text("SELECT 1"))
-                results["sql"] = {"success": True, "message": "SQL connection successful"}
+            await self.sql_client.test_connection()
+            results["sql"] = {"success": True, "message": "SQL connection successful"}
         except Exception as e:
             results["sql"] = {"success": False, "message": f"SQL connection failed: {e}"}
 
         all_success = all(r.get("success", False) for r in results.values())
-        return {
-            "success": all_success,
-            "data": results,
-        }
+        return {"success": all_success, "data": results}
 
     async def preflight_check(
         self,
         credentials: Optional[Dict[str, Any]] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Validate connectivity and access to the requested resources.
-
-        Checks:
-        1. REST API reachable and domains/data products accessible
-        2. SQL endpoint reachable and catalogs queryable
-        """
+        """Validate connectivity and access to the requested resources."""
         creds = credentials or self._credentials
         if not self.rest_client or not self.sql_client:
             await self.load(creds)
@@ -142,16 +129,12 @@ class SEPHandler(HandlerInterface):
 
         # Check SQL - can we list catalogs?
         try:
-            if self.sql_client and self.sql_client.engine:
-                from sqlalchemy import text
-                async with self.sql_client.engine.connect() as conn:
-                    result = await conn.execute(text("SHOW CATALOGS"))
-                    catalogs = result.fetchall()
-                checks["catalogsCheck"] = {
-                    "success": True,
-                    "successMessage": f"Catalogs check successful. Found {len(catalogs)} catalog(s).",
-                    "failureMessage": "",
-                }
+            catalogs = await self.sql_client.fetch_catalogs()
+            checks["catalogsCheck"] = {
+                "success": True,
+                "successMessage": f"Catalogs check successful. Found {len(catalogs)} catalog(s).",
+                "failureMessage": "",
+            }
         except Exception as e:
             checks["catalogsCheck"] = {
                 "success": False,
@@ -177,30 +160,21 @@ class SEPHandler(HandlerInterface):
         metadata_items: List[Dict[str, str]] = []
 
         try:
-            if self.sql_client and self.sql_client.engine:
-                from sqlalchemy import text
-                async with self.sql_client.engine.connect() as conn:
-                    # Fetch catalogs
-                    cat_result = await conn.execute(text("SHOW CATALOGS"))
-                    catalogs = [row[0] for row in cat_result.fetchall()]
-
-                    for catalog in catalogs:
-                        # Skip system catalogs
-                        if catalog in ("system",):
-                            continue
-                        try:
-                            schema_result = await conn.execute(
-                                text(f'SHOW SCHEMAS FROM "{catalog}"')
-                            )
-                            schemas = [row[0] for row in schema_result.fetchall()]
-                            for schema in schemas:
-                                if schema == "information_schema":
-                                    continue
-                                metadata_items.append(
-                                    {"catalog_name": catalog, "schema_name": schema}
-                                )
-                        except Exception:
-                            logger.warning(f"Could not list schemas for catalog: {catalog}")
+            catalogs = await self.sql_client.fetch_catalogs()
+            for cat in catalogs:
+                catalog_name = cat["catalog_name"]
+                # Skip internal catalogs
+                if catalog_name in ("system", "jmx"):
+                    continue
+                try:
+                    schemas = await self.sql_client.fetch_schemas(catalog_name)
+                    for schema in schemas:
+                        metadata_items.append({
+                            "catalog_name": catalog_name,
+                            "schema_name": schema["schema_name"],
+                        })
+                except Exception:
+                    logger.warning(f"Could not list schemas for catalog: {catalog_name}")
         except Exception as e:
             logger.error(f"Failed to fetch metadata: {e}")
             return {"success": False, "data": [], "error": str(e)}
@@ -211,5 +185,3 @@ class SEPHandler(HandlerInterface):
         """Clean up client resources."""
         if self.rest_client:
             await self.rest_client.close()
-        if self.sql_client and self.sql_client.engine:
-            await self.sql_client.engine.dispose()
