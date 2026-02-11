@@ -2,7 +2,7 @@ name: Generate Registry
 
 on:
   push:
-    branches: ["*"]
+    branches: [main, generics]
     paths:
       - "**/atlan-app-registry.json"
   workflow_dispatch:
