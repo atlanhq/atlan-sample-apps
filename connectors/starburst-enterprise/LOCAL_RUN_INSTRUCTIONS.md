@@ -6,14 +6,35 @@
 |------|---------|---------|
 | Python | 3.11+ | [python.org](https://www.python.org/downloads/) |
 | uv | latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| Dapr CLI | 1.13+ | [docs.dapr.io](https://docs.dapr.io/getting-started/install-dapr-cli/) |
-| Temporal CLI | latest | `brew install temporal` or [temporal.io/cli](https://docs.temporal.io/cli) |
+| Docker Desktop | latest | [docker.com](https://www.docker.com/products/docker-desktop/) |
+| Dapr CLI | 1.13+ | `brew install dapr/tap/dapr-cli` (macOS) or [docs.dapr.io](https://docs.dapr.io/getting-started/install-dapr-cli/) |
+| Temporal CLI | latest | `brew install temporal` (macOS) or [temporal.io/cli](https://docs.temporal.io/cli) |
 
 ### Platform-Specific Setup
 
 - **macOS**: https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md
 - **Linux**: https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md
 - **Windows**: https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md
+
+### Installing Temporal & Dapr CLIs (macOS)
+
+```bash
+# Install Temporal CLI
+brew install temporal
+
+# Install Dapr CLI
+brew install dapr/tap/dapr-cli
+```
+
+### Initializing Dapr (first-time setup)
+
+Dapr requires Docker to run its sidecar containers. Make sure **Docker Desktop is running** before proceeding.
+
+```bash
+dapr init
+```
+
+This pulls the required Docker containers (Redis, Zipkin, placement service) and sets up the Dapr runtime.
 
 ---
 
@@ -169,6 +190,38 @@ uv run poe stop-deps
 ---
 
 ## Troubleshooting
+
+### `Failed to spawn: temporal` / `Failed to spawn: dapr`
+The Temporal and/or Dapr CLIs are not installed. Install them first:
+```bash
+brew install temporal
+brew install dapr/tap/dapr-cli
+dapr init
+```
+
+### `dapr init` fails with "could not connect to docker"
+Docker Desktop is either not running or the Docker socket is not exposed.
+
+**Fix 1 — Enable the default Docker socket (recommended):**
+1. Open **Docker Desktop** → **Settings** (gear icon)
+2. Go to **Advanced**
+3. Enable **"Allow the default Docker socket to be used"**
+4. Click **Apply & Restart**
+5. Retry `dapr init`
+
+**Fix 2 — Symlink the socket manually:**
+```bash
+sudo ln -s "$HOME/.docker/run/docker.sock" /var/run/docker.sock
+```
+Then retry `dapr init`.
+
+### `dapr init` fails with "unauthorized: incorrect username or password"
+Docker is trying to authenticate with invalid cached credentials. Log out and retry:
+```bash
+docker logout
+dapr init
+```
+No Docker Hub account is needed to pull the public images used by Dapr.
 
 ### "Connection refused" on port 7233
 Temporal server hasn't started yet. Wait a few seconds after `poe start-deps`.
