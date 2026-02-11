@@ -30,9 +30,6 @@ class TestSEPWorkflow(unittest.TestCase, BaseTest):
             credentials=self.test_workflow_args["credentials"]
         )
         self.assertTrue(response.get("success"), "Auth should succeed")
-        data = response.get("data", {})
-        self.assertIn("rest_api", data)
-        self.assertIn("sql", data)
 
     @pytest.mark.order(3)
     def test_metadata(self):

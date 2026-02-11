@@ -45,10 +45,10 @@ async function testAuth() {
     resultDiv.textContent = 'Testing authentication against REST API and SQL...';
 
     try {
-        const response = await fetch(`${getBaseUrl()}/workflows/v1/test_auth`, {
+        const response = await fetch(`${getBaseUrl()}/workflows/v1/auth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ credentials: getCredentials() }),
+            body: JSON.stringify(getCredentials()),
         });
         const data = await response.json();
 
@@ -57,7 +57,7 @@ async function testAuth() {
             resultDiv.textContent = 'Authentication successful for both REST API and SQL.';
         } else {
             resultDiv.className = 'result-box error';
-            resultDiv.textContent = `Authentication failed: ${JSON.stringify(data.data)}`;
+            resultDiv.textContent = `Authentication failed: ${data.message || JSON.stringify(data)}`;
         }
     } catch (error) {
         resultDiv.className = 'result-box error';
@@ -80,7 +80,7 @@ async function fetchMetadata() {
         const response = await fetch(`${getBaseUrl()}/workflows/v1/metadata`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ credentials: getCredentials() }),
+            body: JSON.stringify(getCredentials()),
         });
         const data = await response.json();
 
@@ -110,7 +110,7 @@ async function preflightCheck() {
     resultDiv.textContent = 'Running preflight checks...';
 
     try {
-        const response = await fetch(`${getBaseUrl()}/workflows/v1/preflight_check`, {
+        const response = await fetch(`${getBaseUrl()}/workflows/v1/check`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

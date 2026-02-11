@@ -75,40 +75,22 @@ class SEPHandler(BaseHandler):
             extra={"host": host, "port": port, "catalog": catalog},
         )
 
-    async def test_auth(self, credentials: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Test authentication against both REST API and SQL endpoints."""
-        creds = credentials or self._credentials
-        if not self.rest_client or not self.sql_client:
-            await self.load(creds)
+    async def test_auth(self) -> bool:
+        """Test authentication against both REST API and SQL endpoints.
 
-        results: Dict[str, Any] = {}
+        Called by the SDK after handler.load() has already been invoked.
+        Raises on failure so the SDK returns an error response.
+        """
+        await self.rest_client.test_connection()
+        await self.sql_client.test_connection()
+        return True
 
-        # Test REST API
-        try:
-            await self.rest_client.test_connection()
-            results["rest_api"] = {"success": True, "message": "REST API connection successful"}
-        except Exception as e:
-            results["rest_api"] = {"success": False, "message": f"REST API connection failed: {e}"}
+    async def preflight_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate connectivity and access to the requested resources.
 
-        # Test SQL via trino DBAPI
-        try:
-            await self.sql_client.test_connection()
-            results["sql"] = {"success": True, "message": "SQL connection successful"}
-        except Exception as e:
-            results["sql"] = {"success": False, "message": f"SQL connection failed: {e}"}
-
-        all_success = all(r.get("success", False) for r in results.values())
-        return {"success": all_success, "data": results}
-
-    async def preflight_check(
-        self,
-        credentials: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """Validate connectivity and access to the requested resources."""
-        creds = credentials or self._credentials
-        if not self.rest_client or not self.sql_client:
-            await self.load(creds)
+        Called by the SDK with the full request body as a positional dict arg.
+        handler.load() has already been called before this.
+        """
 
         checks: Dict[str, Any] = {}
 
@@ -142,20 +124,14 @@ class SEPHandler(BaseHandler):
                 "failureMessage": f"Failed to list catalogs: {e}",
             }
 
-        all_success = all(c.get("success", False) for c in checks.values())
-        return {"success": all_success, "data": checks}
+        return checks
 
-    async def fetch_metadata(
-        self,
-        credentials: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+    async def fetch_metadata(self, **kwargs: Any) -> Dict[str, Any]:
         """Fetch high-level metadata for the connection setup UI.
 
+        Called by the SDK after handler.load() with metadata_type and database kwargs.
         Returns catalog and schema names for filtering.
         """
-        creds = credentials or self._credentials
-        if not self.rest_client or not self.sql_client:
-            await self.load(creds)
 
         metadata_items: List[Dict[str, str]] = []
 
@@ -177,9 +153,9 @@ class SEPHandler(BaseHandler):
                     logger.warning(f"Could not list schemas for catalog: {catalog_name}")
         except Exception as e:
             logger.error(f"Failed to fetch metadata: {e}")
-            return {"success": False, "data": [], "error": str(e)}
+            raise
 
-        return {"success": True, "data": metadata_items}
+        return metadata_items
 
     async def close(self) -> None:
         """Clean up client resources."""
