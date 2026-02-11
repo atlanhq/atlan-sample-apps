@@ -42,10 +42,10 @@ class SEPHandler(BaseHandler):
         self._credentials = credentials
 
         host = credentials["host"]
-        port = int(credentials.get("port", 443))
+        port = int(credentials.get("port", 8080))
         username = credentials["username"]
         password = credentials.get("password", "")
-        http_scheme = credentials.get("http_scheme", "https")
+        http_scheme = credentials.get("http_scheme", "http")
         role = credentials.get("role", "sysadmin")
         catalog = credentials.get("catalog", "system")
         verify_ssl = credentials.get("verify_ssl", True)
