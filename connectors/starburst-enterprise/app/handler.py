@@ -37,7 +37,7 @@ class SEPHandler(BaseHandler):
 
         Expected credential keys:
             host, port, username, password, http_scheme (optional),
-            catalog (optional), role (optional)
+            catalog (optional), role (optional), verify_ssl (optional)
         """
         self._credentials = credentials
 
@@ -48,6 +48,7 @@ class SEPHandler(BaseHandler):
         http_scheme = credentials.get("http_scheme", "https")
         role = credentials.get("role", "sysadmin")
         catalog = credentials.get("catalog", "system")
+        verify_ssl = credentials.get("verify_ssl", True)
 
         # Initialize REST client
         self.rest_client = SEPRestClient(
@@ -57,6 +58,7 @@ class SEPHandler(BaseHandler):
             password=password,
             http_scheme=http_scheme,
             role=role,
+            verify_ssl=verify_ssl,
         )
 
         # Initialize SQL client (trino DBAPI - sync wrapped as async)
@@ -68,6 +70,7 @@ class SEPHandler(BaseHandler):
             http_scheme=http_scheme,
             catalog=catalog,
             role=role,
+            verify_ssl=verify_ssl,
         )
 
         logger.info(

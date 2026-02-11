@@ -33,6 +33,7 @@ class SEPSQLClient:
         http_scheme: str = "https",
         catalog: str = "system",
         role: str = "sysadmin",
+        verify_ssl: bool = True,
     ):
         self.host = host
         self.port = port
@@ -41,6 +42,7 @@ class SEPSQLClient:
         self.http_scheme = http_scheme
         self.catalog = catalog
         self.role = role
+        self.verify_ssl = verify_ssl
 
     def _get_connection(self, catalog: Optional[str] = None):
         """Create a new sync trino DBAPI connection."""
@@ -50,6 +52,7 @@ class SEPSQLClient:
             "user": self.username,
             "http_scheme": self.http_scheme,
             "catalog": catalog or self.catalog,
+            "verify": self.verify_ssl,
         }
         if self.password:
             conn_kwargs["auth"] = BasicAuthentication(self.username, self.password)

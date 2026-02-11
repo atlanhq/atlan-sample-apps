@@ -13,6 +13,7 @@ function getCredentials() {
         http_scheme: document.getElementById('httpScheme').value,
         role: document.getElementById('role').value,
         catalog: document.getElementById('catalog') ? document.getElementById('catalog').value : 'system',
+        verify_ssl: document.getElementById('verifySSL').checked,
     };
 }
 
