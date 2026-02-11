@@ -1,0 +1,64 @@
+{
+    "entityDefs": [
+        {
+            "superTypes": [
+                "SQL"
+            ],
+            "name": "Schema",
+            "description": "Starburst Enterprise Schema within a Catalog.",
+            "typeVersion": "1.0",
+            "serviceType": "atlan",
+            "attributeDefs": [
+                {
+                    "name": "tableCount",
+                    "description": "Number of tables in this schema.",
+                    "typeName": "int",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": true,
+                    "includeInNotification": true
+                },
+                {
+                    "name": "viewsCount",
+                    "description": "Number of views in this schema.",
+                    "typeName": "int",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": true,
+                    "includeInNotification": true
+                }
+            ]
+        }
+    ],
+    "relationshipDefs": [
+        {
+            "name": "database_schemas",
+            "description": "Containment: Catalog (Database) contains Schemas.",
+            "typeVersion": "1.0",
+            "relationshipCategory": "AGGREGATION",
+            "relationshipLabel": "__Database.schemas",
+            "serviceType": "atlan",
+            "endDef1": {
+                "type": "Database",
+                "name": "schemas",
+                "description": "Schemas that exist within this catalog.",
+                "isContainer": true,
+                "cardinality": "SET",
+                "isLegacyAttribute": true
+            },
+            "endDef2": {
+                "type": "Schema",
+                "name": "database",
+                "description": "Catalog in which this schema exists.",
+                "isContainer": false,
+                "cardinality": "SINGLE",
+                "isLegacyAttribute": true
+            },
+            "propagateTags": "ONE_TO_TWO"
+        }
+    ]
+}

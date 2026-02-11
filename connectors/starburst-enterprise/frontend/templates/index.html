@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starburst Enterprise App</title>
+    <link rel="icon" type="image/png" sizes="96x96" href="https://atlan.com/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://atlan.com/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://atlan.com/favicon-16x16.png">
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+    <script>
+        window.env = {
+          APP_HTTP_HOST: "{{ app_http_host }}",
+          APP_HTTP_PORT: "{{ app_http_port }}",
+          APP_DASHBOARD_HTTP_HOST: "{{ app_dashboard_http_host }}",
+          APP_DASHBOARD_HTTP_PORT: "{{ app_dashboard_http_port }}",
+          TENANT_ID: "{{ tenant_id }}",
+          APP_NAME: "{{ app_name }}",
+          TEMPORAL_UI_HOST: "{{ workflow_ui_host }}",
+          TEMPORAL_UI_PORT: "{{ workflow_ui_port }}",
+        }
+    </script>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-container">
+                <img src="https://www.starburst.io/wp-content/uploads/2024/01/icon-starburst.svg" alt="Starburst Logo" class="logo" width="80" height="80">
+                <h1>Starburst Enterprise</h1>
+            </div>
+            <div class="doc-link">
+                <a href="https://docs.starburst.io/latest/" target="_blank" class="doc-link-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span>Documentation</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="step-list">
+                    <div class="step active" data-step="1" onclick="goToPage(1)">
+                        <div class="step-indicator">1</div>
+                        <span>Credential</span>
+                    </div>
+                    <div class="step" data-step="2" onclick="goToPage(2)">
+                        <div class="step-indicator">2</div>
+                        <span>Connection</span>
+                    </div>
+                    <div class="step" data-step="3" onclick="goToPage(3)">
+                        <div class="step-indicator">3</div>
+                        <span>Metadata</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-content">
+                <!-- Page 1: Credentials -->
+                <div class="page" id="page1">
+                    <h2>SEP Credentials</h2>
+                    <p>Enter your Starburst Enterprise connection credentials (Basic/LDAP).</p>
+                    <div class="form-group">
+                        <label for="host">Host</label>
+                        <input type="text" id="host" placeholder="sep.example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="port">Port</label>
+                        <input type="text" id="port" placeholder="8080" value="8080">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="admin">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <label for="httpScheme">HTTP Scheme</label>
+                        <select id="httpScheme">
+                            <option value="https">HTTPS</option>
+                            <option value="http">HTTP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <input type="text" id="role" placeholder="sysadmin" value="sysadmin">
+                    </div>
+                    <div class="button-group">
+                        <button type="button" onclick="testAuth()" id="testAuthBtn">Test Authentication</button>
+                        <button type="button" onclick="goToPage(2)" class="next-btn">Next</button>
+                    </div>
+                    <div id="authResult" class="result-box" style="display:none;"></div>
+                </div>
+
+                <!-- Page 2: Connection / Catalog Selection -->
+                <div class="page" id="page2" style="display:none;">
+                    <h2>Connection Settings</h2>
+                    <p>Select the catalogs and schemas to extract metadata from.</p>
+                    <div class="form-group">
+                        <label for="catalog">Default Catalog</label>
+                        <input type="text" id="catalog" placeholder="tpch" value="tpch">
+                    </div>
+                    <div class="button-group">
+                        <button type="button" onclick="goToPage(1)" class="back-btn">Back</button>
+                        <button type="button" onclick="fetchMetadata()" id="fetchMetaBtn">Fetch Metadata</button>
+                        <button type="button" onclick="goToPage(3)" class="next-btn">Next</button>
+                    </div>
+                    <div id="metadataResult" class="result-box" style="display:none;"></div>
+                </div>
+
+                <!-- Page 3: Run Workflow -->
+                <div class="page" id="page3" style="display:none;">
+                    <h2>Run Extraction</h2>
+                    <p>Start the hybrid metadata extraction workflow (REST API + SQL).</p>
+                    <div class="button-group">
+                        <button type="button" onclick="goToPage(2)" class="back-btn">Back</button>
+                        <button type="button" onclick="preflightCheck()" id="preflightBtn">Preflight Check</button>
+                        <button type="button" onclick="startWorkflow()" id="startBtn" class="primary-btn">Start Extraction</button>
+                    </div>
+                    <div id="preflightResult" class="result-box" style="display:none;"></div>
+                    <div id="workflowResult" class="result-box" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Workflow Started!</h2>
+            <p>Your extraction workflow is running.</p>
+            <a id="temporalLink" target="_blank" href="">View in Temporal UI</a>
+            <button onclick="document.getElementById('successModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+</body>
+</html>

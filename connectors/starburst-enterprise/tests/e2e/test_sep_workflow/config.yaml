@@ -1,0 +1,21 @@
+# E2E test configuration for Starburst Enterprise connector
+credentials:
+  host: "localhost"
+  port: 8080
+  username: "admin"
+  password: "admin"
+  http_scheme: "http"
+  catalog: "tpch"
+  role: "sysadmin"
+
+metadata:
+  include_catalogs: []
+  exclude_catalogs: ["system"]
+  include_schemas: []
+  exclude_schemas: ["information_schema"]
+
+# Catalogs to extract from (populated during preflight)
+catalogs:
+  - "tpch"
+
+output_path: "./local/dapr/objectstore/artifacts/apps/starburst-enterprise/workflows"

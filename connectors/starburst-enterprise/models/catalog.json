@@ -1,0 +1,26 @@
+{
+    "entityDefs": [
+        {
+            "superTypes": [
+                "SQL"
+            ],
+            "name": "Database",
+            "description": "Starburst Enterprise Catalog - top-level container for schemas.",
+            "typeVersion": "1.0",
+            "serviceType": "atlan",
+            "attributeDefs": [
+                {
+                    "name": "schemaCount",
+                    "description": "Number of schemas in this catalog.",
+                    "typeName": "int",
+                    "isOptional": true,
+                    "cardinality": "SINGLE",
+                    "isUnique": false,
+                    "skipScrubbing": true,
+                    "isIndexable": true,
+                    "includeInNotification": true
+                }
+            ]
+        }
+    ]
+}
