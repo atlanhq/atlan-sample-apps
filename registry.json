@@ -1,0 +1,50 @@
+{
+  "templates": {
+    "generic": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/templates/generic"
+    },
+    "extractor": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/generics.zip",
+      "path": "atlan-sample-apps-generics/templates/generic-extractor-app"
+    }
+  },
+  "samples": {
+    "aigiphymessenger": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/ai_giphy"
+    },
+    "helloworld": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/hello_world"
+    },
+    "giphy": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/giphy"
+    },
+    "polyglot": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/polyglot"
+    },
+    "anaplan": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/connectors/anaplan"
+    },
+    "mysql": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/connectors/mysql"
+    },
+    "workflowobservability": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/utilities/workflows_observability"
+    },
+    "assetdescriptorreminder": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/utilities/asset_descriptor_reminder"
+    },
+    "freshnessmonitor": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/utilities/freshness_monitor"
+    }
+  }
+}

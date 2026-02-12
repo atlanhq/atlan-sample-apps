@@ -1,0 +1,140 @@
+name: Generate Registry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/atlan-app-registry.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # Branches to scan for atlan-app-registry.json files.
+  # Add new branches here when templates/samples live outside main.
+  SCAN_BRANCHES: |-
+    main
+
+jobs:
+  generate-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Generate registry.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          REPO="${{ github.repository }}"
+          REGISTRY_FILE="registry.json"
+
+          # Initialize registry structure
+          echo '{"templates":{},"samples":{}}' > "$REGISTRY_FILE"
+
+          while IFS= read -r BRANCH; do
+            [ -z "$BRANCH" ] && continue
+            echo "Scanning branch: $BRANCH"
+
+            # Get the commit SHA for this branch
+            TREE_SHA=$(gh api "repos/${REPO}/branches/${BRANCH}" --jq '.commit.sha' 2>/dev/null || true)
+
+            if [ -z "$TREE_SHA" ]; then
+              echo "  WARNING: Branch $BRANCH not found, skipping"
+              continue
+            fi
+
+            # Find all atlan-app-registry.json files in this branch
+            MANIFEST_PATHS=$(gh api "repos/${REPO}/git/trees/${TREE_SHA}?recursive=1" \
+              --jq '.tree[] | select(.path | endswith("/atlan-app-registry.json")) | .path' 2>/dev/null || true)
+
+            if [ -z "$MANIFEST_PATHS" ]; then
+              echo "  No atlan-app-registry.json files found"
+              continue
+            fi
+
+            while IFS= read -r MANIFEST_PATH; do
+              echo "  Found: $MANIFEST_PATH"
+
+              # Fetch manifest content (base64-encoded from GitHub API)
+              MANIFEST_CONTENT=$(gh api "repos/${REPO}/contents/${MANIFEST_PATH}?ref=${BRANCH}" \
+                --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
+
+              if [ -z "$MANIFEST_CONTENT" ]; then
+                echo "  WARNING: Could not read $MANIFEST_PATH on branch $BRANCH, skipping"
+                continue
+              fi
+
+              # Parse manifest fields
+              NAME=$(echo "$MANIFEST_CONTENT" | jq -r '.name // empty' 2>/dev/null || true)
+              TYPE=$(echo "$MANIFEST_CONTENT" | jq -r '.type // empty' 2>/dev/null || true)
+              PUBLISHED=$(echo "$MANIFEST_CONTENT" | jq -r '.published // false' 2>/dev/null || true)
+
+              # Validate required fields
+              if [ -z "$NAME" ] || [ -z "$TYPE" ]; then
+                echo "  WARNING: Missing name or type in $MANIFEST_PATH on branch $BRANCH, skipping"
+                continue
+              fi
+
+              if [ "$PUBLISHED" != "true" ]; then
+                echo "  Skipping $NAME (published: false)"
+                continue
+              fi
+
+              if [ "$TYPE" != "template" ] && [ "$TYPE" != "sample" ]; then
+                echo "  WARNING: Invalid type '$TYPE' in $MANIFEST_PATH on branch $BRANCH, skipping"
+                continue
+              fi
+
+              # Derive zipUrl and path from branch and manifest location
+              ZIP_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip"
+              REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+              SAFE_BRANCH=$(echo "$BRANCH" | tr '/' '-')
+              DIR_PATH=$(dirname "$MANIFEST_PATH")
+              ARCHIVE_PATH="${REPO_NAME}-${SAFE_BRANCH}/${DIR_PATH}"
+
+              # Add to registry under the appropriate key (templates or samples)
+              REGISTRY_KEY="${TYPE}s"
+              jq --arg key "$REGISTRY_KEY" \
+                 --arg name "$NAME" \
+                 --arg zipUrl "$ZIP_URL" \
+                 --arg path "$ARCHIVE_PATH" \
+                '.[$key][$name] = {"zipUrl": $zipUrl, "path": $path}' \
+                "$REGISTRY_FILE" > "${REGISTRY_FILE}.tmp" && mv "${REGISTRY_FILE}.tmp" "$REGISTRY_FILE"
+
+              echo "  Added: $NAME ($TYPE) from branch $BRANCH"
+
+            done <<< "$MANIFEST_PATHS"
+          done <<< "$SCAN_BRANCHES"
+
+          echo ""
+          echo "Generated registry.json:"
+          jq . "$REGISTRY_FILE"
+
+          # Validate the output
+          TEMPLATE_COUNT=$(jq '.templates | length' "$REGISTRY_FILE")
+          SAMPLE_COUNT=$(jq '.samples | length' "$REGISTRY_FILE")
+          echo ""
+          echo "Registry contains $TEMPLATE_COUNT templates and $SAMPLE_COUNT samples"
+
+          if [ "$TEMPLATE_COUNT" -eq 0 ] && [ "$SAMPLE_COUNT" -eq 0 ]; then
+            echo "ERROR: Registry is empty, something went wrong"
+            exit 1
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add registry.json
+          if git diff --cached --quiet; then
+            echo "No changes to registry.json"
+          else
+            git commit -m "chore: auto-generate registry.json from manifest files"
+            git push
+          fi
