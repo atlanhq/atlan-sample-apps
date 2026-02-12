@@ -2,7 +2,7 @@ name: Generate Registry
 
 on:
   push:
-    branches: [main, generics]
+    branches: [main]
     paths:
       - "**/atlan-app-registry.json"
   workflow_dispatch:
@@ -15,7 +15,6 @@ env:
   # Add new branches here when templates/samples live outside main.
   SCAN_BRANCHES: |-
     main
-    generics
 
 jobs:
   generate-registry:
