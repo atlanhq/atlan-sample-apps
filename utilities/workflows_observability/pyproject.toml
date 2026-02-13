@@ -10,7 +10,7 @@ dependencies = [
     "atlan-application-sdk[tests,workflows]==2.3.1",
     "httpx~=0.28.1",
     "poethepoet",
-    "pyarrow>=23.0.0",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]
@@ -68,5 +68,6 @@ packages = [
 
 # for local development
 [tool.uv.sources]
+atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "22a55e7ef17bf9e5db0b03c442f544f5cba4abc3" }
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
 # atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" }
