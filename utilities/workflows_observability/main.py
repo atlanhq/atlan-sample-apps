@@ -1,6 +1,7 @@
 import asyncio
 
 from app.activities import WorkflowsObservabilityActivities
+from app.handler import WorkflowsObservabilityHandler
 from app.workflow import WorkflowsObservabilityWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.logger_adaptor import get_logger
@@ -13,7 +14,9 @@ APPLICATION_NAME = "workflows-observability"
 async def main():
     logger.info("Starting workflows observability application")
     # initialize application
-    app = BaseApplication(name=APPLICATION_NAME)
+    app = BaseApplication(
+        name=APPLICATION_NAME, handler_class=WorkflowsObservabilityHandler
+    )
 
     # setup workflow
     await app.setup_workflow(
