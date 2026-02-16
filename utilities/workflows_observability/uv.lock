@@ -131,7 +131,7 @@ wheels = [
 [[package]]
 name = "atlan-application-sdk"
 version = "2.3.3"
-source = { git = "https://github.com/atlanhq/application-sdk?rev=22a55e7ef17bf9e5db0b03c442f544f5cba4abc3#22a55e7ef17bf9e5db0b03c442f544f5cba4abc3" }
+source = { git = "https://github.com/atlanhq/application-sdk?rev=7267a3f231735257b1ddad8ae79503e1f6f080d0#7267a3f231735257b1ddad8ae79503e1f6f080d0" }
 dependencies = [
     { name = "aiohttp" },
     { name = "duckdb" },
@@ -2766,7 +2766,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], git = "https://github.com/atlanhq/application-sdk?rev=22a55e7ef17bf9e5db0b03c442f544f5cba4abc3" },
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], git = "https://github.com/atlanhq/application-sdk?rev=7267a3f231735257b1ddad8ae79503e1f6f080d0" },
     { name = "httpx", specifier = "~=0.28.1" },
     { name = "poethepoet" },
     { name = "pyyaml", specifier = ">=6.0" },
