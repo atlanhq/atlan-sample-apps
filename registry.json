@@ -1,0 +1,46 @@
+{
+  "templates": {
+    "generic": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/templates/generic"
+    }
+  },
+  "samples": {
+    "anaplan": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/connectors/anaplan"
+    },
+    "mysql": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/connectors/mysql"
+    },
+    "aigiphymessenger": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/ai_giphy"
+    },
+    "giphy": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/giphy"
+    },
+    "helloworld": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/hello_world"
+    },
+    "polyglot": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/quickstart/polyglot"
+    },
+    "assetdescriptorreminder": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/utilities/asset_descriptor_reminder"
+    },
+    "freshnessmonitor": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/utilities/freshness_monitor"
+    },
+    "workflowobservability": {
+      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
+      "path": "atlan-sample-apps-main/utilities/workflows_observability"
+    }
+  }
+}
