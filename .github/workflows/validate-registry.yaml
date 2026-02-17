@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "**/atlan-app-registry.json"
+      - "scripts/generate-registry.sh"
       - ".github/workflows/validate-registry.yaml"
 
 permissions:
@@ -115,3 +116,19 @@ jobs:
 
           echo ""
           echo "All manifests are valid"
+
+      - name: Verify registry.json is up to date
+        run: |
+          bash scripts/generate-registry.sh \
+            "${{ github.repository }}" \
+            "main"
+          if ! git diff --quiet registry.json; then
+            echo "ERROR: registry.json is out of date."
+            echo "The generate-registry workflow should have updated it automatically."
+            echo "If you're seeing this, re-run the 'Generate Registry' workflow on your PR."
+            echo ""
+            echo "Diff:"
+            git diff registry.json
+            exit 1
+          fi
+          echo "registry.json is up to date"

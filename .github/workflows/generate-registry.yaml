@@ -1,245 +1,45 @@
 name: Generate Registry
 
 on:
-  push:
+  pull_request:
     branches: [main]
     paths:
       - "**/atlan-app-registry.json"
+      - "scripts/generate-registry.sh"
       - ".github/workflows/generate-registry.yaml"
   workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
-
-env:
-  # Branches to scan for atlan-app-registry.json files.
-  # Add new branches here when templates/samples live outside main.
-  SCAN_BRANCHES: |-
-    main
-
-  REQUIRED_FIELDS: "name type published"
-  ALLOWED_TYPES: "template sample"
-  ALLOWED_PUBLISHED: "true false"
 
 jobs:
   generate-registry:
     runs-on: ubuntu-latest
+    # Don't run on PRs from forks (token won't have push access)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.ORG_PAT_GITHUB }}
 
       - name: Generate registry.json
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
+          bash scripts/generate-registry.sh \
+            "${{ github.repository }}" \
+            "main"
 
-          REPO="${{ github.repository }}"
-          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
-          REGISTRY_FILE="registry.json"
-
-          echo '{"templates":{},"samples":{}}' > "$REGISTRY_FILE"
-
-          SEEN_NAMES=""
-          ERRORS=0
-
-          while IFS= read -r BRANCH; do
-            [ -z "$BRANCH" ] && continue
-            echo "Scanning branch: $BRANCH"
-            SAFE_BRANCH=$(echo "$BRANCH" | tr '/' '-')
-
-            TREE_SHA=$(gh api "repos/${REPO}/branches/${BRANCH}" --jq '.commit.sha' 2>/dev/null || true)
-
-            if [ -z "$TREE_SHA" ]; then
-              echo "  WARNING: Branch $BRANCH not found, skipping"
-              continue
-            fi
-
-            MANIFEST_PATHS=$(gh api "repos/${REPO}/git/trees/${TREE_SHA}?recursive=1" \
-              --jq '.tree[] | select(.path | endswith("/atlan-app-registry.json")) | .path' 2>/dev/null || true)
-
-            if [ -z "$MANIFEST_PATHS" ]; then
-              echo "  No atlan-app-registry.json files found"
-              continue
-            fi
-
-            while IFS= read -r MANIFEST_PATH; do
-              echo "  Found: $MANIFEST_PATH"
-
-              MANIFEST_CONTENT=$(gh api "repos/${REPO}/contents/${MANIFEST_PATH}?ref=${BRANCH}" \
-                --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
-
-              if [ -z "$MANIFEST_CONTENT" ]; then
-                echo "  WARNING: Could not read $MANIFEST_PATH, skipping"
-                continue
-              fi
-
-              # --- JSON validation ---
-
-              if ! echo "$MANIFEST_CONTENT" | jq empty 2>/dev/null; then
-                echo "  ERROR: Invalid JSON in $MANIFEST_PATH on branch $BRANCH"
-                ERRORS=$((ERRORS + 1))
-                continue
-              fi
-
-              # --- Reject unknown fields ---
-
-              ACTUAL_FIELDS=$(echo "$MANIFEST_CONTENT" | jq -r 'keys[]' 2>/dev/null)
-              for FIELD in $ACTUAL_FIELDS; do
-                if ! echo "$REQUIRED_FIELDS" | grep -qw "$FIELD"; then
-                  echo "  ERROR: Unknown field '$FIELD' in $MANIFEST_PATH on branch $BRANCH (allowed: $REQUIRED_FIELDS)"
-                  ERRORS=$((ERRORS + 1))
-                fi
-              done
-
-              # --- Check required fields and read values ---
-
-              declare -A FIELDS
-              MANIFEST_VALID=true
-              for FIELD in $REQUIRED_FIELDS; do
-                FIELDS[$FIELD]=$(echo "$MANIFEST_CONTENT" | jq -r --arg f "$FIELD" '.[$f] // empty' 2>/dev/null || true)
-                if [ -z "${FIELDS[$FIELD]}" ]; then
-                  echo "  ERROR: Missing required field '$FIELD' in $MANIFEST_PATH on branch $BRANCH"
-                  ERRORS=$((ERRORS + 1))
-                  MANIFEST_VALID=false
-                fi
-              done
-
-              NAME="${FIELDS[name]}"
-              TYPE="${FIELDS[type]}"
-              PUBLISHED="${FIELDS[published]}"
-
-              # --- Validate field values ---
-
-              if [ -n "$TYPE" ] && ! echo "$ALLOWED_TYPES" | grep -qw "$TYPE"; then
-                echo "  ERROR: Invalid type '$TYPE' in $MANIFEST_PATH on branch $BRANCH (must be one of: $ALLOWED_TYPES)"
-                ERRORS=$((ERRORS + 1))
-                MANIFEST_VALID=false
-              fi
-
-              if [ -n "$PUBLISHED" ] && ! echo "$ALLOWED_PUBLISHED" | grep -qw "$PUBLISHED"; then
-                echo "  ERROR: Invalid published value '$PUBLISHED' in $MANIFEST_PATH on branch $BRANCH (must be one of: $ALLOWED_PUBLISHED)"
-                ERRORS=$((ERRORS + 1))
-                MANIFEST_VALID=false
-              fi
-
-              if [ "$MANIFEST_VALID" != "true" ]; then
-                continue
-              fi
-
-              if [ "$PUBLISHED" != "true" ]; then
-                echo "  Skipping $NAME (published: false)"
-                continue
-              fi
-
-              # --- Duplicate detection ---
-
-              QUALIFIED_NAME="${TYPE}:${NAME}"
-              if echo "$SEEN_NAMES" | grep -qw "$QUALIFIED_NAME"; then
-                echo "  ERROR: Duplicate name '$NAME' for type '$TYPE' in $MANIFEST_PATH on branch $BRANCH"
-                ERRORS=$((ERRORS + 1))
-                continue
-              fi
-              SEEN_NAMES="$SEEN_NAMES $QUALIFIED_NAME"
-
-              # --- Add to registry ---
-
-              ZIP_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip"
-              DIR_PATH=$(dirname "$MANIFEST_PATH")
-              ARCHIVE_PATH="${REPO_NAME}-${SAFE_BRANCH}/${DIR_PATH}"
-
-              REGISTRY_KEY="${TYPE}s"
-              jq --arg key "$REGISTRY_KEY" \
-                 --arg name "$NAME" \
-                 --arg zipUrl "$ZIP_URL" \
-                 --arg path "$ARCHIVE_PATH" \
-                '.[$key][$name] = {"zipUrl": $zipUrl, "path": $path}' \
-                "$REGISTRY_FILE" > "${REGISTRY_FILE}.tmp" && mv "${REGISTRY_FILE}.tmp" "$REGISTRY_FILE"
-
-              echo "  Added: $NAME ($TYPE) from branch $BRANCH"
-
-            done <<< "$MANIFEST_PATHS"
-          done <<< "$SCAN_BRANCHES"
-
-          # Fail if any manifest had errors
-          if [ "$ERRORS" -gt 0 ]; then
-            echo ""
-            echo "ERROR: Registry generation failed with $ERRORS error(s)"
-            exit 1
-          fi
-
-          # --- Output validation ---
-
-          echo ""
-          echo "Generated registry.json:"
-          jq . "$REGISTRY_FILE"
-
-          if ! jq empty "$REGISTRY_FILE" 2>/dev/null; then
-            echo "ERROR: Generated registry.json is not valid JSON"
-            exit 1
-          fi
-
-          TEMPLATE_COUNT=$(jq '.templates | length' "$REGISTRY_FILE")
-          SAMPLE_COUNT=$(jq '.samples | length' "$REGISTRY_FILE")
-          echo ""
-          echo "Registry contains $TEMPLATE_COUNT templates and $SAMPLE_COUNT samples"
-
-          if [ "$TEMPLATE_COUNT" -eq 0 ] && [ "$SAMPLE_COUNT" -eq 0 ]; then
-            echo "ERROR: Registry is empty, something went wrong"
-            exit 1
-          fi
-
-          INVALID=$(jq -r '
-            [.templates, .samples] | add | to_entries[] |
-            select(.value.zipUrl == null or .value.path == null) |
-            .key
-          ' "$REGISTRY_FILE")
-
-          if [ -n "$INVALID" ]; then
-            echo "ERROR: The following entries are missing zipUrl or path:"
-            echo "$INVALID"
-            exit 1
-          fi
-
-          echo "Output validation passed"
-
-      - name: Create PR if registry changed
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push if changed
         run: |
-          BRANCH_NAME="chore/auto-generate-registry"
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add registry.json
-          if git diff --cached --quiet; then
-            echo "No changes to registry.json"
-            exit 0
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: auto-regenerate registry.json"
+            git push
+          else
+            echo "registry.json is already up to date"
           fi
-
-          # Check if branch already exists on remote and delete it
-          # (stale from a previous run that was never merged)
-          if git ls-remote --heads origin "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
-            git push origin --delete "$BRANCH_NAME"
-          fi
-
-          git checkout -b "$BRANCH_NAME"
-          git commit -m "chore: auto-generate registry.json from manifest files"
-          git push origin "$BRANCH_NAME"
-
-          gh pr create \
-            --base main \
-            --head "$BRANCH_NAME" \
-            --title "chore: auto-generate registry.json" \
-            --body "$(cat <<'EOF'
-          Auto-generated by the `generate-registry` workflow.
-
-          This PR updates `registry.json` based on the latest `atlan-app-registry.json` manifest files.
-
-          > **Do not edit `registry.json` manually.** It is fully generated from per-app manifests.
-          EOF
-          )"
