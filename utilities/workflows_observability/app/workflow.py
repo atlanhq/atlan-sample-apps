@@ -36,19 +36,32 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
-        workflow.logger.info(f"Workflow args: {workflow_args}")
+        # Merge workflow_config directly to ensure Argo inputs take precedence
+        # This ensures values from Argo workflow-arguments are used over state store defaults
+        if workflow_config:
+            workflow_args.update(workflow_config)
+
+        workflow.logger.info(f"Merged workflow_args: {workflow_args}")
+
         selected_date: str = workflow_args.get(
-            "selectedDate", date.today().strftime("%Y-%m-%d")
+            "selected_date", date.today().strftime("%Y-%m-%d")
         )
         workflow.logger.info(f"Selected date: {selected_date}")
-        output_prefix: str = workflow_args.get("outputPrefix", "")
+        output_prefix: str = workflow_args.get("output_prefix", "")
         workflow.logger.info(f"Output prefix: {output_prefix}")
+
+        # Extract Atlan credentials from workflow config (optional, falls back to env vars)
+        atlan_base_url: str = workflow_args.get("atlan_base_url")
+        atlan_api_key: str = workflow_args.get("atlan_api_key")
+
         workflow.logger.info("Starting workflows observability workflow")
 
         run_input = FetchWorkflowsRunInput(
             selected_date=selected_date,
             output_prefix=output_prefix,
             size=10,
+            atlan_base_url=atlan_base_url,
+            atlan_api_key=atlan_api_key,
         )
         total = 0
         while True:
