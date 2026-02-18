@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
 from app.helpers import (
     create_local_directory,
@@ -27,12 +28,16 @@ class FetchWorkflowsRunInput:
         output_prefix (str): The prefix or path for output storage.
         start (int): The starting index for pagination.
         size (int): The number of results to fetch per page.
+        atlan_base_url (str, optional): The Atlan base URL. If not provided, will use ATLAN_BASE_URL environment variable.
+        atlan_api_key (str, optional): The Atlan API key. If not provided, will use ATLAN_API_KEY environment variable.
     """
 
     selected_date: str
     output_prefix: str
     start: int = 0
     size: int = 1
+    atlan_base_url: Optional[str] = None
+    atlan_api_key: Optional[str] = None
 
 
 class WorkflowsObservabilityActivities(ActivitiesInterface):
@@ -67,7 +72,10 @@ class WorkflowsObservabilityActivities(ActivitiesInterface):
                     f"Can't fetch workflow runs since the given date, {input_date}, is in the future."
                 )
                 return 0
-            client = await get_async_client()
+            client = await get_async_client(
+                base_url=input.atlan_base_url,
+                api_key=input.atlan_api_key,
+            )
             from pyatlan.model.enums import AtlanWorkflowPhase
 
             logger.info(

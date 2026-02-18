@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workflows-observability
+  labels:
+    workflows.argoproj.io/configmap-type: Parameter
+data:
+  config: |
+    {
+      "properties": {
+        "atlan-base-url": {
+          "type": "string",
+          "required": true,
+          "ui": {
+            "widget": "input",
+            "label": "Atlan Base URL",
+            "hidden": false,
+            "help": "",
+            "grid": 8
+          }
+        },
+        "atlan-api-key": {
+          "type": "string",
+          "required": true,
+          "ui": {
+            "widget": "input",
+            "label": "Atlan API Key",
+            "hidden": false,
+            "help": "Enter the Atlan API Key",
+            "grid": 4
+          }
+        },
+        "workflow-date": {
+          "type": "number",
+          "required": true,
+          "ui": {
+            "widget": "date",
+            "label": "Workflow Date",
+            "hidden": false,
+            "help": "Extract workflows from this date",
+            "grid": 4,
+            "min": -365,
+            "max": 0,
+            "default": -1
+          }
+        },
+        "output-prefix": {
+          "type": "string",
+          "required": false,
+          "ui": {
+            "widget": "input",
+            "label": "Output Prefix",
+            "hidden": false,
+            "help": "Enter the output prefix",
+            "grid": 4
+          }
+        }
+      },
+      "anyOf": [],
+      "steps": [
+        {
+          "title": "Atlan Tenant Details",
+          "description": "Atlan Tenant Details",
+          "id": "atlan-tenant-details",
+          "properties": [
+            "atlan-base-url",
+            "atlan-api-key"
+          ]
+        },
+
+        {
+          "title": "Workflow Details",
+          "description": "Workflow Details",
+          "id": "workflow-details",
+          "properties": [
+            "workflow-date",
+            "output-prefix"
+          ]
+        }
+      ]
+    }
