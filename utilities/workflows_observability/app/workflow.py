@@ -24,6 +24,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             workflow_config (Dict[str, Any]): The configuration dictionary for the workflow.
 
         """
+        workflow.logger.info(f"Original Workflow config: {workflow_config}")
         retry_policy = RetryPolicy(
             maximum_attempts=6,  # 1 initial attempt + 5 retries
             backoff_coefficient=2,
@@ -36,6 +37,7 @@ class WorkflowsObservabilityWorkflow(WorkflowInterface):
             retry_policy=retry_policy,
             start_to_close_timeout=timedelta(seconds=10),
         )
+        workflow.logger.info(f"Workflow args: {workflow_args}")
         # Merge workflow_config directly to ensure Argo inputs take precedence
         # This ensures values from Argo workflow-arguments are used over state store defaults
         if workflow_config:
