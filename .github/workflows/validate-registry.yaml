@@ -1,42 +1,33 @@
-name: Validate Registry
+name: Validate Manifests
 
 on:
   pull_request:
     branches: [main]
     paths:
       - "**/atlan-app-registry.json"
-      - ".github/workflows/generate-registry.yaml"
+      - "scripts/generate-registry.sh"
       - ".github/workflows/validate-registry.yaml"
 
 permissions:
   contents: read
 
 env:
-  # Must match SCAN_BRANCHES in generate-registry.yaml.
-  SCAN_BRANCHES: |-
-    main
-
   REQUIRED_FIELDS: "name type published"
   ALLOWED_TYPES: "template sample"
   ALLOWED_PUBLISHED: "true false"
 
 jobs:
-  validate-and-dry-run:
-    name: Validate Manifests & Dry-Run Generation
+  validate-manifests:
+    name: Validate Manifests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
 
-      - name: Validate manifests and generate registry (dry-run)
+      - name: Validate all atlan-app-registry.json manifests
         run: |
           set -euo pipefail
-
-          REPO="${{ github.repository }}"
-          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
-          REGISTRY_FILE="registry-dry-run.json"
-          echo '{"templates":{},"samples":{}}' > "$REGISTRY_FILE"
 
           SEEN_NAMES=""
           ERRORS=0
@@ -100,12 +91,7 @@ jobs:
               MANIFEST_VALID=false
             fi
 
-            # Skip from registry generation if invalid or unpublished
             if [ "$MANIFEST_VALID" != "true" ]; then
-              continue
-            fi
-            if [ "$PUBLISHED" != "true" ]; then
-              echo "  OK (skipped, published=false)"
               continue
             fi
 
@@ -119,60 +105,30 @@ jobs:
             fi
             SEEN_NAMES="$SEEN_NAMES $QUALIFIED_NAME"
 
-            # --- Dry-run registry generation (iterate over SCAN_BRANCHES) ---
-
-            while IFS= read -r BRANCH; do
-              [ -z "$BRANCH" ] && continue
-              SAFE_BRANCH=$(echo "$BRANCH" | tr '/' '-')
-              DIR_PATH=$(echo "$MANIFEST" | sed 's|^\./||' | xargs dirname)
-              ZIP_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip"
-              ARCHIVE_PATH="${REPO_NAME}-${SAFE_BRANCH}/${DIR_PATH}"
-
-              REGISTRY_KEY="${TYPE}s"
-              jq --arg key "$REGISTRY_KEY" \
-                 --arg name "$NAME" \
-                 --arg zipUrl "$ZIP_URL" \
-                 --arg path "$ARCHIVE_PATH" \
-                '.[$key][$name] = {"zipUrl": $zipUrl, "path": $path}' \
-                "$REGISTRY_FILE" > "${REGISTRY_FILE}.tmp" && mv "${REGISTRY_FILE}.tmp" "$REGISTRY_FILE"
-            done <<< "$SCAN_BRANCHES"
-
             echo "  OK: name=$NAME type=$TYPE published=$PUBLISHED"
           done
 
-          # Fail if any manifest had errors
           if [ "$ERRORS" -gt 0 ]; then
             echo ""
             echo "Validation failed with $ERRORS error(s)"
             exit 1
           fi
 
-          # Validate the generated registry
           echo ""
-          echo "Dry-run generated registry:"
-          jq . "$REGISTRY_FILE"
+          echo "All manifests are valid"
 
-          TEMPLATE_COUNT=$(jq '.templates | length' "$REGISTRY_FILE")
-          SAMPLE_COUNT=$(jq '.samples | length' "$REGISTRY_FILE")
-          echo ""
-          echo "Registry would contain $TEMPLATE_COUNT templates and $SAMPLE_COUNT samples"
-
-          if [ "$TEMPLATE_COUNT" -eq 0 ] && [ "$SAMPLE_COUNT" -eq 0 ]; then
-            echo "ERROR: Generated registry is empty"
+      - name: Verify registry.json is up to date
+        run: |
+          bash scripts/generate-registry.sh \
+            "${{ github.repository }}" \
+            "main"
+          if ! git diff --quiet registry.json; then
+            echo "ERROR: registry.json is out of date."
+            echo "The generate-registry workflow should have updated it automatically."
+            echo "If you're seeing this, re-run the 'Generate Registry' workflow on your PR."
+            echo ""
+            echo "Diff:"
+            git diff registry.json
             exit 1
           fi
-
-          # Validate every entry has the fields the CLI expects
-          INVALID=$(jq -r '
-            [.templates, .samples] | add | to_entries[] |
-            select(.value.zipUrl == null or .value.path == null) |
-            .key
-          ' "$REGISTRY_FILE")
-
-          if [ -n "$INVALID" ]; then
-            echo "ERROR: The following entries are missing zipUrl or path:"
-            echo "$INVALID"
-            exit 1
-          fi
-
-          echo "All entries have required fields (zipUrl, path)"
+          echo "registry.json is up to date"
