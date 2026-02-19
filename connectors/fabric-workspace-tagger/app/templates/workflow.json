@@ -1,0 +1,69 @@
+{
+  "title": "Microsoft Fabric Workspace Tag Sync Configuration",
+  "description": "Configure synchronization of workspace metadata and tags from Microsoft Fabric / Power BI to Atlan",
+  "type": "object",
+  "required": [
+    "fabric_tenant_id",
+    "fabric_client_id",
+    "tag_namespace",
+    "capacity_tag_key",
+    "atlan_connection_qualified_name"
+  ],
+  "properties": {
+    "fabric_tenant_id": {
+      "type": "string",
+      "title": "Azure AD Tenant ID",
+      "description": "Azure Active Directory (Entra ID) tenant ID for authentication",
+      "minLength": 1,
+      "examples": ["00000000-0000-0000-0000-000000000000"]
+    },
+    "fabric_client_id": {
+      "type": "string",
+      "title": "Service Principal Client ID",
+      "description": "Azure AD application (service principal) client ID with Power BI Admin API access",
+      "minLength": 1,
+      "examples": ["11111111-1111-1111-1111-111111111111"]
+    },
+    "fabric_authority_url": {
+      "type": "string",
+      "title": "Azure AD Authority URL",
+      "description": "Azure AD authentication authority URL",
+      "default": "https://login.microsoftonline.com"
+    },
+    "fabric_scope": {
+      "type": "string",
+      "title": "OAuth Scope",
+      "description": "OAuth scope for Power BI / Fabric API access",
+      "default": "https://analysis.windows.net/powerbi/api/.default"
+    },
+    "tag_namespace": {
+      "type": "string",
+      "title": "Tag Namespace",
+      "description": "Prefix/namespace for tags managed by this app (e.g., 'capacity', 'pillar'). Tags from this namespace will be updated by the app.",
+      "minLength": 1,
+      "examples": ["capacity", "pillar", "fabric"]
+    },
+    "capacity_tag_key": {
+      "type": "string",
+      "title": "Capacity Tag Key",
+      "description": "Key to use for capacity tags (e.g., 'capacity'). Tags will be formatted as 'key:capacity_name'.",
+      "minLength": 1,
+      "default": "capacity",
+      "examples": ["capacity", "pbi_capacity"]
+    },
+    "atlan_connection_qualified_name": {
+      "type": "string",
+      "title": "Atlan Power BI Connection Qualified Name",
+      "description": "Qualified name of the Power BI connection in Atlan (e.g., 'default/powerbi/1234567890'). Used to locate PowerBIWorkspace assets.",
+      "minLength": 1,
+      "examples": ["default/powerbi/1234567890"]
+    },
+    "workspace_filter_regex": {
+      "type": "string",
+      "title": "Workspace Filter Regex (Optional)",
+      "description": "Optional regular expression to filter workspaces by name. Only matching workspaces will be processed.",
+      "examples": ["Manufacturing.*", "^(Sales|Finance).*"]
+    }
+  },
+  "additionalProperties": false
+}
