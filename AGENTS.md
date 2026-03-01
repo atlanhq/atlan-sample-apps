@@ -29,6 +29,7 @@ Recommended flow:
 7. `atlan-e2e-contract-validator`
 8. `atlan-cli-run-test-loop`
 9. `atlan-review-doc-sync`
+10. `atlan-sdk-update-automation` (for SDK dependency updates)
 
 ## Constraints
 - SDK and CLI repos are read-only references.
