@@ -1,6 +1,7 @@
 import asyncio
 
 from app.activities import HelloWorldActivities
+from app.handler import HelloWorldHandler
 from app.workflow import HelloWorldWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.decorators.observability_decorator import (
@@ -21,7 +22,7 @@ APPLICATION_NAME = "hello-world"
 async def main():
     logger.info("Starting hello world application")
     # initialize application
-    app = BaseApplication(name=APPLICATION_NAME)
+    app = BaseApplication(name=APPLICATION_NAME, handler_class=HelloWorldHandler)
 
     # setup workflow
     await app.setup_workflow(
@@ -32,7 +33,7 @@ async def main():
     await app.start_worker()
 
     # Setup the application server
-    await app.setup_server(workflow_class=HelloWorldWorkflow)
+    await app.setup_server(workflow_class=HelloWorldWorkflow, has_configmap=True)
 
     # start server
     await app.start_server()

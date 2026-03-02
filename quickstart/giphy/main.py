@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Dict
 
 from app.activities import GiphyActivities
+from app.handler import GiphyHandler
 from app.workflow import GiphyWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.decorators.observability_decorator import (
@@ -23,7 +24,7 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
     logger.info("Starting giphy application")
 
     # initialize application
-    app = BaseApplication(name=APPLICATION_NAME)
+    app = BaseApplication(name=APPLICATION_NAME, handler_class=GiphyHandler)
 
     # setup workflow
     await app.setup_workflow(
@@ -35,7 +36,7 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
     await app.start_worker()
 
     # Setup the application server
-    await app.setup_server(workflow_class=GiphyWorkflow)
+    await app.setup_server(workflow_class=GiphyWorkflow, has_configmap=True)
 
     # start server
     await app.start_server()

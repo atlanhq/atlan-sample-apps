@@ -7,6 +7,10 @@ updates:
     open-pull-requests-limit: 100
     allow:
       - dependency-type: "all"
+    ignore:
+      # SDK updates handled by custom workflow (sdk-update-check.yaml)
+      # which creates Linear issues for team review
+      - dependency-name: "atlan-application-sdk"
 
   - package-ecosystem: "github-actions"
     directory: "/"

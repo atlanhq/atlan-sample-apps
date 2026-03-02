@@ -1,0 +1,37 @@
+{
+  "id": "Giphy",
+  "name": "Giphy App",
+  "logo": "https://assets.atlan.com/assets/atlan-bot.svg",
+  "config": {
+    "properties": {
+      "search_term": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "label": "What kind of GIF are you looking for? 🔍",
+          "placeholder": "E.g., cats, dancing, high five...",
+          "grid": 8
+        }
+      },
+      "recipients": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "label": "Who should receive this awesome GIF? ✉️",
+          "placeholder": "email1@example.com, email2@example.com",
+          "help": "Separate multiple email addresses with commas",
+          "grid": 8
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "payload",
+        "properties": [
+          "search_term",
+          "recipients"
+        ]
+      }
+    ]
+  }
+}

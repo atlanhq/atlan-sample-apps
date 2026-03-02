@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Dict
 
 from app.activities import AIGiphyActivities
+from app.handler import AIGiphyHandler
 from app.workflow import AIGiphyWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.logger_adaptor import get_logger
@@ -15,7 +16,7 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
     logger.info("Starting giphy application")
 
     # initialize application
-    app = BaseApplication(name=APPLICATION_NAME)
+    app = BaseApplication(name=APPLICATION_NAME, handler_class=AIGiphyHandler)
 
     # setup workflow
     await app.setup_workflow(
@@ -37,7 +38,7 @@ async def main(daemon: bool = True) -> Dict[str, Any]:
 
     # start worker
     await app.start_worker()
-    await app.setup_server(workflow_class=AIGiphyWorkflow)
+    await app.setup_server(workflow_class=AIGiphyWorkflow, has_configmap=True)
 
     # start server
     await app.start_server()

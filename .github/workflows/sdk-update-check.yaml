@@ -1,0 +1,32 @@
+name: SDK Update Check
+
+on:
+  schedule:
+    # Run twice a week: Tuesday 9 AM UTC, Friday 9 AM UTC
+    - cron: '0 9 * * 2'
+    - cron: '0 9 * * 5'
+  workflow_dispatch: # Allow manual trigger for testing
+
+permissions:
+  contents: read
+
+jobs:
+  check-sdk-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Make script executable
+        run: chmod +x .github/scripts/check_sdk_update.py
+
+      - name: Check SDK updates and create Linear issue
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          LINEAR_TEAM_ID: ${{ secrets.LINEAR_TEAM_ID }}
+        run: python3 .github/scripts/check_sdk_update.py

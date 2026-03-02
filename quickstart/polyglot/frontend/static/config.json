@@ -1,0 +1,30 @@
+{
+  "id": "Polyglot",
+  "name": "Polyglot Demo",
+  "logo": "https://assets.atlan.com/assets/atlan-bot.svg",
+  "config": {
+    "properties": {
+      "number": {
+        "type": "integer",
+        "required": true,
+        "minimum": 0,
+        "maximum": 20,
+        "default": 5,
+        "ui": {
+          "label": "Enter a number (0-20)",
+          "placeholder": "Enter a number",
+          "help": "Python calling Java using JPype",
+          "grid": 8
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "payload",
+        "properties": [
+          "number"
+        ]
+      }
+    ]
+  }
+}

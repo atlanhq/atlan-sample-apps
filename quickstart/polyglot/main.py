@@ -8,6 +8,7 @@ from Python activities and workflows.
 import asyncio
 
 from app.activities import PolyglotActivities
+from app.handler import PolyglotHandler
 from app.workflow import PolyglotWorkflow
 from application_sdk.application import BaseApplication
 from application_sdk.observability.decorators.observability_decorator import (
@@ -40,7 +41,7 @@ async def main():
 
     try:
         # Initialize application
-        app = BaseApplication(name=APPLICATION_NAME)
+        app = BaseApplication(name=APPLICATION_NAME, handler_class=PolyglotHandler)
 
         # Setup workflow with activities
         await app.setup_workflow(
@@ -53,7 +54,7 @@ async def main():
 
         # Setup the application server
         logger.info("Setting up API server...")
-        await app.setup_server(workflow_class=PolyglotWorkflow)
+        await app.setup_server(workflow_class=PolyglotWorkflow, has_configmap=True)
 
         # Start the server
         logger.info("Starting API server on port 8000...")
