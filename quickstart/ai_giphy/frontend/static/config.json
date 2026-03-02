@@ -1,0 +1,27 @@
+{
+  "id": "AIGiphy",
+  "name": "AI Giphy App",
+  "logo": "https://assets.atlan.com/assets/atlan-bot.svg",
+  "config": {
+    "properties": {
+      "ai_input_string": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "label": "What do you want the AI to do? 🤖",
+          "placeholder": "E.g., Fetch an ironman gif and send it to test@example.com",
+          "help": "Describe what GIF to fetch and who to send it to.",
+          "grid": 8
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "payload",
+        "properties": [
+          "ai_input_string"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "HelloWorld",
+  "name": "Hello World",
+  "logo": "https://assets.atlan.com/assets/atlan-bot.svg",
+  "config": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "label": "Enter your name",
+          "placeholder": "for example, John Doe",
+          "grid": 8
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "payload",
+        "properties": [
+          "name"
+        ]
+      }
+    ]
+  }
+}
