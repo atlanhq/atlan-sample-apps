@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Dict, List, Set
 
 from app.clients import AppClient
+from app.constants import AnaplanUrls
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
@@ -33,7 +34,7 @@ async def extract_pages_data(client: AppClient) -> List[Dict[str, Any]]:
         page_data: List[Dict[str, Any]] = []
 
         # Extract page assets from Anaplan with pagination
-        url = f"https://{client.host}/a/springboard-definition-service/pages"
+        url = AnaplanUrls.springboard_pages(client.host)
         limit = 100
         offset = 0
 
@@ -98,7 +99,7 @@ async def get_page_details(client: AppClient, page: Dict[str, Any]) -> Dict[str,
     if not page_type or not page_guid:
         return page  # Return basic page data if pageType or guid is missing
 
-    detail_url = f"https://{client.host}/a/springboard-definition-service/{page_type}s/{page_guid}"
+    detail_url = AnaplanUrls.springboard_page_detail(client.host, page_type, page_guid)
 
     try:
         detail_response = await client.execute_http_get_request(detail_url)
@@ -181,10 +182,16 @@ async def extract_pages_with_details(
             f"Processing {len(valid_pages)} valid pages for detailed information"
         )
 
-        # Create tasks for all pages
-        tasks = [get_page_details(client, page) for page in valid_pages]
+        # Create tasks for all pages with concurrency limit
+        semaphore = asyncio.Semaphore(10)
 
-        # Execute all tasks concurrently
+        async def throttled_get_page_details(page: Dict[str, Any]) -> Dict[str, Any]:
+            async with semaphore:
+                return await get_page_details(client, page)
+
+        tasks = [throttled_get_page_details(page) for page in valid_pages]
+
+        # Execute all tasks concurrently (bounded by semaphore)
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle exceptions

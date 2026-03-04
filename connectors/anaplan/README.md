@@ -17,19 +17,24 @@ A powerful application that extracts metadata from Anaplan instances and transfo
 
 ## Quick Start
 
-1. **Download required components:**
+1. **Sync all libraries:**
+   ```bash
+   uv sync --all-groups --all-extras
+   ```
+
+2. **Download required components:**
    ```bash
    uv run poe download-components
    ```
 
-2. **Set up environment variables (see .env.example)**
+3. **Set up environment variables (see .env.example)**
 
-3. **Start dependencies (in separate terminal):**
+4. **Start dependencies (in separate terminal):**
    ```bash
    uv run poe start-deps
    ```
 
-4. **Run the application:**
+5. **Run the application:**
    ```bash
    uv run main.py
    ```
@@ -99,6 +104,7 @@ uv run pytest connectors/anaplan/tests/unit
 Make sure to have these environment variables set:
 ```bash
 export E2E_ANAPLAN_HOST=your-anaplan-host.com
+export E2E_ANAPLAN_AUTH_TYPE=basic
 export E2E_ANAPLAN_USERNAME=your-anaplan-username
 export E2E_ANAPLAN_PASSWORD=your-anaplan-password
 ```

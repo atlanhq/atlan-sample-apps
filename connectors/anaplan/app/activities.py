@@ -1,7 +1,8 @@
 import json
 import os
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, cast
 
+import daft
 import pandas as pd
 from app.clients import AppClient
 from app.extracts.apps import extract_apps_data
@@ -15,6 +16,7 @@ from application_sdk.activities.metadata_extraction.base import (
     BaseMetadataExtractionActivities,
     BaseMetadataExtractionActivitiesState,
 )
+from application_sdk.common.types import DataframeType
 from application_sdk.io.json import JsonFileWriter
 from application_sdk.io.parquet import ParquetFileReader
 from application_sdk.observability.logger_adaptor import get_logger
@@ -220,7 +222,7 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
                 await parquet_output.write(pandas_df)
 
                 logger.info(
-                    f"Successfully wrote {len(app_data)} apps to: {parquet_output.get_full_path()}"
+                    f"Successfully wrote {len(filtered_app_data)} apps to: {parquet_output.get_full_path()}"
                 )
 
             else:
@@ -335,16 +337,17 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
 
             # Setup input for reading raw parquet files
             # Use the typename to construct the correct path
-            raw_input = ParquetFileReader(
+            reader = ParquetFileReader(
                 path=os.path.join(output_path, "raw", typename),
+                dataframe_type=DataframeType.daft,
             )
-            raw_input = raw_input.get_batched_daft_dataframe()
 
             # Setup output for writing transformed JSON files
             transformed_output = JsonFileWriter(
                 path=os.path.join(output_path, "transformed", typename),
                 typename=typename,
                 chunk_start=workflow_args.get("chunk_start"),
+                dataframe_type=DataframeType.daft,
             )
 
             # Add connection information to workflow_args for transformer
@@ -356,18 +359,24 @@ class AppMetadataExtractionActivities(BaseMetadataExtractionActivities):
             ).get("connection_qualified_name", None)
 
             # Process each batch of raw data
-            async for dataframe in raw_input:
-                if dataframe is not None and dataframe.count_rows() > 0:
-                    # Transform raw data to Atlas format using transformer
-                    transform_metadata = state.transformer.transform_metadata(
-                        dataframe=dataframe, **workflow_args
-                    )
+            try:
+                async for _dataframe in reader.read_batches():
+                    dataframe = cast(daft.DataFrame, _dataframe)
+                    if dataframe is not None and dataframe.count_rows() > 0:
+                        # Transform raw data to Atlas format using transformer
+                        transform_metadata = state.transformer.transform_metadata(
+                            dataframe=dataframe, **workflow_args
+                        )
 
-                    # Write transformed data to JSON output
-                    await transformed_output.write(transform_metadata)
+                        # Write transformed data to JSON output
+                        await transformed_output.write(transform_metadata)
 
-            # Return transformation statistics
-            return transformed_output.statistics
+                # Return transformation statistics
+                return await transformed_output.close()
+            finally:
+                await reader.close()
+                # Ensure writer is closed on failure (idempotent if already closed above)
+                await transformed_output.close()
 
         except Exception as e:
             logger.error(f"Failed to transform data: {str(e)}")

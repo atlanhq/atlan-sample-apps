@@ -3,7 +3,7 @@ test_workflow_args:
     host: $E2E_ANAPLAN_HOST
     username: $E2E_ANAPLAN_USERNAME
     password: $E2E_ANAPLAN_PASSWORD
-    authType: "basic"
+    authType: $E2E_ANAPLAN_AUTH_TYPE
   metadata:
     include-metadata: "{}"
     exclude-metadata: "{}"

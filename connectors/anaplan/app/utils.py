@@ -1,6 +1,8 @@
 import os
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, cast
 
+import daft
+from application_sdk.common.types import DataframeType
 from application_sdk.io.parquet import ParquetFileReader, ParquetFileWriter
 from application_sdk.observability.logger_adaptor import get_logger
 
@@ -59,18 +61,22 @@ async def get_app_guids(workflow_args: Dict[str, Any]) -> Set[str]:
         raise ValueError("Output path must be specified in workflow_args")
 
     # Read app parquet files to get valid app GUIDs
-    app_parquet_input = ParquetFileReader(
+    reader = ParquetFileReader(
         path=os.path.join(output_path, "raw", "app"),
+        dataframe_type=DataframeType.daft,
     )
-    app_parquet_input = app_parquet_input.get_batched_daft_dataframe()
 
     # Create set of valid app GUIDs from app extracts
     all_apps: set = set()
-    async for app_dataframe in app_parquet_input:
-        if app_dataframe is not None and app_dataframe.count_rows() > 0:
-            app_list = app_dataframe.to_pylist()
-            guids = [item["guid"] for item in app_list if item["guid"] is not None]
-            all_apps.update(guids)
+    try:
+        async for _app_dataframe in reader.read_batches():
+            app_dataframe = cast(daft.DataFrame, _app_dataframe)
+            if app_dataframe is not None and app_dataframe.count_rows() > 0:
+                app_list = app_dataframe.to_pylist()
+                guids = [item["guid"] for item in app_list if item["guid"] is not None]
+                all_apps.update(guids)
+    finally:
+        await reader.close()
 
     logger.info(f"Found {len(all_apps)} valid app GUIDs from app extracts")
     return all_apps

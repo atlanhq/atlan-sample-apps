@@ -1,114 +1,194 @@
 {
-    "config": {
+  "config": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "required": false,
+        "ui": {
+          "label": "Name",
+          "hidden": true,
+          "placeholder": "Name"
+        }
+      },
+      "connector": {
+        "type": "string",
+        "default": "anaplan",
+        "required": false,
+        "ui": {
+          "label": "Connector",
+          "hidden": true,
+          "placeholder": "Connector"
+        }
+      },
+      "connectorType": {
+        "type": "string",
+        "required": false,
+        "ui": {
+          "key": "_host",
+          "label": "connectorType",
+          "placeholder": "connectorType",
+          "hidden": true
+        }
+      },
+      "host": {
+        "type": "string",
+        "required": true,
+        "default": "",
+        "ui": {
+          "label": "Host",
+          "help": "Enter the host name without the 'https://' and trailing '/', e.g. us1a.app.anaplan.com",
+          "placeholder": "us1a.app.anaplan.com",
+          "hidden": false,
+          "BYOCdisabled": true,
+          "addonBefore": "https://",
+          "rules": [
+            {
+              "pattern": "^(?!https?:\/\/)[^\\s\/$.?#][^\/]*$",
+              "message": "Please remove any trailing slash or http(s):// prefix",
+              "trigger": "change"
+            },
+            {
+              "required": true,
+              "message": "Please enter a valid host name"
+            }
+          ],
+          "grid": 8
+        }
+      },
+      "auth-type": {
+        "type": "string",
+        "enum": [
+          "basic",
+          "ca_cert"
+        ],
+        "default": "basic",
+        "required": true,
+        "enumNames": [
+          "Basic",
+          "CA Certificate"
+        ],
+        "ui": {
+          "widget": "radio",
+          "label": "Authentication",
+          "placeholder": "Credential Type",
+          "hidden": false,
+          "rules": [
+            {
+              "required": true,
+              "message": "Please enter a valid authentication type"
+            }
+          ]
+        }
+      },
+      "basic": {
+        "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "required": false,
-            "ui": {
-              "label": "Name",
-              "hidden": true,
-              "placeholder": "Name"
-            }
-          },
-          "connector": {
-            "type": "string",
-            "default": "anaplan",
-            "required": false,
-            "ui": {
-              "label": "Connector",
-              "hidden": true,
-              "placeholder": "Connector"
-            }
-          },
-          "connectorType": {
-            "type": "string",
-            "required": false,
-            "ui": {
-              "key": "_host",
-              "label": "connectorType",
-              "placeholder": "connectorType",
-              "hidden": true
-            }
-          },
-          "host": {
+          "username": {
             "type": "string",
             "required": true,
-            "default": "",
             "ui": {
-              "label": "Host",
-              "help": "Enter the host name without the 'https://' and trailing '/', e.g. us1a.app.anaplan.com",
-              "placeholder": "us1a.app.anaplan.com",
-              "hidden": false,
-              "BYOCdisabled": true,
-              "addonBefore": "https://",
-              "rules": [
-                {
-                  "pattern": "^(?!https?:\/\/)[^\\s\/$.?#].[^\/]*$",
-                  "message": "Please remove any trailing slash or http(s):// prefix",
-                  "trigger": "change"
-                },
-                {
-                  "required": true,
-                  "message": "Please enter a valid host name"
-                }
-              ],
-              "grid": 8
-            }
-          },
-          "auth-type": {
-            "type": "string",
-            "enum": ["basic"],
-            "default": "basic",
-            "required": true,
-            "enumNames": ["Basic"],
-            "ui": {
-              "widget": "radio",
-              "label": "Authentication",
-              "placeholder": "Credential Type",
-              "hidden": false,
+              "label": "Username",
+              "help": "Anaplan Username (can be email-id) for the account with access to all workspaces and apps to be cataloged on Atlan.",
+              "feedback": true,
+              "message": "Please enter a valid Username",
+              "placeholder": "Username",
+              "grid": 4,
               "rules": [
                 {
                   "required": true,
-                  "message": "Please enter a valid authentication type"
+                  "message": "Please enter a valid Username"
                 }
               ]
             }
           },
-          "basic": {
+          "password": {
+            "type": "string",
+            "required": true,
+            "ui": {
+              "widget": "password",
+              "label": "Password",
+              "help": "Anaplan Password for the account mentioned in the username field.",
+              "placeholder": "Password",
+              "feedback": true,
+              "grid": 4,
+              "rules": [
+                {
+                  "required": true,
+                  "message": "Please enter a valid Password"
+                }
+              ]
+            }
+          }
+        },
+        "ui": {
+          "widget": "nested",
+          "label": "Basic Authentication",
+          "nestedValue": false,
+          "hidden": true
+        }
+      },
+      "ca_cert": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "required": true,
+            "ui": {
+              "label": "Encoded Data",
+              "help": "Encoded Data for the CA certificate.",
+              "feedback": true,
+              "message": "Please enter a valid Encoded Data",
+              "placeholder": "Encoded Data",
+              "grid": 4,
+              "rules": [
+                {
+                  "required": true,
+                  "message": "Please enter a valid Encoded Data"
+                }
+              ]
+            }
+          },
+          "password": {
+            "type": "string",
+            "required": true,
+            "ui": {
+              "widget": "password",
+              "label": "Encoded Signed Data",
+              "help": "Encoded Signed Data for the CA certificate.",
+              "placeholder": "Encoded Signed Data",
+              "feedback": true,
+              "grid": 4,
+              "rules": [
+                {
+                  "required": true,
+                  "message": "Please enter a valid Encoded Signed Data"
+                }
+              ]
+            }
+          },
+          "extra": {
             "type": "object",
             "properties": {
-              "username": {
+              "CaCertificate": {
                 "type": "string",
                 "required": true,
                 "ui": {
-                  "label": "Username",
-                  "help": "Anaplan Username (can be email-id) for the account with access to all workspaces and apps to be cataloged on Atlan.",
-                  "feedback": true,
-                  "message": "Please enter a valid Username",
-                  "placeholder": "Username",
-                  "grid": 4,
+                  "widget": "fileUpload",
+                  "label": "CA Certificate File",
+                  "hidden": false,
+                  "help": "Select the CA certificate file.",
+                  "placeholder": "Select CA certificate file",
+                  "grid": 8,
+                  "accept": [
+                    "application/pkix-cert",
+                    "application/x-x509-ca-cert",
+                    "application/x-x509-user-cert"
+                  ],
+                  "fileMetadata": true,
                   "rules": [
                     {
                       "required": true,
-                      "message": "Please enter a valid Username"
-                    }
-                  ]
-                }
-              },
-              "password": {
-                "type": "string",
-                "required": true,
-                "ui": {
-                  "widget": "password",
-                  "label": "Password",
-                  "help": "Anaplan Password for the account mentioned in the username field.",
-                  "placeholder": "Password",
-                  "feedback": true,
-                  "grid": 4,
-                  "rules": [
-                    {
-                      "required": true,
-                      "message": "Please enter a valid Password"
+                      "message": "Please select a valid CA certificate file"
                     }
                   ]
                 }
@@ -116,21 +196,41 @@
             },
             "ui": {
               "widget": "nested",
-              "label": "Basic Authentication",
+              "label": "CA Certificate",
               "nestedValue": false,
-              "hidden": true
+              "hidden": false
             }
           }
         },
-        "anyOf": [
-          {
-            "properties": {
-              "auth-type": {
-                "const": "basic"
-              }
-            },
-            "required": ["basic"]
+        "ui": {
+          "widget": "nested",
+          "label": "CA Certificate Authentication",
+          "nestedValue": false,
+          "hidden": true
+        }
+      }
+    },
+    "anyOf": [
+      {
+        "properties": {
+          "auth-type": {
+            "const": "basic"
           }
+        },
+        "required": [
+          "basic"
         ]
-    }
+      },
+      {
+        "properties": {
+          "auth-type": {
+            "const": "ca_cert"
+          }
+        },
+        "required": [
+          "ca_cert"
+        ]
+      }
+    ]
+  }
 }
