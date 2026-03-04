@@ -43,16 +43,10 @@ async def main():
         ]
     )
 
-    # Start the worker (starts Temporal worker with workflows and activities)
-    await application.start_worker()
-
-    # Setup the application server (creates FastAPI server with handlers)
-    await application.setup_server(
+    # Start application server and FastAPI server
+    await application.start(
         workflow_class=AppMetadataExtractionWorkflow, has_configmap=True
     )
-
-    # Start the application server
-    await application.start_server()
 
 
 if __name__ == "__main__":

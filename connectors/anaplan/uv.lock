@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.11, <3.14"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -156,7 +156,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["daft", "iam-auth", "pandas", "sqlalchemy", "tests", "workflows"], specifier = "==2.3.1" },
+    { name = "atlan-application-sdk", extras = ["daft", "iam-auth", "pandas", "sqlalchemy", "tests", "workflows"], specifier = "==2.5.0" },
     { name = "poethepoet", specifier = ">=0.37.0" },
 ]
 
@@ -179,7 +179,7 @@ test = [
 
 [[package]]
 name = "atlan-application-sdk"
-version = "2.3.1"
+version = "2.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -188,15 +188,17 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "loguru" },
     { name = "opentelemetry-exporter-otlp" },
+    { name = "pandas" },
     { name = "psutil" },
+    { name = "pyarrow" },
     { name = "pyatlan" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/3a/63d533a04b21f186a5ac65985640757fe0b99b62a50868c2065af0382037/atlan_application_sdk-2.3.1.tar.gz", hash = "sha256:e38ddc58b67f7fa26488fc3f38feb5a2343ab193d1b8e0554aa1be9c53bb35f7", size = 1168374, upload-time = "2026-01-28T11:28:35.793Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d1/31/6cf622d18babd4b5c5aa8c4a76b737d4cc50b5397d8f9f79280258cc73f3/atlan_application_sdk-2.5.0.tar.gz", hash = "sha256:d52efb69903cf84e912242a02db006c4f2bf20ca57f84166e6842c5acd882df4", size = 1279112, upload-time = "2026-03-03T00:26:07.032Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8c/7c/21bae5016fc97b221df4becaaa984d15aa138b172deb1b5ab2bac48bda4e/atlan_application_sdk-2.3.1-py3-none-any.whl", hash = "sha256:b7817c2d1b9f27bc4ef59c0556d60111f28947c472edc502abb811db929f47af", size = 291961, upload-time = "2026-01-28T11:28:34.135Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/1e/e88c03166fddc9b9f63fff93358692537cf34e685c2ffd9bc7c1ade09504/atlan_application_sdk-2.5.0-py3-none-any.whl", hash = "sha256:d73884a864bbcae47169ded6ed162f29af44bd2d1ea5dd467c56888f46162eb2", size = 384504, upload-time = "2026-03-03T00:26:05.637Z" },
 ]
 
 [package.optional-dependencies]
@@ -208,12 +210,12 @@ iam-auth = [
 ]
 pandas = [
     { name = "pandas" },
+    { name = "pyarrow" },
 ]
 sqlalchemy = [
     { name = "sqlalchemy", extra = ["asyncio"] },
 ]
 tests = [
-    { name = "pandas" },
     { name = "pandera", extra = ["io"] },
     { name = "pytest-order" },
 ]

@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from app.clients import AppClient
+from app.constants import AnaplanUrls
 from application_sdk.observability.logger_adaptor import get_logger
 
 logger = get_logger(__name__)
@@ -32,7 +33,7 @@ async def extract_apps_data(client: AppClient) -> List[Dict[str, Any]]:
         app_data: List[Dict[str, Any]] = []
 
         # Extract app assets from Anaplan with pagination
-        url = f"https://{client.host}/a/springboard-definition-service/apps"
+        url = AnaplanUrls.springboard_apps(client.host)
         limit = 100
         offset = 0
 
