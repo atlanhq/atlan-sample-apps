@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo File Summary</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Demo File Summary</h1>
+        <p class="subtitle">Read JSON input and produce status count summary</p>
+
+        <div class="info-box">
+            <h2>How to Use</h2>
+            <ol>
+                <li>Place your JSON input file in the object store at the configured path</li>
+                <li>Trigger the workflow via the API or Temporal UI</li>
+                <li>Check the output file for the status count summary</li>
+            </ol>
+        </div>
+
+        <div class="example-box">
+            <h3>Example Input:</h3>
+            <pre>[
+  {"id": 1, "status": "completed"},
+  {"id": 2, "status": "pending"},
+  {"id": 3, "status": "completed"}
+]</pre>
+
+            <h3>Example Output:</h3>
+            <pre>{
+  "total_records": 3,
+  "status_counts": {
+    "completed": 2,
+    "pending": 1
+  }
+}</pre>
+        </div>
+
+        <div class="links">
+            <a href="http://localhost:8233" target="_blank">View Temporal UI</a>
+            <a href="/server/health" target="_blank">Health Check</a>
+        </div>
+    </div>
+</body>
+</html>
