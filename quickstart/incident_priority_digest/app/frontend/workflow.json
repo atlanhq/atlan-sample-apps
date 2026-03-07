@@ -1,0 +1,27 @@
+{
+  "id": "incident-priority-digest",
+  "name": "Incident Priority Digest",
+  "logo": "https://assets.atlan.com/assets/ph-file-cloud-light.svg",
+  "config": {
+    "properties": {
+      "records_json": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "label": "Incident Records (JSON)",
+          "placeholder": "[{\"id\": \"INC-001\", \"severity\": \"critical\", ...}]",
+          "grid": 12
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "configuration",
+        "title": "Configuration",
+        "properties": [
+          "records_json"
+        ]
+      }
+    ]
+  }
+}
