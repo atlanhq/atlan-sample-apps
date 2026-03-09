@@ -6,7 +6,7 @@ authors = [{ name = "Atlan Apps Team", email = "apps@atlan.com" }]
 requires-python = ">=3.11"
 license = "Apache-2.0"
 dependencies = [
-    "atlan-application-sdk[tests,workflows]==2.5.0",
+    "atlan-application-sdk[tests,workflows]==2.6.0",
     "poethepoet>=0.37.0",
     "httpx>=0.27",  # Used by local dev proxy only (see main.py)
 ]
@@ -27,7 +27,7 @@ stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || 
 
 [tool.poe.tasks.download-components]
 interpreter = "python"
-env = { SDK_VERSION = "v2.5.0" }
+env = { SDK_VERSION = "v2.6.0" }
 shell = """
 import pathlib, requests, os
 

@@ -19,6 +19,5 @@ frontend/ui/.env.*.local
 *.swp
 CLAUDE.md
 
-# Dapr components (local dev only)
-components/
+# Local dev artifacts
 temporal.db
