@@ -19,6 +19,7 @@ RUN apk add --no-cache \
     git \
     gcc \
     python3-dev \
+    curl \
     && rm -rf /var/cache/apk/*
 
 # Copy uv
