@@ -95,11 +95,6 @@ async def main():
 
     server = APIServer()
 
-    # Simple diagnostic endpoint — no auth, no postMessage, no dependencies.
-    @server.app.get("/ping")
-    async def ping():
-        return {"status": "ok", "app": "metadata-lens"}
-
     # --- LOCAL DEV ONLY: register proxy if DEV_MODE is explicitly set ---
     dev_mode = os.environ.get("DEV_MODE", "").lower() == "true"
     if dev_mode and os.environ.get("ATLAN_BASE_URL"):
