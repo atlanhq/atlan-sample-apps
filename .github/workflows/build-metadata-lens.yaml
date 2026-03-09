@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - frontend-poc
     paths:
       - 'frontend/metadata-lens/**'
       - '!frontend/metadata-lens/**.md'
