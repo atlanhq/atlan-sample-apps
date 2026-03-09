@@ -1,0 +1,24 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Frontend build artifacts (rebuilt in Docker Stage 1)
+frontend/static/
+frontend/ui/node_modules/
+
+# Secrets
+frontend/ui/.env.local
+frontend/ui/.env.*.local
+
+# Dev / IDE
+.git/
+.github/
+.idea/
+.vscode/
+*.swp
+CLAUDE.md
+
+# Dapr components (local dev only)
+components/
+temporal.db

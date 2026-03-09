@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Frontend
+frontend/ui/node_modules/
+frontend/static/
+
+# Secrets — never commit
+frontend/ui/.env.local
+frontend/ui/.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
