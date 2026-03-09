@@ -26,11 +26,11 @@ traces = get_traces()
 # the real Atlan instance. In production (deployed inside Atlan), these calls
 # are handled by the platform's own routing — this proxy is not needed.
 #
-# Set ATLAN_BASE_URL to enable:
-#   ATLAN_BASE_URL=https://your-tenant.atlan.com uv run main.py
+# Enable by setting BOTH env vars:
+#   DEV_MODE=true ATLAN_BASE_URL=https://your-tenant.atlan.com uv run main.py
 #
-# When ATLAN_BASE_URL is not set, no proxy routes are registered and the app
-# behaves exactly as it would in production.
+# DEV_MODE is the gate — ATLAN_BASE_URL alone does NOT activate the proxy,
+# since ATLAN_BASE_URL is injected by the CI/CD system in production.
 # ---------------------------------------------------------------------------
 
 
@@ -95,11 +95,11 @@ async def main():
 
     server = APIServer()
 
-    # --- LOCAL DEV ONLY: register proxy if ATLAN_BASE_URL is set ---
-    atlan_base_url = os.environ.get("ATLAN_BASE_URL")
-    if atlan_base_url:
+    # --- LOCAL DEV ONLY: register proxy if DEV_MODE is explicitly set ---
+    dev_mode = os.environ.get("DEV_MODE", "").lower() == "true"
+    if dev_mode and os.environ.get("ATLAN_BASE_URL"):
         register_dev_proxy(server.app)
-    # ---------------------------------------------------------------
+    # -------------------------------------------------------------------
 
     application = BaseApplication(name=APPLICATION_NAME, server=server)
 
