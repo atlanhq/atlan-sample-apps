@@ -1,155 +1,55 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { AuthContext, AuthState, AtlanMessage } from '../types/atlan'
+import { useState, useEffect, useRef } from 'react'
+import { AtlanAuth } from '@atlanhq/atlan-auth'
 
-const HANDSHAKE_TIMEOUT_MS = 10_000
-const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000 // 5 minutes before expiry
-
-export function isDevMode(): boolean {
-  return import.meta.env.VITE_DEV_MODE === 'true'
+export interface AtlanAuthState {
+  status: 'initializing' | 'authenticated' | 'error' | 'logged_out'
+  atlan: AtlanAuth | null
+  token: string | null
+  assetId: string | null
+  error: string | null
 }
 
-function getAllowedOrigin(): string {
-  return import.meta.env.VITE_ATLAN_ORIGIN || '*'
+function getAssetIdFromUrl(): string | null {
+  return new URLSearchParams(window.location.search).get('assetId')
 }
 
-function buildDevAuthContext(): AuthContext {
-  return {
-    token: import.meta.env.VITE_ATLAN_API_TOKEN || '',
-    user: { id: 'dev-user', username: 'dev', email: 'dev@localhost' },
-    page: {
-      route: '/assets',
-      params: { id: import.meta.env.VITE_ATLAN_ASSET_GUID || '' },
-    },
-    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-  }
-}
-
-export function useAtlanAuth(): AuthState & { assetId: string | null } {
-  const devMode = isDevMode()
-
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    if (devMode) {
-      const context = buildDevAuthContext()
-      if (!context.token || !context.page.params.id) {
-        return {
-          status: 'error',
-          message: 'Dev mode: VITE_ATLAN_API_TOKEN and VITE_ATLAN_ASSET_GUID must be set in .env.local',
-        }
-      }
-      return { status: 'authenticated', context }
-    }
-    return { status: 'connecting' }
+export function useAtlanAuth(): AtlanAuthState {
+  const [state, setState] = useState<AtlanAuthState>({
+    status: 'initializing',
+    atlan: null,
+    token: null,
+    assetId: null,
+    error: null,
   })
-
-  const [assetId, setAssetId] = useState<string | null>(() => {
-    if (devMode) {
-      return import.meta.env.VITE_ATLAN_ASSET_GUID || null
-    }
-    return null
-  })
-
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const handshakeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const scheduleTokenRefresh = useCallback((expiresAt: number) => {
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current)
-    }
-
-    const now = Date.now()
-    const refreshAt = expiresAt - TOKEN_REFRESH_BUFFER_MS
-    const delay = Math.max(0, refreshAt - now)
-
-    refreshTimerRef.current = setTimeout(() => {
-      const allowedOrigin = getAllowedOrigin()
-      const targetOrigin = allowedOrigin === '*' ? '*' : allowedOrigin
-      window.parent.postMessage({ type: 'IFRAME_TOKEN_REQUEST' }, targetOrigin)
-    }, delay)
-  }, [])
+  const atlanRef = useRef<AtlanAuth | null>(null)
 
   useEffect(() => {
-    // In dev mode, auth is handled via env vars — no postMessage needed
-    if (devMode) return
+    const origin = import.meta.env.VITE_ATLAN_ORIGIN || window.location.origin
+    const atlan = new AtlanAuth({
+      origin,
+      onReady: () => {
+        const assetId = getAssetIdFromUrl()
+        setState({
+          status: 'authenticated',
+          atlan,
+          token: atlan.getToken(),
+          assetId,
+          error: null,
+        })
+      },
+      onError: (error) => {
+        setState(prev => ({ ...prev, status: 'error', error: error.message ?? 'Authentication failed' }))
+      },
+      onTokenRefresh: (token) => {
+        setState(prev => ({ ...prev, token }))
+      },
+      onLogout: () => {
+        setState({ status: 'logged_out', atlan: null, token: null, assetId: null, error: null })
+      },
+    })
+    atlanRef.current = atlan
+    atlan.init().catch(() => {}) // errors handled by onError
+  }, [])
 
-    const allowedOrigin = getAllowedOrigin()
-
-    const handleMessage = (event: MessageEvent<AtlanMessage>) => {
-      if (allowedOrigin !== '*' && event.origin !== allowedOrigin) {
-        return
-      }
-
-      const { type, payload } = event.data ?? {}
-
-      switch (type) {
-        case 'ATLAN_HANDSHAKE': {
-          if (handshakeTimerRef.current) {
-            clearTimeout(handshakeTimerRef.current)
-            handshakeTimerRef.current = null
-          }
-          const targetOrigin = allowedOrigin === '*' ? '*' : event.origin
-          window.parent.postMessage({ type: 'IFRAME_READY' }, targetOrigin)
-          break
-        }
-
-        case 'ATLAN_AUTH_CONTEXT': {
-          if (!payload) {
-            setAuthState({ status: 'error', message: 'Received auth context without payload' })
-            return
-          }
-          const context: AuthContext = payload
-          setAuthState({ status: 'authenticated', context })
-
-          const guid = context.page?.params?.id ?? null
-          setAssetId(guid)
-
-          if (context.expiresAt) {
-            scheduleTokenRefresh(context.expiresAt)
-          }
-          break
-        }
-
-        case 'ATLAN_TOKEN_REFRESH': {
-          if (!payload) return
-          setAuthState({ status: 'authenticated', context: payload })
-          if (payload.expiresAt) {
-            scheduleTokenRefresh(payload.expiresAt)
-          }
-          break
-        }
-
-        case 'ATLAN_LOGOUT': {
-          setAuthState({ status: 'logged_out' })
-          setAssetId(null)
-          if (refreshTimerRef.current) {
-            clearTimeout(refreshTimerRef.current)
-            refreshTimerRef.current = null
-          }
-          break
-        }
-      }
-    }
-
-    window.addEventListener('message', handleMessage)
-
-    handshakeTimerRef.current = setTimeout(() => {
-      setAuthState((prev) => {
-        if (prev.status === 'connecting') {
-          return { status: 'error', message: 'Handshake timed out — is the app embedded in Atlan?' }
-        }
-        return prev
-      })
-    }, HANDSHAKE_TIMEOUT_MS)
-
-    return () => {
-      window.removeEventListener('message', handleMessage)
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current)
-      }
-      if (handshakeTimerRef.current) {
-        clearTimeout(handshakeTimerRef.current)
-      }
-    }
-  }, [devMode, scheduleTokenRefresh])
-
-  return { ...authState, assetId }
+  return state
 }

@@ -2,17 +2,31 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useAssetMetadata } from './use-asset-metadata'
 import type { EntityResponse } from '../types/atlan'
-import * as api from '../services/atlan-api'
+import type { AtlanAuth } from '@atlanhq/atlan-auth'
 
-vi.mock('../services/atlan-api')
+function createMockAtlan(apiGet: ReturnType<typeof vi.fn>): AtlanAuth {
+  return {
+    api: {
+      get: apiGet,
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+    },
+  } as unknown as AtlanAuth
+}
 
 describe('useAssetMetadata', () => {
+  let mockApiGet: ReturnType<typeof vi.fn>
+  let mockAtlan: AtlanAuth
+
   beforeEach(() => {
     vi.restoreAllMocks()
+    mockApiGet = vi.fn()
+    mockAtlan = createMockAtlan(mockApiGet)
   })
 
   it('returns empty state when assetId is null', () => {
-    const { result } = renderHook(() => useAssetMetadata(null, 'token', ''))
+    const { result } = renderHook(() => useAssetMetadata(null, mockAtlan))
 
     expect(result.current.attributes).toEqual([])
     expect(result.current.totalCount).toBe(0)
@@ -21,31 +35,35 @@ describe('useAssetMetadata', () => {
     expect(result.current.entityTypeName).toBeNull()
   })
 
-  it('returns empty state when token is null', () => {
-    const { result } = renderHook(() => useAssetMetadata('guid-1', null, ''))
+  it('returns empty state when atlan is null', () => {
+    const { result } = renderHook(() => useAssetMetadata('guid-1', null))
 
     expect(result.current.attributes).toEqual([])
     expect(result.current.loading).toBe(false)
   })
 
   it('fetches and returns sorted non-null attributes', async () => {
-    vi.mocked(api.fetchEntityByGuid).mockResolvedValue({
-      entity: {
-        typeName: 'Table',
-        guid: 'guid-1',
-        status: 'ACTIVE',
-        attributes: {
-          name: 'my_table',
-          description: null,
-          qualifiedName: 'db.schema.my_table',
-          createTime: 1700000000000,
-          ownerUsers: undefined,
-          columnCount: 5,
+    mockApiGet.mockResolvedValue({
+      data: {
+        entity: {
+          typeName: 'Table',
+          guid: 'guid-1',
+          status: 'ACTIVE',
+          attributes: {
+            name: 'my_table',
+            description: null,
+            qualifiedName: 'db.schema.my_table',
+            createTime: 1700000000000,
+            ownerUsers: undefined,
+            columnCount: 5,
+          },
         },
       },
+      status: 200,
+      headers: {},
     })
 
-    const { result } = renderHook(() => useAssetMetadata('guid-1', 'token', ''))
+    const { result } = renderHook(() => useAssetMetadata('guid-1', mockAtlan))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -62,10 +80,30 @@ describe('useAssetMetadata', () => {
     expect(result.current.attributes[3].key).toBe('qualifiedName')
   })
 
-  it('handles API errors gracefully', async () => {
-    vi.mocked(api.fetchEntityByGuid).mockRejectedValue(new Error('Failed to fetch entity: 404 Not Found'))
+  it('calls api.get with correct URL', async () => {
+    mockApiGet.mockResolvedValue({
+      data: {
+        entity: { typeName: 'Table', guid: 'guid-1', status: 'ACTIVE', attributes: {} },
+      },
+      status: 200,
+      headers: {},
+    })
 
-    const { result } = renderHook(() => useAssetMetadata('bad-guid', 'token', ''))
+    renderHook(() => useAssetMetadata('guid-1', mockAtlan))
+
+    await waitFor(() => {
+      expect(mockApiGet).toHaveBeenCalledOnce()
+    })
+
+    expect(mockApiGet).toHaveBeenCalledWith(
+      '/api/meta/entity/guid/guid-1?ignoreRelationships=true&minExtInfo=false'
+    )
+  })
+
+  it('handles API errors gracefully', async () => {
+    mockApiGet.mockRejectedValue(new Error('Failed to fetch entity: 404 Not Found'))
+
+    const { result } = renderHook(() => useAssetMetadata('bad-guid', mockAtlan))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -77,9 +115,9 @@ describe('useAssetMetadata', () => {
   })
 
   it('handles non-Error thrown values', async () => {
-    vi.mocked(api.fetchEntityByGuid).mockRejectedValue('string error')
+    mockApiGet.mockRejectedValue('string error')
 
-    const { result } = renderHook(() => useAssetMetadata('guid', 'token', ''))
+    const { result } = renderHook(() => useAssetMetadata('guid', mockAtlan))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -89,19 +127,21 @@ describe('useAssetMetadata', () => {
   })
 
   it('shows loading state while fetching', async () => {
-    let resolvePromise: (value: EntityResponse) => void
-    vi.mocked(api.fetchEntityByGuid).mockImplementation(
-      () => new Promise<EntityResponse>((resolve) => { resolvePromise = resolve })
+    let resolvePromise: (value: { data: EntityResponse; status: number; headers: Record<string, string> }) => void
+    mockApiGet.mockImplementation(
+      () => new Promise((resolve) => { resolvePromise = resolve })
     )
 
-    const { result } = renderHook(() => useAssetMetadata('guid-1', 'token', ''))
+    const { result } = renderHook(() => useAssetMetadata('guid-1', mockAtlan))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(true)
     })
 
     resolvePromise!({
-      entity: { typeName: 'Column', guid: 'guid-1', status: 'ACTIVE', attributes: {} },
+      data: { entity: { typeName: 'Column', guid: 'guid-1', status: 'ACTIVE', attributes: {} } },
+      status: 200,
+      headers: {},
     })
 
     await waitFor(() => {
@@ -110,16 +150,20 @@ describe('useAssetMetadata', () => {
   })
 
   it('handles entity with empty attributes', async () => {
-    vi.mocked(api.fetchEntityByGuid).mockResolvedValue({
-      entity: {
-        typeName: 'Database',
-        guid: 'guid-1',
-        status: 'ACTIVE',
-        attributes: {},
+    mockApiGet.mockResolvedValue({
+      data: {
+        entity: {
+          typeName: 'Database',
+          guid: 'guid-1',
+          status: 'ACTIVE',
+          attributes: {},
+        },
       },
+      status: 200,
+      headers: {},
     })
 
-    const { result } = renderHook(() => useAssetMetadata('guid-1', 'token', ''))
+    const { result } = renderHook(() => useAssetMetadata('guid-1', mockAtlan))
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
@@ -130,16 +174,20 @@ describe('useAssetMetadata', () => {
   })
 
   it('refetches when assetId changes', async () => {
-    vi.mocked(api.fetchEntityByGuid)
+    mockApiGet
       .mockResolvedValueOnce({
-        entity: { typeName: 'Table', guid: 'g1', status: 'ACTIVE', attributes: { name: 'table1' } },
+        data: { entity: { typeName: 'Table', guid: 'g1', status: 'ACTIVE', attributes: { name: 'table1' } } },
+        status: 200,
+        headers: {},
       })
       .mockResolvedValueOnce({
-        entity: { typeName: 'Column', guid: 'g2', status: 'ACTIVE', attributes: { name: 'col1' } },
+        data: { entity: { typeName: 'Column', guid: 'g2', status: 'ACTIVE', attributes: { name: 'col1' } } },
+        status: 200,
+        headers: {},
       })
 
     const { result, rerender } = renderHook(
-      ({ assetId }) => useAssetMetadata(assetId, 'token', ''),
+      ({ assetId }) => useAssetMetadata(assetId, mockAtlan),
       { initialProps: { assetId: 'g1' } }
     )
 
@@ -153,6 +201,6 @@ describe('useAssetMetadata', () => {
       expect(result.current.entityTypeName).toBe('Column')
     })
 
-    expect(api.fetchEntityByGuid).toHaveBeenCalledTimes(2)
+    expect(mockApiGet).toHaveBeenCalledTimes(2)
   })
 })

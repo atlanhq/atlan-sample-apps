@@ -70,6 +70,8 @@ jobs:
           build-args: |
             ACCESS_TOKEN_USR=$GITHUB_ACTOR
             ACCESS_TOKEN_PWD=${{ secrets.ORG_PAT_GITHUB }}
+          secrets: |
+            npm_token=${{ secrets.GITHUB_TOKEN }}
         env:
           DOCKER_CLIENT_TIMEOUT: 600
           COMPOSE_HTTP_TIMEOUT: 600

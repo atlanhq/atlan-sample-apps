@@ -1,7 +1,7 @@
-import type { AuthState } from '../types/atlan'
+import type { AtlanAuthState } from '../hooks/use-atlan-auth'
 
 interface LoadingStateProps {
-  authStatus: AuthState['status']
+  authStatus: AtlanAuthState['status']
   metadataLoading: boolean
   error: string | null
 }
@@ -17,12 +17,12 @@ export function LoadingState({ authStatus, metadataLoading, error }: LoadingStat
     )
   }
 
-  if (authStatus === 'connecting') {
+  if (authStatus === 'initializing') {
     return (
       <div className="state-container state-connecting">
         <div className="state-spinner" />
         <div className="state-title">Connecting to Atlan</div>
-        <div className="state-message">Waiting for authentication handshake...</div>
+        <div className="state-message">Initializing authentication...</div>
       </div>
     )
   }

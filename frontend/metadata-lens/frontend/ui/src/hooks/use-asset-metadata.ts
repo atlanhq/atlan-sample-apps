@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { AttributeEntry } from '../types/atlan'
-import { fetchEntityByGuid } from '../services/atlan-api'
+import type { AtlanAuth } from '@atlanhq/atlan-auth'
+import type { AttributeEntry, EntityResponse } from '../types/atlan'
 
 interface UseAssetMetadataResult {
   attributes: AttributeEntry[]
@@ -23,8 +23,7 @@ function extractAttributes(attrs: Record<string, unknown>): AttributeEntry[] {
 
 export function useAssetMetadata(
   assetId: string | null,
-  token: string | null,
-  baseUrl: string
+  atlan: AtlanAuth | null
 ): UseAssetMetadataResult {
   const [attributes, setAttributes] = useState<AttributeEntry[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -33,7 +32,7 @@ export function useAssetMetadata(
   const [entityTypeName, setEntityTypeName] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!assetId || !token) {
+    if (!assetId || !atlan) {
       setAttributes([])
       setTotalCount(0)
       setError(null)
@@ -48,10 +47,12 @@ export function useAssetMetadata(
       setError(null)
 
       try {
-        const response = await fetchEntityByGuid(assetId!, token!, baseUrl)
+        const response = await atlan!.api.get<EntityResponse>(
+          `/api/meta/entity/guid/${encodeURIComponent(assetId!)}?ignoreRelationships=true&minExtInfo=false`
+        )
         if (cancelled) return
 
-        const entity = response.entity
+        const entity = response.data.entity
         setEntityTypeName(entity.typeName)
 
         const allAttrs = entity.attributes ?? {}
@@ -79,7 +80,7 @@ export function useAssetMetadata(
     return () => {
       cancelled = true
     }
-  }, [assetId, token, baseUrl])
+  }, [assetId, atlan])
 
   return { attributes, totalCount, loading, error, entityTypeName }
 }

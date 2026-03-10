@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react'
 import { LoadingState } from './loading-state'
 
 describe('LoadingState', () => {
-  it('renders connecting state', () => {
-    render(<LoadingState authStatus="connecting" metadataLoading={false} error={null} />)
+  it('renders initializing state', () => {
+    render(<LoadingState authStatus="initializing" metadataLoading={false} error={null} />)
     expect(screen.getByText('Connecting to Atlan')).toBeInTheDocument()
-    expect(screen.getByText('Waiting for authentication handshake...')).toBeInTheDocument()
+    expect(screen.getByText('Initializing authentication...')).toBeInTheDocument()
   })
 
   it('renders error state', () => {
@@ -35,7 +35,7 @@ describe('LoadingState', () => {
   })
 
   it('prioritizes error over other states', () => {
-    render(<LoadingState authStatus="connecting" metadataLoading={true} error="Error message" />)
+    render(<LoadingState authStatus="initializing" metadataLoading={true} error="Error message" />)
     expect(screen.getByText('Something went wrong')).toBeInTheDocument()
     expect(screen.getByText('Error message')).toBeInTheDocument()
     expect(screen.queryByText('Connecting to Atlan')).not.toBeInTheDocument()

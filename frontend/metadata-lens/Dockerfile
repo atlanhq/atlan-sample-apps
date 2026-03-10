@@ -2,8 +2,12 @@
 FROM node:20-alpine AS frontend-build
 
 WORKDIR /app
-COPY frontend/ui/package.json frontend/ui/package-lock.json frontend/ui/
-RUN cd frontend/ui && npm ci
+COPY frontend/ui/package.json frontend/ui/package-lock.json frontend/ui/.npmrc frontend/ui/
+RUN --mount=type=secret,id=npm_token \
+    NPM_TOKEN=$(cat /run/secrets/npm_token) \
+    && echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> frontend/ui/.npmrc \
+    && cd frontend/ui && npm ci \
+    && sed -i '/_authToken/d' frontend/ui/.npmrc
 COPY frontend/ui/ frontend/ui/
 RUN cd frontend/ui && npm run build
 # Output: /app/frontend/static/assets/index.{js,css}
