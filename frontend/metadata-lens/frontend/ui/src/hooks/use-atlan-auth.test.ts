@@ -2,256 +2,308 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useAtlanAuth } from './use-atlan-auth'
 
-// Capture callback options passed to AtlanAuth constructor
-let capturedOptions: Record<string, unknown> = {}
-const mockInit = vi.fn().mockResolvedValue(undefined)
-const mockGetToken = vi.fn().mockReturnValue('sdk-token')
-
-vi.mock('@atlanhq/atlan-auth', () => ({
-  AtlanAuth: vi.fn().mockImplementation((options: Record<string, unknown>) => {
-    capturedOptions = options
-    return {
-      init: mockInit,
-      getToken: mockGetToken,
-      api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
-    }
-  }),
-}))
-
 describe('useAtlanAuth', () => {
-  const originalLocation = window.location
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-    capturedOptions = {}
-  })
-
-  afterEach(() => {
-    // Restore location if it was overridden
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-    })
-  })
-
-  it('starts in initializing state', () => {
-    const { result } = renderHook(() => useAtlanAuth())
-
-    expect(result.current.status).toBe('initializing')
-    expect(result.current.atlan).toBeNull()
-    expect(result.current.token).toBeNull()
-    expect(result.current.assetId).toBeNull()
-    expect(result.current.error).toBeNull()
-  })
-
-  it('calls AtlanAuth.init() on mount', () => {
-    renderHook(() => useAtlanAuth())
-    expect(mockInit).toHaveBeenCalledOnce()
-  })
-
-  it('extracts assetId from postMessage page.params.id', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '' },
-      writable: true,
+  describe('production mode (iframe handshake)', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+      // Ensure dev mode is off for production tests
+      import.meta.env.VITE_DEV_MODE = ''
+      vi.stubGlobal('parent', {
+        postMessage: vi.fn(),
+      })
     })
 
-    const { result } = renderHook(() => useAtlanAuth())
+    afterEach(() => {
+      vi.useRealTimers()
+      vi.restoreAllMocks()
+    })
 
-    // Simulate ATLAN_AUTH_CONTEXT postMessage arriving before onReady
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent('message', {
-          data: {
-            type: 'ATLAN_AUTH_CONTEXT',
-            payload: {
-              token: 'test-token',
-              user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
-              page: { route: '/assets', params: { id: 'postmessage-guid' } },
-            },
-          },
-        })
+    it('starts in connecting state', () => {
+      const { result } = renderHook(() => useAtlanAuth())
+      expect(result.current.status).toBe('connecting')
+      expect(result.current.assetId).toBeNull()
+    })
+
+    it('responds to ATLAN_HANDSHAKE with IFRAME_READY', () => {
+      renderHook(() => useAtlanAuth())
+
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'ATLAN_HANDSHAKE' },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      // When VITE_ATLAN_ORIGIN is not set, origin defaults to '*'
+      expect(window.parent.postMessage).toHaveBeenCalledWith(
+        { type: 'IFRAME_READY' },
+        '*'
       )
     })
 
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
-    })
+    it('handles ATLAN_AUTH_CONTEXT and extracts asset ID', () => {
+      const { result } = renderHook(() => useAtlanAuth())
 
-    expect(result.current.assetId).toBe('postmessage-guid')
-  })
-
-  it('prefers postMessage assetId over URL param', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '?assetId=url-guid' },
-      writable: true,
-    })
-
-    const { result } = renderHook(() => useAtlanAuth())
-
-    // postMessage arrives with a different asset ID
-    act(() => {
-      window.dispatchEvent(
-        new MessageEvent('message', {
-          data: {
-            type: 'ATLAN_AUTH_CONTEXT',
-            payload: {
-              token: 'test-token',
-              user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
-              page: { route: '/assets', params: { id: 'postmessage-guid' } },
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: {
+              type: 'ATLAN_AUTH_CONTEXT',
+              payload: {
+                token: 'test-token',
+                user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
+                page: { route: '/asset', params: { id: 'asset-guid-123' } },
+                expiresAt: Date.now() + 3600000,
+              },
             },
-          },
-        })
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      expect(result.current.status).toBe('authenticated')
+      expect(result.current.assetId).toBe('asset-guid-123')
+      if (result.current.status === 'authenticated') {
+        expect(result.current.context.token).toBe('test-token')
+      }
+    })
+
+    it('sets error when auth context has no payload', () => {
+      const { result } = renderHook(() => useAtlanAuth())
+
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'ATLAN_AUTH_CONTEXT' },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      expect(result.current.status).toBe('error')
+      if (result.current.status === 'error') {
+        expect(result.current.message).toContain('without payload')
+      }
+    })
+
+    it('handles ATLAN_LOGOUT by clearing state', () => {
+      const { result } = renderHook(() => useAtlanAuth())
+
+      // First authenticate
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: {
+              type: 'ATLAN_AUTH_CONTEXT',
+              payload: {
+                token: 'test-token',
+                user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
+                page: { route: '/asset', params: { id: 'asset-guid-123' } },
+                expiresAt: Date.now() + 3600000,
+              },
+            },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      expect(result.current.status).toBe('authenticated')
+
+      // Then logout
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'ATLAN_LOGOUT' },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      expect(result.current.status).toBe('logged_out')
+      expect(result.current.assetId).toBeNull()
+    })
+
+    it('times out if no handshake received within 10 seconds', () => {
+      const { result } = renderHook(() => useAtlanAuth())
+
+      expect(result.current.status).toBe('connecting')
+
+      act(() => {
+        vi.advanceTimersByTime(10_000)
+      })
+
+      expect(result.current.status).toBe('error')
+      if (result.current.status === 'error') {
+        expect(result.current.message).toContain('timed out')
+      }
+    })
+
+    it('clears handshake timeout after receiving handshake', () => {
+      const { result } = renderHook(() => useAtlanAuth())
+
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'ATLAN_HANDSHAKE' },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      // Advance past timeout — should NOT switch to error
+      act(() => {
+        vi.advanceTimersByTime(10_000)
+      })
+
+      // Still connecting (not error) because handshake was received
+      expect(result.current.status).toBe('connecting')
+    })
+
+    it('handles ATLAN_TOKEN_REFRESH', () => {
+      const { result } = renderHook(() => useAtlanAuth())
+
+      // First authenticate
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: {
+              type: 'ATLAN_AUTH_CONTEXT',
+              payload: {
+                token: 'old-token',
+                user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
+                page: { route: '/asset', params: { id: 'guid-1' } },
+                expiresAt: Date.now() + 3600000,
+              },
+            },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      // Refresh token
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: {
+              type: 'ATLAN_TOKEN_REFRESH',
+              payload: {
+                token: 'new-token',
+                user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
+                page: { route: '/asset', params: { id: 'guid-1' } },
+                expiresAt: Date.now() + 7200000,
+              },
+            },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      if (result.current.status === 'authenticated') {
+        expect(result.current.context.token).toBe('new-token')
+      }
+    })
+
+    it('schedules proactive token refresh 5 minutes before expiry', () => {
+      renderHook(() => useAtlanAuth())
+
+      const expiresAt = Date.now() + 10 * 60 * 1000 // 10 min from now
+
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: {
+              type: 'ATLAN_AUTH_CONTEXT',
+              payload: {
+                token: 'test-token',
+                user: { id: 'u1', username: 'testuser', email: 'test@atlan.com' },
+                page: { route: '/asset', params: { id: 'guid-1' } },
+                expiresAt,
+              },
+            },
+            origin: 'https://atlan.com',
+          })
+        )
+      })
+
+      // Advance to 5 minutes before expiry (5 min from now)
+      act(() => {
+        vi.advanceTimersByTime(5 * 60 * 1000)
+      })
+
+      // Should have sent a token refresh request
+      expect(window.parent.postMessage).toHaveBeenCalledWith(
+        { type: 'IFRAME_TOKEN_REQUEST' },
+        '*'
       )
     })
-
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
-    })
-
-    expect(result.current.assetId).toBe('postmessage-guid')
   })
 
-  it('falls back to URL ?assetId= param when no postMessage page data', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '?assetId=url-asset-guid' },
-      writable: true,
+  describe('dev mode', () => {
+    afterEach(() => {
+      import.meta.env.VITE_DEV_MODE = ''
+      import.meta.env.VITE_ATLAN_API_TOKEN = ''
+      import.meta.env.VITE_ATLAN_ASSET_GUID = ''
     })
 
-    const { result } = renderHook(() => useAtlanAuth())
+    it('immediately authenticates with env var token and GUID', () => {
+      import.meta.env.VITE_DEV_MODE = 'true'
+      import.meta.env.VITE_ATLAN_API_TOKEN = 'dev-token-abc'
+      import.meta.env.VITE_ATLAN_ASSET_GUID = 'guid-from-env'
 
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
+      const { result } = renderHook(() => useAtlanAuth())
+
+      expect(result.current.status).toBe('authenticated')
+      expect(result.current.assetId).toBe('guid-from-env')
+      if (result.current.status === 'authenticated') {
+        expect(result.current.context.token).toBe('dev-token-abc')
+        expect(result.current.context.user.username).toBe('dev')
+        expect(result.current.context.page.params.id).toBe('guid-from-env')
+      }
     })
 
-    expect(result.current.assetId).toBe('url-asset-guid')
-  })
+    it('returns error when token is missing', () => {
+      import.meta.env.VITE_DEV_MODE = 'true'
+      import.meta.env.VITE_ATLAN_API_TOKEN = ''
+      import.meta.env.VITE_ATLAN_ASSET_GUID = 'some-guid'
 
-  it('sets assetId to null when no postMessage and no URL param', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '' },
-      writable: true,
+      const { result } = renderHook(() => useAtlanAuth())
+
+      expect(result.current.status).toBe('error')
+      if (result.current.status === 'error') {
+        expect(result.current.message).toContain('VITE_ATLAN_API_TOKEN')
+      }
     })
 
-    const { result } = renderHook(() => useAtlanAuth())
+    it('returns error when asset GUID is missing', () => {
+      import.meta.env.VITE_DEV_MODE = 'true'
+      import.meta.env.VITE_ATLAN_API_TOKEN = 'some-token'
+      import.meta.env.VITE_ATLAN_ASSET_GUID = ''
 
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
+      const { result } = renderHook(() => useAtlanAuth())
+
+      expect(result.current.status).toBe('error')
+      if (result.current.status === 'error') {
+        expect(result.current.message).toContain('VITE_ATLAN_ASSET_GUID')
+      }
     })
 
-    expect(result.current.assetId).toBeNull()
-  })
+    it('does not set up postMessage listener in dev mode', () => {
+      import.meta.env.VITE_DEV_MODE = 'true'
+      import.meta.env.VITE_ATLAN_API_TOKEN = 'dev-token'
+      import.meta.env.VITE_ATLAN_ASSET_GUID = 'dev-guid'
 
-  it('transitions to authenticated when onReady fires', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '?assetId=asset-guid-123' },
-      writable: true,
+      const addEventSpy = vi.spyOn(window, 'addEventListener')
+
+      renderHook(() => useAtlanAuth())
+
+      const messageListeners = addEventSpy.mock.calls.filter(
+        ([event]) => event === 'message'
+      )
+      expect(messageListeners).toHaveLength(0)
+
+      addEventSpy.mockRestore()
     })
-
-    const { result } = renderHook(() => useAtlanAuth())
-
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
-    })
-
-    expect(result.current.status).toBe('authenticated')
-    expect(result.current.atlan).not.toBeNull()
-    expect(result.current.token).toBe('sdk-token')
-    expect(result.current.assetId).toBe('asset-guid-123')
-    expect(result.current.error).toBeNull()
-  })
-
-  it('handles onError callback', () => {
-    const { result } = renderHook(() => useAtlanAuth())
-
-    act(() => {
-      const onError = capturedOptions.onError as (error: Error) => void
-      onError(new Error('Auth failed'))
-    })
-
-    expect(result.current.status).toBe('error')
-    expect(result.current.error).toBe('Auth failed')
-  })
-
-  it('handles onError with missing message', () => {
-    const { result } = renderHook(() => useAtlanAuth())
-
-    act(() => {
-      const onError = capturedOptions.onError as (error: { message?: string }) => void
-      onError({})
-    })
-
-    expect(result.current.status).toBe('error')
-    expect(result.current.error).toBe('Authentication failed')
-  })
-
-  it('handles onLogout callback', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '?assetId=asset-1' },
-      writable: true,
-    })
-
-    const { result } = renderHook(() => useAtlanAuth())
-
-    // First authenticate
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
-    })
-    expect(result.current.status).toBe('authenticated')
-
-    // Then logout
-    act(() => {
-      const onLogout = capturedOptions.onLogout as () => void
-      onLogout()
-    })
-
-    expect(result.current.status).toBe('logged_out')
-    expect(result.current.atlan).toBeNull()
-    expect(result.current.token).toBeNull()
-    expect(result.current.assetId).toBeNull()
-    expect(result.current.error).toBeNull()
-  })
-
-  it('updates token on onTokenRefresh', () => {
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, search: '?assetId=asset-1' },
-      writable: true,
-    })
-
-    const { result } = renderHook(() => useAtlanAuth())
-
-    // First authenticate
-    act(() => {
-      const onReady = capturedOptions.onReady as () => void
-      onReady()
-    })
-    expect(result.current.token).toBe('sdk-token')
-
-    // Refresh — onTokenRefresh receives new token string directly
-    act(() => {
-      const onTokenRefresh = capturedOptions.onTokenRefresh as (token: string) => void
-      onTokenRefresh('refreshed-token')
-    })
-
-    expect(result.current.token).toBe('refreshed-token')
-  })
-
-  it('cleans up postMessage listener on unmount', () => {
-    const removeSpy = vi.spyOn(window, 'removeEventListener')
-
-    const { unmount } = renderHook(() => useAtlanAuth())
-    unmount()
-
-    const messageRemovals = removeSpy.mock.calls.filter(
-      ([event]) => event === 'message'
-    )
-    expect(messageRemovals).toHaveLength(1)
-
-    removeSpy.mockRestore()
   })
 })
