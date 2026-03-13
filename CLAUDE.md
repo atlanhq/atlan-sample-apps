@@ -36,3 +36,30 @@ Recommended flow:
 - SDK and CLI repos are read-only references.
 - Log CLI improvement requests in `.claude/skills/_shared/references/cli-change-proposals.md`.
 - Never hardcode machine-local absolute paths.
+
+## Security
+
+> Follow these security guidelines for every change to the sample apps.
+
+### Contact
+
+- **Security Team:** #bu-security-and-it on Slack
+
+### Quickstart for Agents
+
+This repo contains sample connectors and quickstart apps demonstrating the Application SDK. Samples use `ATLAN_BASE_URL` and `ATLAN_API_KEY` from environment. Review every change for:
+
+- **API key in sample code** — sample apps must never hardcode `ATLAN_API_KEY` values; always read from environment; sample README files must not include real API keys.
+- **Sample credentials** — any credentials shown in templates or documentation must be clearly marked as placeholders (e.g., `<YOUR_API_KEY>`); real secrets must not be committed.
+
+### Security Invariants
+
+- **[MUST]** `ATLAN_API_KEY` must never be hardcoded in sample code or README files.
+- **[MUST]** Sample templates must use placeholder values, not real credentials.
+
+### Review Checklist
+
+- [ ] No hardcoded `ATLAN_API_KEY` or real credentials in sample code or templates
+- [ ] README and docs use placeholder values (`<YOUR_API_KEY>`)
+- [ ] Sample apps read credentials from environment variables only
+- [ ] All direct dependencies in `pyproject.toml` pinned exactly
