@@ -22,13 +22,26 @@ export function useAtlanAuth(): AtlanAuthState {
     error: null,
   })
   const atlanRef = useRef<AtlanAuth | null>(null)
+  const assetIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     const origin = import.meta.env.VITE_ATLAN_ORIGIN || window.location.origin
+
+    // Listen for ATLAN_AUTH_CONTEXT to extract page.params.id (asset GUID).
+    // The SDK doesn't expose the page field, so we capture it directly.
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data ?? {}
+      if (data.type === 'ATLAN_AUTH_CONTEXT') {
+        const page = data.payload?.page ?? data.page
+        assetIdRef.current = page?.params?.id ?? null
+      }
+    }
+    window.addEventListener('message', handleMessage)
+
     const atlan = new AtlanAuth({
       origin,
       onReady: () => {
-        const assetId = getAssetIdFromUrl()
+        const assetId = assetIdRef.current ?? getAssetIdFromUrl()
         setState({
           status: 'authenticated',
           atlan,
@@ -49,6 +62,10 @@ export function useAtlanAuth(): AtlanAuthState {
     })
     atlanRef.current = atlan
     atlan.init().catch(() => {}) // errors handled by onError
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+    }
   }, [])
 
   return state
