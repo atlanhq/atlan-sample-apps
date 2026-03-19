@@ -65,7 +65,8 @@ packages = [
     "app"
 ]
 
-# for local development
+# For local development — uncomment to use a local or branch version of the SDK.
+# The load_to_lakehouse activity requires SDK >= 2.7.0 (or the feat/load-to-lakehouse-activity branch).
 # [tool.uv.sources]
 # atlan-application-sdk = { path = "../application-sdk", editable = true }
-# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" }
+# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", branch = "feat/load-to-lakehouse-activity" }
