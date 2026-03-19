@@ -3,6 +3,14 @@ This file contains the workflow definition for the SQL metadata extraction appli
 
 Note:
 - The run method is overriden from the base class for demostration purposes.
+
+Lakehouse Load:
+- After extraction and transformation, the workflow can load data into an
+  Iceberg lakehouse via the MDLH service. This is enabled by setting:
+    ENABLE_LAKEHOUSE_LOAD=true
+    LH_LOAD_RAW_NAMESPACE / LH_LOAD_RAW_TABLE_NAME      (raw parquet)
+    LH_LOAD_TRANSFORMED_NAMESPACE / LH_LOAD_TRANSFORMED_TABLE_NAME  (transformed jsonl)
+  See application_sdk.constants for all configuration options.
 """
 
 import asyncio
@@ -10,6 +18,12 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, List
 
 from app.activities import SQLMetadataExtractionActivities
+from application_sdk.constants import (
+    ENABLE_LAKEHOUSE_LOAD,
+    LH_LOAD_RAW_MODE,
+    LH_LOAD_RAW_NAMESPACE,
+    LH_LOAD_RAW_TABLE_NAME,
+)
 from application_sdk.observability.decorators.observability_decorator import (
     observability,
 )
@@ -91,6 +105,30 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
         ]
         await asyncio.gather(*fetch_and_transforms)
 
+        # --- Lakehouse Load (raw) ---
+        # After all fetches complete, load raw parquet files into an Iceberg table.
+        # Enabled via ENABLE_LAKEHOUSE_LOAD=true + LH_LOAD_RAW_NAMESPACE/TABLE_NAME env vars.
+        if (
+            ENABLE_LAKEHOUSE_LOAD
+            and LH_LOAD_RAW_NAMESPACE
+            and LH_LOAD_RAW_TABLE_NAME
+        ):
+            await self._execute_lakehouse_load(
+                workflow_args,
+                output_path=f"{workflow_args.get('output_path', '')}/raw",
+                namespace=LH_LOAD_RAW_NAMESPACE,
+                table_name=LH_LOAD_RAW_TABLE_NAME,
+                mode=LH_LOAD_RAW_MODE,
+                file_extension=".parquet",
+            )
+
+        # --- Exit activities (upload to Atlan + lakehouse load for transformed) ---
+        # run_exit_activities handles:
+        #   1. upload_to_atlan (if ENABLE_ATLAN_UPLOAD=true)
+        #   2. load_to_lakehouse for transformed jsonl (if ENABLE_LAKEHOUSE_LOAD=true
+        #      + LH_LOAD_TRANSFORMED_NAMESPACE/TABLE_NAME env vars)
+        await self.run_exit_activities(workflow_args)
+
     @staticmethod
     def get_activities(
         activities: SQLMetadataExtractionActivities,
@@ -112,4 +150,6 @@ class SQLMetadataExtractionWorkflow(BaseSQLMetadataExtractionWorkflow):
             activities.fetch_columns,
             activities.credential_extraction_demo_activity,
             activities.transform_data,
+            activities.upload_to_atlan,
+            activities.load_to_lakehouse,
         ]
