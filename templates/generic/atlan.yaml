@@ -1,0 +1,23 @@
+name: generic
+# app_id:  # Assigned on first deploy via Global Marketplace
+display_name: "generic"
+type: connector
+execution_mode: argo
+icon_url: ""
+visibility: public
+
+deploy:
+  replicaCount: 1
+  containerPort: 8000
+  env: {}
+  dapr:
+    objectstore: false
+    secretstore: true
+    statestore: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

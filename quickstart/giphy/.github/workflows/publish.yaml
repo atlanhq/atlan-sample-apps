@@ -1,0 +1,29 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or SHA to build and publish (default: current ref)"
+        required: false
+        type: string
+      channel:
+        description: "Target channel: 'all' (draft, needs approval), 'beta', 'staging' (auto-approved). Ignored when tenants is set."
+        required: false
+        type: string
+        default: "all"
+      tenants:
+        description: "Comma-separated tenant IDs for targeted publish. Takes precedence over channel."
+        required: false
+        type: string
+
+jobs:
+  publish:
+    uses: atlanhq/application-sdk/.github/workflows/publish-app.yaml@main
+    with:
+      ref: ${{ inputs.ref || github.ref }}
+      channel: ${{ inputs.channel || 'all' }}
+      tenants: ${{ inputs.tenants || '' }}
+    secrets: inherit
