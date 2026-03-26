@@ -1,0 +1,38 @@
+name: Validate Deploy Scaffolding
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "templates/_shared/**"
+      - "**/atlan.yaml"
+      - "**/.github/workflows/build-image.yaml"
+      - "**/.github/workflows/publish.yaml"
+      - "scripts/generate-deploy-scaffolding.sh"
+      - ".github/workflows/validate-deploy-scaffolding.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-scaffolding:
+    name: Validate Deploy Scaffolding
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Verify deploy scaffolding is up to date
+        run: |
+          bash scripts/generate-deploy-scaffolding.sh
+          if ! git diff --quiet; then
+            echo "ERROR: Deploy scaffolding is out of date."
+            echo "The generate-deploy-scaffolding workflow should have updated it automatically."
+            echo "If you're seeing this, re-run the 'Generate Deploy Scaffolding' workflow on your PR."
+            echo ""
+            echo "Diff:"
+            git diff
+            exit 1
+          fi
+          echo "Deploy scaffolding is up to date"

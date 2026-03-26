@@ -1,0 +1,41 @@
+# =============================================================================
+# APP IDENTITY (required)
+# =============================================================================
+name: mysql                     # Deployment namespace name
+# app_id:                          # Get from Global Marketplace after registering your app
+display_name: "mysql"           # UI display name
+type: connector                     # App type (e.g. connector, utility)
+
+# =============================================================================
+# APP METADATA (optional — have defaults)
+# =============================================================================
+creator_org: "Atlan"               # Organization that created this app
+execution_mode: argo               # Execution mode (argo)
+visibility: public                 # Visibility (public)
+short_description: ""              # Short description for marketplace listing
+long_description: ""               # Detailed description for marketplace listing
+tags: []                           # Tags for marketplace discovery
+icon_url: ""                       # URL to app icon
+is_system_app: false               # Whether this is a system app
+allowed_tenants: []                # Restrict to specific tenants (empty = all)
+# argo_package_names:              # Argo package names (if applicable)
+#   - "@atlan/my-package"
+
+# =============================================================================
+# DEPLOYMENT CONFIG
+# =============================================================================
+deploy:
+  replicaCount: 1
+  containerPort: 8000
+  env: {}
+  dapr:
+    objectstore: false
+    secretstore: true
+    statestore: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
