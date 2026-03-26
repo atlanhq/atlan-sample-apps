@@ -1,0 +1,43 @@
+name: Generate Deploy Scaffolding
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "templates/_shared/**"
+      - "**/atlan-app-registry.json"
+      - "scripts/generate-deploy-scaffolding.sh"
+      - ".github/workflows/generate-deploy-scaffolding.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-scaffolding:
+    runs-on: ubuntu-latest
+    # Don't run on PRs from forks (token won't have push access)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.ORG_PAT_GITHUB }}
+
+      - name: Generate deploy scaffolding
+        run: bash scripts/generate-deploy-scaffolding.sh
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "*/atlan.yaml" "*/.github/workflows/build-image.yaml" "*/.github/workflows/publish.yaml"
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: auto-regenerate deploy scaffolding"
+            git push
+          else
+            echo "Deploy scaffolding is already up to date"
+          fi
