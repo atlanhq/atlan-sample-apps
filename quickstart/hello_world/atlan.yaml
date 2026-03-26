@@ -1,9 +1,9 @@
 # =============================================================================
 # APP IDENTITY (required)
 # =============================================================================
-name: hello_world                    # Deployment namespace name
+name: helloworld                     # Deployment namespace name
 # app_id:                          # Get from Global Marketplace after registering your app
-display_name: "hello_world"          # UI display name
+display_name: "helloworld"           # UI display name
 type: connector                    # App type (e.g. connector, orchestrator)
 
 # =============================================================================
