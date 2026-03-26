@@ -51,7 +51,16 @@ for MANIFEST in $MANIFESTS; do
   fi
 
   REL_PATH="${APP_DIR#"$REPO_ROOT/"}"
-  echo "Processing: $REL_PATH ($APP_NAME)"
+
+  # Derive app type from top-level directory
+  TOP_DIR=$(echo "$REL_PATH" | cut -d'/' -f1)
+  case "$TOP_DIR" in
+    connectors) APP_TYPE="connector" ;;
+    utilities)  APP_TYPE="utility" ;;
+    *)          APP_TYPE="connector" ;;
+  esac
+
+  echo "Processing: $REL_PATH ($APP_NAME, type=$APP_TYPE)"
 
   # Copy workflow files
   mkdir -p "$APP_DIR/.github/workflows"
@@ -59,7 +68,7 @@ for MANIFEST in $MANIFESTS; do
   cp "$WORKFLOW_SRC/publish.yaml" "$APP_DIR/.github/workflows/publish.yaml"
 
   # Generate atlan.yaml from template
-  sed "s/{{NAME}}/$APP_NAME/g" "$ATLAN_YAML_TEMPLATE" > "$APP_DIR/atlan.yaml"
+  sed -e "s/{{NAME}}/$APP_NAME/g" -e "s/{{TYPE}}/$APP_TYPE/g" "$ATLAN_YAML_TEMPLATE" > "$APP_DIR/atlan.yaml"
 
   UPDATED=$((UPDATED + 1))
   echo "  ✓ build-image.yaml, publish.yaml, atlan.yaml"
