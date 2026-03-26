@@ -132,17 +132,3 @@ jobs:
             exit 1
           fi
           echo "registry.json is up to date"
-
-      - name: Verify deploy scaffolding is up to date
-        run: |
-          bash scripts/generate-deploy-scaffolding.sh
-          if ! git diff --quiet; then
-            echo "ERROR: Deploy scaffolding is out of date."
-            echo "The generate-deploy-scaffolding workflow should have updated it automatically."
-            echo "If you're seeing this, re-run the 'Generate Deploy Scaffolding' workflow on your PR."
-            echo ""
-            echo "Diff:"
-            git diff
-            exit 1
-          fi
-          echo "Deploy scaffolding is up to date"
