@@ -1,11 +1,29 @@
-name: anaplan
-# app_id:  # Assigned on first deploy via Global Marketplace
-display_name: "anaplan"
-type: connector
-execution_mode: argo
-icon_url: ""
-visibility: public
+# =============================================================================
+# APP IDENTITY (required)
+# =============================================================================
+name: anaplan                    # Deployment namespace name
+# app_id:                          # Get from Global Marketplace after registering your app
+display_name: "anaplan"          # UI display name
+type: connector                    # App type (e.g. connector, orchestrator)
 
+# =============================================================================
+# APP METADATA (optional — have defaults)
+# =============================================================================
+creator_org: "Atlan"               # Organization that created this app
+execution_mode: argo               # Execution mode (argo)
+visibility: public                 # Visibility (public)
+short_description: ""              # Short description for marketplace listing
+long_description: ""               # Detailed description for marketplace listing
+tags: []                           # Tags for marketplace discovery
+icon_url: ""                       # URL to app icon
+is_system_app: false               # Whether this is a system app
+allowed_tenants: []                # Restrict to specific tenants (empty = all)
+# argo_package_names:              # Argo package names (if applicable)
+#   - "@atlan/my-package"
+
+# =============================================================================
+# DEPLOYMENT CONFIG
+# =============================================================================
 deploy:
   replicaCount: 1
   containerPort: 8000
