@@ -43,12 +43,7 @@ UPDATED=0
 
 for MANIFEST in $MANIFESTS; do
   APP_DIR=$(dirname "$MANIFEST")
-  APP_NAME=$(jq -r '.name // empty' "$MANIFEST")
-
-  if [ -z "$APP_NAME" ]; then
-    echo "WARN: Skipping $MANIFEST — missing 'name' field"
-    continue
-  fi
+  APP_NAME=$(basename "$APP_DIR")
 
   REL_PATH="${APP_DIR#"$REPO_ROOT/"}"
 

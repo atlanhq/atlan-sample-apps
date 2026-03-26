@@ -1,9 +1,9 @@
 # =============================================================================
 # APP IDENTITY (required)
 # =============================================================================
-name: assetdescriptorreminder                     # Deployment namespace name
+name: asset_descriptor_reminder                     # Deployment namespace name
 # app_id:                          # Get from Global Marketplace after registering your app
-display_name: "assetdescriptorreminder"           # UI display name
+display_name: "asset_descriptor_reminder"           # UI display name
 type: utility                     # App type (e.g. connector, utility)
 
 # =============================================================================
