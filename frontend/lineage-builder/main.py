@@ -67,7 +67,7 @@ def register_dev_proxy(fastapi_app):
 async def main():
     logger.info("Starting Manual Lineage Builder application")
 
-    server = APIServer()
+    server = APIServer(has_configmap=True)
 
     dev_mode = os.environ.get("DEV_MODE", "").lower() == "true"
     if dev_mode and os.environ.get("ATLAN_BASE_URL"):
