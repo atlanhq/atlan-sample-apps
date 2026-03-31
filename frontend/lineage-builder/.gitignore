@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+temporal.db
+
+# Node
+node_modules/
+frontend/static/
+frontend/ui/.env.local
+
+# Misc
+.DS_Store
+*.log
+components/
