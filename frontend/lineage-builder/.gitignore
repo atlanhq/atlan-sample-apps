@@ -14,4 +14,4 @@ frontend/ui/.env.local
 # Misc
 .DS_Store
 *.log
-components/
+/components/
