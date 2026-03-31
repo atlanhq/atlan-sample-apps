@@ -1,3 +1,4 @@
+# Embedded Manual Lineage Builder — Atlan Application SDK
 import asyncio
 import os
 
