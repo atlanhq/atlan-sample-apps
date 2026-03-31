@@ -7,7 +7,7 @@ on:
       - frontend-poc
     paths:
       - 'frontend/lineage-builder/**'
-      - '.github/workflows/build-lineage-builder.yaml'
+      - '.github/workflows/build-embedded-lineage-builder.yaml'
       - '!frontend/lineage-builder/**.md'
       - '!frontend/lineage-builder/images/**'
   workflow_dispatch:
