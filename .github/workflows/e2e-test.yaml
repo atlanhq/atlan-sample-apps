@@ -57,7 +57,7 @@ jobs:
           echo "Total components downloaded: $file_count"
 
       - name: Upload components artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: sdk-components
           path: components/
