@@ -7,7 +7,7 @@ requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[daft,sqlalchemy,tests,workflows,iam-auth]==2.3.1",
+    "atlan-application-sdk[daft,sqlalchemy,tests,workflows,iam-auth]",
     "poethepoet",
     "aiomysql>=0.3.0",
 ]
@@ -65,7 +65,8 @@ packages = [
     "app"
 ]
 
-# for local development
-# [tool.uv.sources]
-# atlan-application-sdk = { path = "../application-sdk", editable = true }
-# atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", rev = "349e45a1ee273315a4474f645332e2ef4c8569a9" }
+# The load_to_lakehouse activity requires the feat/load-to-lakehouse-activity branch
+# until it is released. Pin back to a version (e.g. ==2.7.0) once the SDK is published.
+[tool.uv.sources]
+atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk", branch = "feat/load-to-lakehouse-activity" }
+
