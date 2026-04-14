@@ -1,0 +1,27 @@
+name: observability_monitor
+display_name: "Observability Monitor"
+type: utility
+
+creator_org: "Atlan"
+execution_mode: argo
+visibility: public
+short_description: "Shows observability execution history for assets via CustomEntity + Observability.Executions CM."
+long_description: ""
+tags:
+  - observability
+  - custom-entity
+icon_url: "https://assets.atlan.com/assets/dq-test.svg"
+is_system_app: false
+allowed_tenants: []
+
+deploy:
+  replicaCount: 1
+  containerPort: 8000
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
