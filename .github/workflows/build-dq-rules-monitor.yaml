@@ -1,0 +1,71 @@
+name: Build Data Quality Rules Monitor Image
+
+on:
+    push:
+        branches:
+            - main
+            - feat/data-quality-rules-monitor
+        paths:
+            - "utilities/data_quality_rules_monitor/**"
+            - "Dockerfile"
+            - ".github/workflows/build-dq-rules-monitor.yaml"
+            - "!**.md"
+            - "!images/**"
+            - "!**.png"
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        concurrency:
+            group: ${{ github.workflow }}-${{ github.ref }}
+            cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+        timeout-minutes: 20
+        steps:
+            - uses: actions/checkout@v4.0.0
+              with:
+                  fetch-depth: 0
+
+            - name: Get branch name
+              run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+              id: get_branch
+
+            - run: echo "REPOSITORY_NAME=`echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//"`" >> $GITHUB_ENV
+              shell: bash
+
+            - name: Get version tag
+              run: echo "version=$(echo `git ls-remote https://github.com/${GITHUB_REPOSITORY_OWNER}/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)abcd" >> $GITHUB_OUTPUT
+              id: get_version
+
+            - name: Lowercase branch name
+              run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+              id: get_lowercase_branch
+
+            - name: Copy root Dockerfile into app dir
+              run: cp Dockerfile ./utilities/data_quality_rules_monitor/Dockerfile
+
+            - name: Set up Buildx
+              id: buildx
+              uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+            - name: Login to GitHub Registry
+              uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+              with:
+                  registry: ghcr.io
+                  username: $GITHUB_ACTOR
+                  password: ${{ secrets.ORG_PAT_GITHUB }}
+
+            - name: Build and push docker image
+              id: ghcr_docker_build
+              uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # v6.17.0
+              with:
+                  context: ./utilities/data_quality_rules_monitor
+                  file: ./utilities/data_quality_rules_monitor/Dockerfile
+                  push: true
+                  platforms: linux/amd64,linux/arm64
+                  tags: |
+                      ghcr.io/${{ github.repository_owner }}/atlan-sample-apps-dq-rules-monitor-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
+                      ghcr.io/${{ github.repository_owner }}/atlan-sample-apps-dq-rules-monitor-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+              env:
+                  DOCKER_CLIENT_TIMEOUT: 600
+                  COMPOSE_HTTP_TIMEOUT: 600
