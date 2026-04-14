@@ -1,0 +1,27 @@
+name: data_quality_rules_monitor
+display_name: "Data Quality Rules Monitor"
+type: utility
+
+creator_org: "Atlan"
+execution_mode: argo
+visibility: public
+short_description: "Shows DQ rules (CustomEntity assets) linked to the current asset via applicationQualifiedName."
+long_description: ""
+tags:
+  - data-quality
+  - custom-entity
+icon_url: "https://assets.atlan.com/assets/dq-test.svg"
+is_system_app: false
+allowed_tenants: []
+
+deploy:
+  replicaCount: 1
+  containerPort: 8000
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
