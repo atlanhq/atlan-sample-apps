@@ -6,26 +6,33 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    base: "./",
     build: {
       outDir: "../static",
       emptyOutDir: true,
+      assetsDir: "assets",
       rollupOptions: {
         output: {
           entryFileNames: "assets/index.js",
-          chunkFileNames: "assets/[name].js",
-          assetFileNames: "assets/[name][extname]",
+          chunkFileNames: "assets/chunk-[name].js",
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name && assetInfo.name.endsWith(".css"))
+              return "assets/index.css";
+            return "assets/[name][extname]";
+          },
         },
       },
     },
     server: {
-      port: 5173,
-      proxy: {
-        "/api/meta": {
-          target: env.VITE_ATLAN_BASE_URL || "https://localhost",
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      proxy: env.VITE_ATLAN_BASE_URL
+        ? {
+            "/api/meta": {
+              target: env.VITE_ATLAN_BASE_URL,
+              changeOrigin: true,
+              secure: true,
+            },
+          }
+        : undefined,
     },
   };
 });

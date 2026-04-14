@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Frontend
+frontend/ui/node_modules/
+frontend/static/
+
+# Re-include React components (repo-level .gitignore excludes all components/)
+!frontend/ui/src/components/
+
+# Secrets — never commit
+frontend/ui/.env.local
+frontend/ui/.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
