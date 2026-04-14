@@ -8,7 +8,7 @@ export default function App() {
   const { authState, token, baseUrl, assetId, error: authError } =
     useAtlanAuth();
 
-  const { rules, loading, error } = useDqRules(baseUrl, token, assetId);
+  const { rules, viewMode, loading, error } = useDqRules(baseUrl, token, assetId);
 
   if (authState !== "authenticated") {
     return <LoadingState authState={authState} error={authError} />;
@@ -27,7 +27,7 @@ export default function App() {
     <div className="app">
       {error && <div className="alert alert-error">{error}</div>}
       <StatsWidgets rules={rules} />
-      <RulesTable rules={rules} />
+      <RulesTable rules={rules} viewMode={viewMode} />
     </div>
   );
 }
