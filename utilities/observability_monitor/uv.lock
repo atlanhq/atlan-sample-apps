@@ -667,39 +667,6 @@ wheels = [
 ]
 
 [[package]]
-name = "data-quality-rules-monitor"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "atlan-application-sdk", extra = ["tests", "workflows"] },
-    { name = "httpx" },
-    { name = "poethepoet" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "coverage" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==2.6.0" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "poethepoet", specifier = ">=0.37.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "coverage" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[[package]]
 name = "distlib"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1759,6 +1726,39 @@ wheels = [
 ]
 
 [[package]]
+name = "observability-monitor"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "atlan-application-sdk", extra = ["tests", "workflows"] },
+    { name = "httpx" },
+    { name = "poethepoet" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "coverage" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==2.6.0" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "poethepoet", specifier = ">=0.37.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "coverage" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[[package]]
 name = "opentelemetry-api"
 version = "1.39.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1941,11 +1941,11 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.0"
+version = "26.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d2cf530f3accf79c4fca01e96ffc950d8a52213bd8e4/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/df/de/0d2b39fb4af88a0258f3bac87dfcbb48e73fbdea4a2ed0e2213f9a4c2f9a/packaging-26.1.tar.gz", hash = "sha256:f042152b681c4bfac5cae2742a55e103d27ab2ec0f3d88037136b6bfe7c9c5de", size = 215519, upload-time = "2026-04-14T21:12:49.362Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/c2/920ef838e2f0028c8262f16101ec09ebd5969864e5a64c4c05fad0617c56/packaging-26.1-py3-none-any.whl", hash = "sha256:5d9c0669c6285e491e0ced2eee587eaf67b670d94a19e94e3984a481aba6802f", size = 95831, upload-time = "2026-04-14T21:12:47.56Z" },
 ]
 
 [[package]]
@@ -3256,7 +3256,7 @@ wheels = [
 
 [[package]]
 name = "virtualenv"
-version = "21.2.3"
+version = "21.2.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "distlib" },
@@ -3264,9 +3264,9 @@ dependencies = [
     { name = "platformdirs" },
     { name = "python-discovery" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/60/8c/bdd9f89f89e4a787ac61bb2da4d884bc45e0c287ec694dfa3170dddd5cfe/virtualenv-21.2.3.tar.gz", hash = "sha256:9bb6d1414ab55ca624371e30c7719c32f183ef44da544ef8aa44a456de7ac191", size = 5844776, upload-time = "2026-04-14T01:10:36.692Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/98/3a7e644e19cb26133488caff231be390579860bbbb3da35913c49a1d0a46/virtualenv-21.2.4.tar.gz", hash = "sha256:b294ef68192638004d72524ce7ef303e9d0cf5a44c95ce2e54a7500a6381cada", size = 5850742, upload-time = "2026-04-14T22:15:31.438Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/19/bc7c4e05f42532863cf2ae7e7e847beab25835934e0410160b47eeff1e35/virtualenv-21.2.3-py3-none-any.whl", hash = "sha256:486652347ea8526d91e9807c0274583cb7ba31dd4942ff10fb5621402f0fe0d8", size = 5828329, upload-time = "2026-04-14T01:10:34.809Z" },
+    { url = "https://files.pythonhosted.org/packages/27/8d/edd0bd910ff803c308ee9a6b7778621af0d10252219ad9f19ef4d4982a61/virtualenv-21.2.4-py3-none-any.whl", hash = "sha256:29d21e941795206138d0f22f4e45ff7050e5da6c6472299fb7103318763861ac", size = 5831232, upload-time = "2026-04-14T22:15:29.342Z" },
 ]
 
 [[package]]
