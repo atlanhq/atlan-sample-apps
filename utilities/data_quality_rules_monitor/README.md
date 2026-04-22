@@ -1,5 +1,6 @@
 # Data Quality Rules Monitor
 
+
 Read-only Atlan embedded app that shows the DQ rules linked to the current asset.
 
 Rules are modeled as `CustomEntity` assets under the `Data Quality` connection and linked to their target asset via `applicationQualifiedName`. This app renders them as a single table — table-level rules (exact match) plus column-level rules (prefix match `<tableQn>/<column>`).
