@@ -57,5 +57,5 @@ jobs:
                       ghcr.io/${{ github.repository_owner }}/atlan-data-quality-rules-monitor:latest
                       ghcr.io/${{ github.repository_owner }}/atlan-data-quality-rules-monitor:${{ steps.short_sha.outputs.sha }}
               env:
-                  DOCKER_CLIENT_TIMEOUT: 600
-                  COMPOSE_HTTP_TIMEOUT: 600
+                  DOCKER_CLIENT_TIMEOUT: 900
+                  COMPOSE_HTTP_TIMEOUT: 900
