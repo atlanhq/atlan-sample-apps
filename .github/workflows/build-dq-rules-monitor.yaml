@@ -38,7 +38,7 @@ jobs:
               id: get_version
 
             - name: Lowercase branch name
-              run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+              run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]' | tr '/' '-')" >> $GITHUB_OUTPUT
               id: get_lowercase_branch
 
             - name: Set up Buildx
