@@ -26,20 +26,13 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Get branch name
-              run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-              id: get_branch
-
-            - run: echo "REPOSITORY_NAME=`echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//"`" >> $GITHUB_ENV
-              shell: bash
-
-            - name: Get version tag
-              run: echo "version=$(echo `git ls-remote https://github.com/${GITHUB_REPOSITORY_OWNER}/${REPOSITORY_NAME}.git ${{ steps.get_branch.outputs.branch }} | awk '{ print $1}' | cut -c1-7`)abcd" >> $GITHUB_OUTPUT
-              id: get_version
+            - name: Get short SHA
+              id: short_sha
+              run: echo "sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
             - name: Lowercase branch name
-              run: echo "lowercase_branch=$(echo '${{ steps.get_branch.outputs.branch }}' | tr '[:upper:]' '[:lower:]' | tr '/' '-')" >> $GITHUB_OUTPUT
               id: get_lowercase_branch
+              run: echo "lowercase_branch=$(echo '${GITHUB_REF#refs/heads/}' | tr '[:upper:]' '[:lower:]' | tr '/' '-')" >> $GITHUB_OUTPUT
 
             - name: Set up Buildx
               id: buildx
@@ -49,7 +42,7 @@ jobs:
               uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
               with:
                   registry: ghcr.io
-                  username: $GITHUB_ACTOR
+                  username: ${{ github.actor }}
                   password: ${{ secrets.ORG_PAT_GITHUB }}
 
             - name: Build and push docker image
@@ -61,8 +54,8 @@ jobs:
                   push: true
                   platforms: linux/amd64,linux/arm64
                   tags: |
-                      ghcr.io/${{ github.repository_owner }}/atlan-sample-apps-dq-rules-monitor-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:latest
-                      ghcr.io/${{ github.repository_owner }}/atlan-sample-apps-dq-rules-monitor-${{ steps.get_lowercase_branch.outputs.lowercase_branch }}:${{ steps.get_version.outputs.version }}
+                      ghcr.io/${{ github.repository_owner }}/atlan-data-quality-rules-monitor:latest
+                      ghcr.io/${{ github.repository_owner }}/atlan-data-quality-rules-monitor:${{ steps.short_sha.outputs.sha }}
               env:
                   DOCKER_CLIENT_TIMEOUT: 600
                   COMPOSE_HTTP_TIMEOUT: 600
