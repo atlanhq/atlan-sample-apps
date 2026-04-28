@@ -1,0 +1,47 @@
+# =============================================================================
+# APP IDENTITY (required)
+# =============================================================================
+name: lakehouse_batch_processor
+display_name: "Lakehouse Batch Processor"
+type: utility
+
+# =============================================================================
+# APP METADATA
+# =============================================================================
+creator_org: "Atlan"
+execution_mode: argo
+visibility: public
+short_description: "Reads Iceberg events, calls a hello-world API, writes randomly-classified outcomes."
+long_description: |
+  Sample app demonstrating the v3 Application SDK pattern:
+   - Read events from a lakehouse Iceberg table.
+   - POST each event to a public hello-world API (httpbin.org/anything).
+   - Randomly classify outcomes as SUCCESS / RETRY / FAILED.
+   - Append batch results to a partitioned outcomes Iceberg table.
+tags:
+  - sample
+  - lakehouse
+  - iceberg
+  - v3-sdk
+icon_url: ""
+is_system_app: false
+allowed_tenants: []
+
+# =============================================================================
+# DEPLOYMENT CONFIG
+# =============================================================================
+deploy:
+  replicaCount: 1
+  containerPort: 8000
+  env: {}
+  dapr:
+    objectstore: false
+    secretstore: true
+    statestore: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
