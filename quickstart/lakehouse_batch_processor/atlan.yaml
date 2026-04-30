@@ -1,31 +1,25 @@
 # =============================================================================
 # APP IDENTITY (required)
 # =============================================================================
-name: lakehouse_batch_processor
-display_name: "Lakehouse Batch Processor"
-type: utility
+name: lakehouse_batch_processor                     # Deployment namespace name
+# app_id:                          # Get from Global Marketplace after registering your app
+display_name: "lakehouse_batch_processor"           # UI display name
+type: connector                     # App type (e.g. connector, utility)
 
 # =============================================================================
-# APP METADATA
+# APP METADATA (optional — have defaults)
 # =============================================================================
-creator_org: "Atlan"
-execution_mode: argo
-visibility: public
-short_description: "Reads Iceberg events, calls a hello-world API, writes randomly-classified outcomes."
-long_description: |
-  Sample app demonstrating the v3 Application SDK pattern:
-   - Read events from a lakehouse Iceberg table.
-   - POST each event to a public hello-world API (httpbin.org/anything).
-   - Randomly classify outcomes as SUCCESS / RETRY / FAILED.
-   - Append batch results to a partitioned outcomes Iceberg table.
-tags:
-  - sample
-  - lakehouse
-  - iceberg
-  - v3-sdk
-icon_url: ""
-is_system_app: false
-allowed_tenants: []
+creator_org: "Atlan"               # Organization that created this app
+execution_mode: argo               # Execution mode (argo)
+visibility: public                 # Visibility (public)
+short_description: ""              # Short description for marketplace listing
+long_description: ""               # Detailed description for marketplace listing
+tags: []                           # Tags for marketplace discovery
+icon_url: ""                       # URL to app icon
+is_system_app: false               # Whether this is a system app
+allowed_tenants: []                # Restrict to specific tenants (empty = all)
+# argo_package_names:              # Argo package names (if applicable)
+#   - "@atlan/my-package"
 
 # =============================================================================
 # DEPLOYMENT CONFIG
