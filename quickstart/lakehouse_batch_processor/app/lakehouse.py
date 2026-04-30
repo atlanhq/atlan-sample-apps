@@ -1,16 +1,14 @@
 """Lakehouse helpers for the batch processor sample.
 
-Uses ``application_sdk.lakehouse.LakehouseInterface`` for all reads/writes —
-this module only owns the sample's table schemas and a small env-driven
-catalog loader.
+Uses ``application_sdk.lakehouse`` for all reads/writes — this module only
+owns the sample's table schemas. Reader / writer are constructed lazily via
+``LakehouseReader.from_env`` / ``LakehouseWriter.from_env`` from the standard
+``ICEBERG_*`` environment variables, so the sample app holds no catalog code.
 """
 
 from __future__ import annotations
 
-import os
-
 import pyarrow as pa
-from application_sdk.lakehouse import LakehouseInterface
 from pyiceberg.partitioning import PartitionField, PartitionSpec
 from pyiceberg.schema import Schema
 from pyiceberg.transforms import IdentityTransform
@@ -60,42 +58,3 @@ def results_partition_spec() -> PartitionSpec:
             name="status",
         )
     )
-
-
-def load_catalog_from_env():
-    """Build a PyIceberg catalog from environment variables.
-
-    Required env vars:
-      - ICEBERG_CATALOG_URI
-      - ICEBERG_CLIENT_ID
-      - ICEBERG_CLIENT_SECRET
-
-    Optional:
-      - ICEBERG_WAREHOUSE (default: "context_store")
-    """
-    from pyiceberg.catalog import load_catalog
-
-    uri = os.environ["ICEBERG_CATALOG_URI"]
-    client_id = os.environ["ICEBERG_CLIENT_ID"]
-    client_secret = os.environ["ICEBERG_CLIENT_SECRET"]
-    warehouse = os.environ.get("ICEBERG_WAREHOUSE", "context_store")
-    return load_catalog(
-        warehouse,
-        **{
-            "type": "rest",
-            "uri": uri,
-            "warehouse": warehouse,
-            "credential": f"{client_id}:{client_secret}",
-            "scope": "PRINCIPAL_ROLE:ALL",
-            "rest.sigv4-enabled": "false",
-        },
-    )
-
-
-def load_lakehouse(app_namespace: str = "samples") -> LakehouseInterface:
-    """Build a ``LakehouseInterface`` for this sample app.
-
-    Reader can scan any namespace; writer is bound to ``app_namespace`` so
-    cross-namespace writes log a warning (per SDK convention).
-    """
-    return LakehouseInterface(load_catalog_from_env(), app_namespace=app_namespace)

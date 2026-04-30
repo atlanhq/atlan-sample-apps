@@ -19,11 +19,8 @@ from pathlib import Path
 # Make the app/ package importable when run as a script
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.lakehouse import (  # noqa: E402
-    EVENTS_ARROW_SCHEMA,
-    EVENTS_SCHEMA,
-    load_lakehouse,
-)
+from app.lakehouse import EVENTS_ARROW_SCHEMA, EVENTS_SCHEMA  # noqa: E402
+from application_sdk.lakehouse import LakehouseWriter  # noqa: E402
 
 
 def main() -> None:
@@ -33,7 +30,7 @@ def main() -> None:
     parser.add_argument("--count", type=int, default=10)
     args = parser.parse_args()
 
-    lakehouse = load_lakehouse(app_namespace=args.namespace)
+    writer = LakehouseWriter.from_env(app_namespace=args.namespace)
 
     now = datetime.now(UTC).replace(tzinfo=None)
     records = [
@@ -44,7 +41,7 @@ def main() -> None:
         }
         for i in range(args.count)
     ]
-    rows = lakehouse.writer.write_records(
+    rows = writer.write_records(
         args.table,
         records,
         schema=EVENTS_SCHEMA,

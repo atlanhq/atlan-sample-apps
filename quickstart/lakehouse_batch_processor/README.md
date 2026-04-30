@@ -1,10 +1,11 @@
 # Lakehouse Batch Processor (sample)
 
 A minimal v3-SDK sample app demonstrating the new
-`application_sdk.lakehouse.LakehouseInterface` pattern. It reads "events"
-from an Iceberg lakehouse, calls a public hello-world API, randomly
-classifies the result as `SUCCESS` / `RETRY` / `FAILED`, and appends a
-batch of result rows to an Iceberg results table.
+`application_sdk.lakehouse.LakehouseReader` /
+`application_sdk.lakehouse.LakehouseWriter` pattern. It reads "events" from
+an Iceberg lakehouse, calls a public hello-world API, randomly classifies
+the result as `SUCCESS` / `RETRY` / `FAILED`, and appends a batch of result
+rows to an Iceberg results table.
 
 ```
 events Iceberg table  →  hello API  →  random classifier  →  results Iceberg table
@@ -12,13 +13,13 @@ events Iceberg table  →  hello API  →  random classifier  →  results Icebe
 
 ## Pipeline
 
-1. `fetch_events` – `LakehouseInterface.reader.fetch_records()` scan of
+1. `fetch_events` – `LakehouseReader.from_env().fetch_records()` scan of
    `<events_namespace>.<events_table>`.
 2. `process_events` – POST each event to `HELLO_API_URL`
    (default `https://httpbin.org/anything`), then classify the response
    randomly (50% `SUCCESS` / 30% `RETRY` / 20% `FAILED`).
-3. `write_results` – `LakehouseInterface.writer.write_records()` to
-   `<results_namespace>.<results_table>` (Iceberg, partitioned by
+3. `write_results` – `LakehouseWriter.from_env(app_namespace).write_records()`
+   to `<results_namespace>.<results_table>` (Iceberg, partitioned by
    `status`). The table + namespace are auto-created on first write.
 
 The `run()` method on `LakehouseBatchProcessorApp` orchestrates these
@@ -32,7 +33,7 @@ lakehouse_batch_processor/
 ├── app/
 │   ├── application.py   # v3 App subclass (3 @task methods + run())
 │   ├── api_client.py    # HelloApiCaller (httpx)
-│   ├── lakehouse.py     # schemas + load_lakehouse() helper
+│   ├── lakehouse.py     # schemas + partition spec (no catalog code)
 │   └── models.py        # EventRecord, ResultRecord, RandomClassifier
 ├── scripts/
 │   └── seed_events.py   # Seed sample events into the events table
@@ -102,8 +103,10 @@ The unit tests cover the random classifier distribution and the
 - This is a **sample**. The random classifier is intentionally non-deterministic
   and the API call has no business meaning — both exist only to demonstrate
   the v3 SDK App + `@task` pattern end-to-end against a real lakehouse via
-  the SDK `LakehouseInterface`.
+  `LakehouseReader.from_env()` / `LakehouseWriter.from_env(app_namespace)`.
 - The results table is **append-only** and partitioned by `status` so a
   consumer can scan `WHERE status = 'RETRY'` cheaply.
-- `LakehouseInterface` is bound to one `app_namespace` (defaults to `samples`
+- `LakehouseWriter` is bound to one `app_namespace` (defaults to `samples`
   here). Cross-namespace writes log a warning per SDK convention.
+- All catalog credentials are read from `ICEBERG_*` env vars — apps never
+  pass a catalog or credentials in code.

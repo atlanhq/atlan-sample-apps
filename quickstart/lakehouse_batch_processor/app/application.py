@@ -3,11 +3,12 @@
 Demo pipeline (does nothing useful — just demonstrates the v3 SDK pattern
 on top of ``application_sdk.lakehouse``):
 
-  1. Read events from an Iceberg table via ``LakehouseInterface.reader``.
+  1. Read events from an Iceberg table via ``LakehouseReader.from_env``.
   2. POST each event to a public hello-world API (httpbin.org/anything).
   3. Randomly classify the result as SUCCESS / RETRY / FAILED.
   4. Write results to an Iceberg results table via
-     ``LakehouseInterface.writer`` (auto-creates and partitions by status).
+     ``LakehouseWriter.from_env(app_namespace)`` (auto-creates and
+     partitions by status; cross-namespace writes log a warning).
 """
 
 from __future__ import annotations
@@ -84,18 +85,18 @@ class LakehouseBatchProcessorApp(App):
     version = "0.1.0"
     description = (
         "Demo app that reads events from an Iceberg lakehouse via the SDK "
-        "LakehouseInterface, calls a public hello-world API, and writes "
-        "randomly-classified batch results back."
+        "LakehouseReader / LakehouseWriter, calls a public hello-world API, "
+        "and writes randomly-classified batch results back."
     )
 
     # --- Tasks (I/O work happens here) ---
 
     @task(timeout_seconds=120)
     async def fetch_events(self, input: FetchEventsInput) -> FetchEventsOutput:
-        from app.lakehouse import load_lakehouse
+        from application_sdk.lakehouse import LakehouseReader
 
-        lakehouse = load_lakehouse(app_namespace=input.events_namespace)
-        records = lakehouse.reader.fetch_records(
+        reader = LakehouseReader.from_env()
+        records = reader.fetch_records(
             input.events_namespace,
             input.events_table,
             limit=input.fetch_limit,
@@ -148,14 +149,14 @@ class LakehouseBatchProcessorApp(App):
         from app.lakehouse import (
             RESULTS_ARROW_SCHEMA,
             RESULTS_SCHEMA,
-            load_lakehouse,
             results_partition_spec,
         )
+        from application_sdk.lakehouse import LakehouseWriter
 
         if not input.results:
             return WriteResultsOutput(rows_written=0)
 
-        lakehouse = load_lakehouse(app_namespace=input.results_namespace)
+        writer = LakehouseWriter.from_env(app_namespace=input.results_namespace)
         now = datetime.now(UTC).replace(tzinfo=None)
         records = [
             {
@@ -167,7 +168,7 @@ class LakehouseBatchProcessorApp(App):
             }
             for r in input.results
         ]
-        rows = lakehouse.writer.write_records(
+        rows = writer.write_records(
             input.results_table,
             records,
             schema=RESULTS_SCHEMA,
