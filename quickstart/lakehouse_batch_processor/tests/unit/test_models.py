@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from app.models import EventRecord, OutcomeRecord, RandomClassifier
+from app.models import EventRecord, RandomClassifier, ResultRecord
 
 
 class TestEventRecord(unittest.TestCase):
@@ -13,48 +13,48 @@ class TestEventRecord(unittest.TestCase):
         self.assertEqual(e.payload, "hello")
 
 
-class TestOutcomeRecord(unittest.TestCase):
+class TestResultRecord(unittest.TestCase):
     def test_success(self):
-        o = OutcomeRecord(
+        r = ResultRecord(
             event_id="e1", status="SUCCESS", api_status_code=200, error_message=None
         )
-        self.assertEqual(o.status, "SUCCESS")
-        self.assertIsNone(o.error_message)
+        self.assertEqual(r.status, "SUCCESS")
+        self.assertIsNone(r.error_message)
 
     def test_failure(self):
-        o = OutcomeRecord(
+        r = ResultRecord(
             event_id="e2",
             status="FAILED",
             api_status_code=500,
             error_message="boom",
         )
-        self.assertEqual(o.status, "FAILED")
-        self.assertEqual(o.error_message, "boom")
+        self.assertEqual(r.status, "FAILED")
+        self.assertEqual(r.error_message, "boom")
 
 
 class TestRandomClassifier(unittest.TestCase):
     def test_returns_one_of_known_statuses(self):
         rng = random.Random(42)
         for _ in range(50):
-            outcome = RandomClassifier.classify("e", 200, rng=rng)
-            self.assertIn(outcome.status, {"SUCCESS", "RETRY", "FAILED"})
+            result = RandomClassifier.classify("e", 200, rng=rng)
+            self.assertIn(result.status, {"SUCCESS", "RETRY", "FAILED"})
 
     def test_success_has_no_error_message(self):
         rng = random.Random(42)
         for _ in range(50):
-            outcome = RandomClassifier.classify("e", 200, rng=rng)
-            if outcome.status == "SUCCESS":
-                self.assertIsNone(outcome.error_message)
+            result = RandomClassifier.classify("e", 200, rng=rng)
+            if result.status == "SUCCESS":
+                self.assertIsNone(result.error_message)
             else:
-                self.assertIsNotNone(outcome.error_message)
+                self.assertIsNotNone(result.error_message)
 
     def test_event_id_preserved(self):
-        outcome = RandomClassifier.classify("my-id", 200)
-        self.assertEqual(outcome.event_id, "my-id")
+        result = RandomClassifier.classify("my-id", 200)
+        self.assertEqual(result.event_id, "my-id")
 
     def test_api_status_code_preserved(self):
-        outcome = RandomClassifier.classify("e", 418)
-        self.assertEqual(outcome.api_status_code, 418)
+        result = RandomClassifier.classify("e", 418)
+        self.assertEqual(result.api_status_code, 418)
 
     def test_distribution_roughly_matches_weights(self):
         # Seeded RNG → deterministic check that the classifier honours the

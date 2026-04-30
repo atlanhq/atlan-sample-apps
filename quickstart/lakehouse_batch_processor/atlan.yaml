@@ -11,13 +11,14 @@ type: utility
 creator_org: "Atlan"
 execution_mode: argo
 visibility: public
-short_description: "Reads Iceberg events, calls a hello-world API, writes randomly-classified outcomes."
+short_description: "Reads Iceberg events, calls a hello-world API, writes randomly-classified results."
 long_description: |
   Sample app demonstrating the v3 Application SDK pattern:
-   - Read events from a lakehouse Iceberg table.
+   - Read events from a lakehouse Iceberg table via LakehouseInterface.reader.
    - POST each event to a public hello-world API (httpbin.org/anything).
-   - Randomly classify outcomes as SUCCESS / RETRY / FAILED.
-   - Append batch results to a partitioned outcomes Iceberg table.
+   - Randomly classify results as SUCCESS / RETRY / FAILED.
+   - Append batch results to a partitioned Iceberg results table via
+     LakehouseInterface.writer.
 tags:
   - sample
   - lakehouse

@@ -4,10 +4,7 @@ import asyncio
 import unittest
 from unittest.mock import AsyncMock, patch
 
-from app.application import (
-    BatchProcessorInput,
-    LakehouseBatchProcessorApp,
-)
+from app.application import BatchProcessorInput, LakehouseBatchProcessorApp
 
 
 def _run(coro):
@@ -27,7 +24,7 @@ class TestApp(unittest.TestCase):
                 app, "fetch_events", new=AsyncMock(return_value=_StubFetch(events=[]))
             ),
             patch.object(app, "process_events", new=AsyncMock()) as proc,
-            patch.object(app, "write_outcomes", new=AsyncMock()) as write,
+            patch.object(app, "write_results", new=AsyncMock()) as write,
         ):
             result = _run(app.run(BatchProcessorInput()))
             self.assertEqual(result.processed, 0)
@@ -44,10 +41,25 @@ class TestApp(unittest.TestCase):
             {"event_id": "e2", "payload": "p2"},
             {"event_id": "e3", "payload": "p3"},
         ]
-        outcomes = [
-            {"event_id": "e1", "status": "SUCCESS", "api_status_code": 200, "error_message": None},
-            {"event_id": "e2", "status": "RETRY", "api_status_code": 200, "error_message": "x"},
-            {"event_id": "e3", "status": "FAILED", "api_status_code": 200, "error_message": "y"},
+        results = [
+            {
+                "event_id": "e1",
+                "status": "SUCCESS",
+                "api_status_code": 200,
+                "error_message": None,
+            },
+            {
+                "event_id": "e2",
+                "status": "RETRY",
+                "api_status_code": 200,
+                "error_message": "x",
+            },
+            {
+                "event_id": "e3",
+                "status": "FAILED",
+                "api_status_code": 200,
+                "error_message": "y",
+            },
         ]
         with (
             patch.object(
@@ -58,11 +70,11 @@ class TestApp(unittest.TestCase):
             patch.object(
                 app,
                 "process_events",
-                new=AsyncMock(return_value=_StubProcess(outcomes=outcomes)),
+                new=AsyncMock(return_value=_StubProcess(results=results)),
             ),
             patch.object(
                 app,
-                "write_outcomes",
+                "write_results",
                 new=AsyncMock(return_value=_StubWrite(rows_written=3)),
             ),
         ):
@@ -71,7 +83,7 @@ class TestApp(unittest.TestCase):
             self.assertEqual(result.success, 1)
             self.assertEqual(result.retry, 1)
             self.assertEqual(result.failed, 1)
-            self.assertIn("samples.lakehouse_batch_outcomes", result.outcomes_table)
+            self.assertIn("samples.lakehouse_batch_results", result.results_table)
 
 
 class _StubFetch:
@@ -80,8 +92,8 @@ class _StubFetch:
 
 
 class _StubProcess:
-    def __init__(self, outcomes):
-        self.outcomes = outcomes
+    def __init__(self, results):
+        self.results = results
 
 
 class _StubWrite:

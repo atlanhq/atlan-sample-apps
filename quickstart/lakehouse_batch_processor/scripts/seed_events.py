@@ -1,4 +1,4 @@
-"""Seed sample events into the Iceberg events table.
+"""Seed sample events into the Iceberg events table via the SDK lakehouse writer.
 
 Usage::
 
@@ -19,25 +19,11 @@ from pathlib import Path
 # Make the app/ package importable when run as a script
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pyarrow as pa  # noqa: E402
-
 from app.lakehouse import (  # noqa: E402
     EVENTS_ARROW_SCHEMA,
     EVENTS_SCHEMA,
-    load_catalog_from_env,
+    load_lakehouse,
 )
-
-
-def _ensure_table(catalog, namespace: str, table: str):
-    table_id = f"{namespace}.{table}"
-    try:
-        return catalog.load_table(table_id)
-    except Exception:
-        try:
-            catalog.create_namespace(namespace)
-        except Exception:
-            pass
-        return catalog.create_table(identifier=table_id, schema=EVENTS_SCHEMA)
 
 
 def main() -> None:
@@ -47,11 +33,10 @@ def main() -> None:
     parser.add_argument("--count", type=int, default=10)
     args = parser.parse_args()
 
-    catalog = load_catalog_from_env()
-    table = _ensure_table(catalog, args.namespace, args.table)
+    lakehouse = load_lakehouse(app_namespace=args.namespace)
 
     now = datetime.now(UTC).replace(tzinfo=None)
-    rows = [
+    records = [
         {
             "event_id": str(uuid.uuid4()),
             "payload": f"hello world #{i + 1}",
@@ -59,9 +44,14 @@ def main() -> None:
         }
         for i in range(args.count)
     ]
-    arrow = pa.Table.from_pylist(rows, schema=EVENTS_ARROW_SCHEMA)
-    table.append(arrow)
-    print(f"Seeded {args.count} events into {args.namespace}.{args.table}")
+    rows = lakehouse.writer.write_records(
+        args.table,
+        records,
+        schema=EVENTS_SCHEMA,
+        arrow_schema=EVENTS_ARROW_SCHEMA,
+        namespace=args.namespace,
+    )
+    print(f"Seeded {rows} events into {args.namespace}.{args.table}")
 
 
 if __name__ == "__main__":

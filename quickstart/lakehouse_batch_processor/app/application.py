@@ -1,14 +1,13 @@
 """LakehouseBatchProcessor — v3 SDK sample app.
 
-Demo pipeline (does nothing useful — just demonstrates the v3 SDK pattern):
+Demo pipeline (does nothing useful — just demonstrates the v3 SDK pattern
+on top of ``application_sdk.lakehouse``):
 
-  1. Read events from an Iceberg table.
+  1. Read events from an Iceberg table via ``LakehouseInterface.reader``.
   2. POST each event to a public hello-world API (httpbin.org/anything).
-  3. Randomly classify the outcome as SUCCESS / RETRY / FAILED.
-  4. Write outcomes to an Iceberg results table partitioned by status.
-
-Modeled after the reverse-sync description workflow in the Databricks
-connector, but trimmed down for sample/learning use.
+  3. Randomly classify the result as SUCCESS / RETRY / FAILED.
+  4. Write results to an Iceberg results table via
+     ``LakehouseInterface.writer`` (auto-creates and partitions by status).
 """
 
 from __future__ import annotations
@@ -19,7 +18,6 @@ from application_sdk.app import App
 from application_sdk.app.task import task
 from application_sdk.contracts.base import Input, Output
 
-
 # ---------------------------------------------------------------------------
 # Workflow-level Input / Output
 # ---------------------------------------------------------------------------
@@ -28,8 +26,8 @@ from application_sdk.contracts.base import Input, Output
 class BatchProcessorInput(Input):
     events_namespace: str = "samples"
     events_table: str = "lakehouse_batch_events"
-    outcomes_namespace: str = "samples"
-    outcomes_table: str = "lakehouse_batch_outcomes"
+    results_namespace: str = "samples"
+    results_table: str = "lakehouse_batch_results"
     fetch_limit: int = 100
 
 
@@ -38,7 +36,7 @@ class BatchProcessorOutput(Output):
     success: int = 0
     retry: int = 0
     failed: int = 0
-    outcomes_table: str = ""
+    results_table: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -61,16 +59,16 @@ class ProcessEventsInput(Input, allow_unbounded_fields=True):
 
 
 class ProcessEventsOutput(Output, allow_unbounded_fields=True):
-    outcomes: list[Any] = []
+    results: list[Any] = []
 
 
-class WriteOutcomesInput(Input, allow_unbounded_fields=True):
-    outcomes_namespace: str = ""
-    outcomes_table: str = ""
-    outcomes: list[Any] = []
+class WriteResultsInput(Input, allow_unbounded_fields=True):
+    results_namespace: str = ""
+    results_table: str = ""
+    results: list[Any] = []
 
 
-class WriteOutcomesOutput(Output):
+class WriteResultsOutput(Output):
     rows_written: int = 0
 
 
@@ -80,26 +78,33 @@ class WriteOutcomesOutput(Output):
 
 
 class LakehouseBatchProcessorApp(App):
-    """Sample app: lakehouse → API → random outcome → lakehouse."""
+    """Sample app: lakehouse → API → random result → lakehouse."""
 
     name = "lakehouse-batch-processor"
     version = "0.1.0"
     description = (
-        "Demo app that reads events from an Iceberg lakehouse, calls a public "
-        "hello-world API, and writes randomly-classified batch outcomes back."
+        "Demo app that reads events from an Iceberg lakehouse via the SDK "
+        "LakehouseInterface, calls a public hello-world API, and writes "
+        "randomly-classified batch results back."
     )
 
     # --- Tasks (I/O work happens here) ---
 
     @task(timeout_seconds=120)
     async def fetch_events(self, input: FetchEventsInput) -> FetchEventsOutput:
-        from app.lakehouse import IcebergReader, load_catalog_from_env
+        from app.lakehouse import load_lakehouse
 
-        reader = IcebergReader(load_catalog_from_env())
-        events = reader.read_events(
-            input.events_namespace, input.events_table, input.fetch_limit
+        lakehouse = load_lakehouse(app_namespace=input.events_namespace)
+        records = lakehouse.reader.fetch_records(
+            input.events_namespace,
+            input.events_table,
+            limit=input.fetch_limit,
         )
-        return FetchEventsOutput(events=[_event_to_dict(e) for e in events])
+        events = [
+            {"event_id": r["event_id"], "payload": r.get("payload") or ""}
+            for r in records
+        ]
+        return FetchEventsOutput(events=events)
 
     @task(timeout_seconds=600, heartbeat_timeout_seconds=60)
     async def process_events(self, input: ProcessEventsInput) -> ProcessEventsOutput:
@@ -108,14 +113,14 @@ class LakehouseBatchProcessorApp(App):
 
         caller = HelloApiCaller()
         classifier = RandomClassifier()
-        outcomes = []
+        results = []
         for raw in input.events:
             event_id = raw["event_id"]
             payload = raw.get("payload", "")
             try:
                 status_code = await caller.call(event_id, payload)
             except Exception as exc:
-                outcomes.append(
+                results.append(
                     {
                         "event_id": event_id,
                         "status": "FAILED",
@@ -125,36 +130,52 @@ class LakehouseBatchProcessorApp(App):
                 )
                 continue
 
-            outcome = classifier.classify(event_id, status_code)
-            outcomes.append(
+            result = classifier.classify(event_id, status_code)
+            results.append(
                 {
-                    "event_id": outcome.event_id,
-                    "status": outcome.status,
-                    "api_status_code": outcome.api_status_code,
-                    "error_message": outcome.error_message,
+                    "event_id": result.event_id,
+                    "status": result.status,
+                    "api_status_code": result.api_status_code,
+                    "error_message": result.error_message,
                 }
             )
-        return ProcessEventsOutput(outcomes=outcomes)
+        return ProcessEventsOutput(results=results)
 
     @task(timeout_seconds=120)
-    async def write_outcomes(self, input: WriteOutcomesInput) -> WriteOutcomesOutput:
-        from app.lakehouse import IcebergWriter, load_catalog_from_env
-        from app.models import OutcomeRecord
+    async def write_results(self, input: WriteResultsInput) -> WriteResultsOutput:
+        from datetime import UTC, datetime
 
-        writer = IcebergWriter(load_catalog_from_env())
-        records = [
-            OutcomeRecord(
-                event_id=o["event_id"],
-                status=o["status"],
-                api_status_code=o.get("api_status_code"),
-                error_message=o.get("error_message"),
-            )
-            for o in input.outcomes
-        ]
-        rows = writer.write_outcomes(
-            input.outcomes_namespace, input.outcomes_table, records
+        from app.lakehouse import (
+            RESULTS_ARROW_SCHEMA,
+            RESULTS_SCHEMA,
+            load_lakehouse,
+            results_partition_spec,
         )
-        return WriteOutcomesOutput(rows_written=rows)
+
+        if not input.results:
+            return WriteResultsOutput(rows_written=0)
+
+        lakehouse = load_lakehouse(app_namespace=input.results_namespace)
+        now = datetime.now(UTC).replace(tzinfo=None)
+        records = [
+            {
+                "event_id": r["event_id"],
+                "status": r["status"],
+                "api_status_code": r.get("api_status_code"),
+                "error_message": r.get("error_message"),
+                "processed_at": now,
+            }
+            for r in input.results
+        ]
+        rows = lakehouse.writer.write_records(
+            input.results_table,
+            records,
+            schema=RESULTS_SCHEMA,
+            partition_spec=results_partition_spec(),
+            arrow_schema=RESULTS_ARROW_SCHEMA,
+            namespace=input.results_namespace,
+        )
+        return WriteResultsOutput(rows_written=rows)
 
     # --- Orchestration (deterministic — only call tasks) ---
 
@@ -167,33 +188,28 @@ class LakehouseBatchProcessorApp(App):
             )
         )
         events = fetch_result.events
+        results_table_qn = f"{input.results_namespace}.{input.results_table}"
         if not events:
-            return BatchProcessorOutput(
-                outcomes_table=f"{input.outcomes_namespace}.{input.outcomes_table}"
-            )
+            return BatchProcessorOutput(results_table=results_table_qn)
 
         process_result = await self.process_events(ProcessEventsInput(events=events))
-        outcomes = process_result.outcomes
+        results = process_result.results
 
-        await self.write_outcomes(
-            WriteOutcomesInput(
-                outcomes_namespace=input.outcomes_namespace,
-                outcomes_table=input.outcomes_table,
-                outcomes=outcomes,
+        await self.write_results(
+            WriteResultsInput(
+                results_namespace=input.results_namespace,
+                results_table=input.results_table,
+                results=results,
             )
         )
 
-        success = sum(1 for o in outcomes if o.get("status") == "SUCCESS")
-        retry = sum(1 for o in outcomes if o.get("status") == "RETRY")
-        failed = sum(1 for o in outcomes if o.get("status") == "FAILED")
+        success = sum(1 for r in results if r.get("status") == "SUCCESS")
+        retry = sum(1 for r in results if r.get("status") == "RETRY")
+        failed = sum(1 for r in results if r.get("status") == "FAILED")
         return BatchProcessorOutput(
             processed=len(events),
             success=success,
             retry=retry,
             failed=failed,
-            outcomes_table=f"{input.outcomes_namespace}.{input.outcomes_table}",
+            results_table=results_table_qn,
         )
-
-
-def _event_to_dict(event: Any) -> dict[str, Any]:
-    return {"event_id": event.event_id, "payload": event.payload}

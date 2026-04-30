@@ -130,7 +130,7 @@ wheels = [
 [[package]]
 name = "atlan-application-sdk"
 version = "3.1.0"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../../../application-sdk" }
 dependencies = [
     { name = "aiohttp" },
     { name = "fastapi", extra = ["standard"] },
@@ -147,10 +147,6 @@ dependencies = [
     { name = "temporalio" },
     { name = "uvloop", marker = "sys_platform != 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b2/d6/a049a55e2a90e139ade34ec8c162afc95adceaf96ad7b3eb451b49fc084f/atlan_application_sdk-3.1.0.tar.gz", hash = "sha256:71708ccaafb0a8ee4c7709a3a8cc17fd672257ea086aa7e5af0924fa3cd39609", size = 1810334, upload-time = "2026-04-22T16:43:59.39Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4b/07/7e3f3f7fbd17f59134eb1a19ab64cf33c3003f17a209147a4d8ba0f3a477/atlan_application_sdk-3.1.0-py3-none-any.whl", hash = "sha256:4a36128cf89aad74cf50546d882a8bbf1bb3c92dace0aa62e1de6751ac20f2e9", size = 568941, upload-time = "2026-04-22T16:43:57.473Z" },
-]
 
 [package.optional-dependencies]
 tests = [
@@ -161,6 +157,85 @@ tests = [
 workflows = [
     { name = "orjson" },
     { name = "temporalio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiohttp", specifier = ">=3.10.0,<3.14.0" },
+    { name = "azure-identity", marker = "extra == 'azure'", specifier = ">=1.15.0" },
+    { name = "azure-storage-blob", marker = "extra == 'azure'", specifier = ">=12.19.0" },
+    { name = "azure-storage-file-datalake", marker = "extra == 'azure'", specifier = ">=12.19.0" },
+    { name = "boto3", marker = "extra == 'iam-auth'", specifier = ">=1.38.6,<1.43.0" },
+    { name = "daft", marker = "extra == 'daft'", specifier = ">=0.7.1,<0.8.0" },
+    { name = "daft", marker = "extra == 'incremental'", specifier = ">=0.7.1,<0.8.0" },
+    { name = "daft", marker = "extra == 'lakehouse'", specifier = ">=0.7.1,<0.8.0" },
+    { name = "duckdb", marker = "extra == 'incremental'", specifier = ">=1.1.3,<1.5.0" },
+    { name = "duckdb", marker = "extra == 'sql'", specifier = ">=1.1.3,<1.5.0" },
+    { name = "duckdb-engine", marker = "extra == 'incremental'", specifier = ">=0.17.0,<0.18.0" },
+    { name = "duckdb-engine", marker = "extra == 'sql'", specifier = ">=0.17.0,<0.18.0" },
+    { name = "faker", marker = "extra == 'scale-data-generator'", specifier = ">=37.1.0,<39.1.0" },
+    { name = "fastapi", extras = ["standard"], specifier = "==0.127.0" },
+    { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=3.2.0" },
+    { name = "httpx", marker = "extra == 'tests'", specifier = ">=0.27.0,<0.29.0" },
+    { name = "httpx-retries", specifier = ">=0.4.0,<0.5.0" },
+    { name = "loguru", specifier = ">=0.7.3,<0.8.0" },
+    { name = "numpy", marker = "extra == 'scale-data-generator'", specifier = ">=1.23.5,<2.5.0" },
+    { name = "obstore", specifier = ">=0.9.1,<0.10.0" },
+    { name = "opentelemetry-exporter-otlp", specifier = "==1.39.1" },
+    { name = "opentelemetry-exporter-prometheus", specifier = "==0.60b1" },
+    { name = "orjson", specifier = ">=3.11.6,<3.12.0" },
+    { name = "orjson", marker = "extra == 'workflows'", specifier = ">=3.11.6,<3.12.0" },
+    { name = "pandas", marker = "extra == 'incremental'", specifier = ">=2.2.3,<2.4.0" },
+    { name = "pandas", marker = "extra == 'pandas'", specifier = ">=2.2.3,<2.4.0" },
+    { name = "pandas", marker = "extra == 'sql'", specifier = ">=2.2.3,<2.4.0" },
+    { name = "pandera", extras = ["io"], marker = "extra == 'tests'", specifier = ">=0.23.1,<0.28.0" },
+    { name = "pyarrow", marker = "extra == 'incremental'", specifier = ">=20.0.0,<23.0.0" },
+    { name = "pyarrow", marker = "extra == 'pandas'", specifier = ">=20.0.0,<23.0.0" },
+    { name = "pyarrow", marker = "extra == 'sql'", specifier = ">=20.0.0,<23.0.0" },
+    { name = "pyatlan", specifier = ">=9,<10" },
+    { name = "pydantic", specifier = ">=2.10.6,<2.13.0" },
+    { name = "pyiceberg", marker = "extra == 'lakehouse'", specifier = ">=0.7.0,<0.9.0" },
+    { name = "pytest-order", marker = "extra == 'tests'", specifier = ">=1.3.0,<1.4.0" },
+    { name = "python-dotenv", specifier = ">=1.1.0,<1.3.0" },
+    { name = "pyyaml", specifier = ">=6.0.2,<6.1.0" },
+    { name = "redis", extras = ["hiredis"], marker = "extra == 'distributed-lock'", specifier = ">=5.2.0,<7.2.0" },
+    { name = "rocksdict", marker = "extra == 'incremental'", specifier = ">=0.3.0" },
+    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'incremental'", specifier = ">=2.0.36,<2.1.0" },
+    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'sql'", specifier = ">=2.0.36,<2.1.0" },
+    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'sqlalchemy'", specifier = ">=2.0.36,<2.1.0" },
+    { name = "temporalio", specifier = ">=1.7.1,<1.24.0" },
+    { name = "temporalio", marker = "extra == 'workflows'", specifier = ">=1.7.1,<1.24.0" },
+    { name = "uvloop", marker = "sys_platform != 'win32'", specifier = ">=0.21.0,<0.23.0" },
+]
+provides-extras = ["workflows", "sql", "daft", "lakehouse", "incremental", "iam-auth", "azure", "distributed-lock", "mcp", "tests", "scale-data-generator", "sqlalchemy", "pandas"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "boto3-stubs", specifier = ">=1.38.6,<1.43.0" },
+    { name = "isort", specifier = ">=5.13.2,<5.14.0" },
+    { name = "libcst", specifier = ">=1.4.0,<1.8.0" },
+    { name = "poethepoet", specifier = ">=0.34.0,<0.40.0" },
+    { name = "pre-commit", specifier = ">=4.2.0,<4.6.0" },
+]
+docs = [
+    { name = "mike", specifier = ">=2.1.3,<2.2.0" },
+    { name = "mkdocs", specifier = ">=1.6.1,<1.7.0" },
+    { name = "mkdocs-material", specifier = ">=9.6.4,<9.8.0" },
+    { name = "pydoctor", specifier = ">=24.11.2,<25.11.0" },
+    { name = "pymdown-extensions", specifier = ">=10.15.0,<11.0.0" },
+]
+examples = [
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.7,<3.4.0" },
+    { name = "snowflake-sqlalchemy", specifier = ">=1.7.0,<1.9.0" },
+]
+test = [
+    { name = "coverage", specifier = ">=7.6.1,<7.14.0" },
+    { name = "hypothesis", specifier = ">=6.114.0,<6.149.0" },
+    { name = "mock", specifier = ">=5.1.0,<5.3.0" },
+    { name = "pytest", specifier = ">=8.3.3,<9.1.0" },
+    { name = "pytest-asyncio", specifier = ">=0.26.0,<1.4.0" },
+    { name = "pytest-timeout", specifier = ">=2.3.0,<3.0.0" },
+    { name = "trustme", specifier = ">=1.2.1,<1.3.0" },
 ]
 
 [[package]]
@@ -1026,7 +1101,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atlan-application-sdk", extras = ["tests", "workflows"], specifier = "==3.1.0" },
+    { name = "atlan-application-sdk", extras = ["tests", "workflows"], editable = "../../../application-sdk" },
     { name = "httpx", specifier = "==0.28.1" },
     { name = "poethepoet", specifier = "==0.32.1" },
     { name = "pyarrow", specifier = "==23.0.0" },

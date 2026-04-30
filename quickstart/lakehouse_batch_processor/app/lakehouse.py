@@ -1,27 +1,20 @@
-"""Iceberg read/write helpers for the batch processor sample."""
+"""Lakehouse helpers for the batch processor sample.
+
+Uses ``application_sdk.lakehouse.LakehouseInterface`` for all reads/writes —
+this module only owns the sample's table schemas and a small env-driven
+catalog loader.
+"""
 
 from __future__ import annotations
 
 import os
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING
 
 import pyarrow as pa
+from application_sdk.lakehouse import LakehouseInterface
 from pyiceberg.partitioning import PartitionField, PartitionSpec
 from pyiceberg.schema import Schema
 from pyiceberg.transforms import IdentityTransform
-from pyiceberg.types import (
-    IntegerType,
-    NestedField,
-    StringType,
-    TimestampType,
-)
-
-from app.models import EventRecord, OutcomeRecord
-
-if TYPE_CHECKING:
-    from pyiceberg.catalog import Catalog
-
+from pyiceberg.types import IntegerType, NestedField, StringType, TimestampType
 
 EVENTS_SCHEMA = Schema(
     NestedField(1, "event_id", StringType(), required=True),
@@ -38,7 +31,7 @@ EVENTS_ARROW_SCHEMA = pa.schema(
 )
 
 
-OUTCOMES_SCHEMA = Schema(
+RESULTS_SCHEMA = Schema(
     NestedField(1, "event_id", StringType(), required=True),
     NestedField(2, "status", StringType(), required=True),
     NestedField(3, "api_status_code", IntegerType(), required=False),
@@ -46,7 +39,7 @@ OUTCOMES_SCHEMA = Schema(
     NestedField(5, "processed_at", TimestampType(), required=True),
 )
 
-OUTCOMES_ARROW_SCHEMA = pa.schema(
+RESULTS_ARROW_SCHEMA = pa.schema(
     [
         pa.field("event_id", pa.string(), nullable=False),
         pa.field("status", pa.string(), nullable=False),
@@ -57,7 +50,19 @@ OUTCOMES_ARROW_SCHEMA = pa.schema(
 )
 
 
-def load_catalog_from_env() -> "Catalog":
+def results_partition_spec() -> PartitionSpec:
+    field_id = RESULTS_SCHEMA.find_field("status").field_id
+    return PartitionSpec(
+        PartitionField(
+            source_id=field_id,
+            field_id=1000,
+            transform=IdentityTransform(),
+            name="status",
+        )
+    )
+
+
+def load_catalog_from_env():
     """Build a PyIceberg catalog from environment variables.
 
     Required env vars:
@@ -87,85 +92,10 @@ def load_catalog_from_env() -> "Catalog":
     )
 
 
-class IcebergReader:
-    """Read events from the input Iceberg table."""
+def load_lakehouse(app_namespace: str = "samples") -> LakehouseInterface:
+    """Build a ``LakehouseInterface`` for this sample app.
 
-    def __init__(self, catalog: "Catalog") -> None:
-        self._catalog = catalog
-
-    def read_events(
-        self, namespace: str, table: str, limit: int = 100
-    ) -> list[EventRecord]:
-        table_id = f"{namespace}.{table}"
-        try:
-            t = self._catalog.load_table(table_id)
-        except Exception:
-            return []
-
-        arrow = t.scan(limit=limit).to_arrow()
-        if arrow.num_rows == 0:
-            return []
-        return [
-            EventRecord(
-                event_id=arrow["event_id"][i].as_py(),
-                payload=arrow["payload"][i].as_py() or "",
-            )
-            for i in range(arrow.num_rows)
-        ]
-
-
-class IcebergWriter:
-    """Append outcome rows to the outcomes Iceberg table.
-
-    Auto-creates the namespace + table if either is missing. Partitions on
-    ``status`` so downstream consumers can scan SUCCESS/RETRY/FAILED cheaply.
+    Reader can scan any namespace; writer is bound to ``app_namespace`` so
+    cross-namespace writes log a warning (per SDK convention).
     """
-
-    def __init__(self, catalog: "Catalog") -> None:
-        self._catalog = catalog
-
-    def write_outcomes(
-        self, namespace: str, table: str, outcomes: list[OutcomeRecord]
-    ) -> int:
-        if not outcomes:
-            return 0
-
-        table_id = f"{namespace}.{table}"
-        try:
-            t = self._catalog.load_table(table_id)
-        except Exception:
-            try:
-                self._catalog.create_namespace(namespace)
-            except Exception:
-                pass
-            t = self._catalog.create_table(
-                identifier=table_id,
-                schema=OUTCOMES_SCHEMA,
-                partition_spec=_outcomes_partition_spec(),
-            )
-
-        now = datetime.now(UTC).replace(tzinfo=None)
-        arrow = pa.table(
-            {
-                "event_id": [o.event_id for o in outcomes],
-                "status": [o.status for o in outcomes],
-                "api_status_code": [o.api_status_code for o in outcomes],
-                "error_message": [o.error_message for o in outcomes],
-                "processed_at": [now] * len(outcomes),
-            },
-            schema=OUTCOMES_ARROW_SCHEMA,
-        )
-        t.append(arrow)
-        return arrow.num_rows
-
-
-def _outcomes_partition_spec() -> PartitionSpec:
-    field_id = OUTCOMES_SCHEMA.find_field("status").field_id
-    return PartitionSpec(
-        PartitionField(
-            source_id=field_id,
-            field_id=1000,
-            transform=IdentityTransform(),
-            name="status",
-        )
-    )
+    return LakehouseInterface(load_catalog_from_env(), app_namespace=app_namespace)

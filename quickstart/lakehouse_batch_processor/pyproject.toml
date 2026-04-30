@@ -1,7 +1,7 @@
 [project]
 name = "lakehouse-batch-processor"
 version = "0.1.0"
-description = "Sample app: read events from Iceberg, call a hello-world API, randomly classify, write outcomes."
+description = "Sample app: read events from Iceberg via SDK LakehouseInterface, call a hello-world API, randomly classify, write results."
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
 requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
@@ -47,6 +47,8 @@ include = ["./**/*.py"]
 include = ["./**/*.py"]
 packages = ["app"]
 
-# For local development against an editable application-sdk checkout, uncomment:
-# [tool.uv.sources]
-# atlan-application-sdk = { path = "../../../application-sdk", editable = true }
+[tool.uv.sources]
+# Local editable install for SDK lakehouse-interface integration.
+# Swap to git ref once SDK PR atlanhq/application-sdk#1628 lands:
+#   atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk.git", branch = "refactor-v4-ware-693-lakehouse-interface" }
+atlan-application-sdk = { path = "../../../application-sdk", editable = true }
