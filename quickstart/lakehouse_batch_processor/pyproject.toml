@@ -1,0 +1,52 @@
+[project]
+name = "lakehouse-batch-processor"
+version = "0.1.0"
+description = "Sample app: read events from Iceberg, call a hello-world API, randomly classify, write outcomes."
+authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
+requires-python = ">=3.11,<3.14"
+license = "Apache-2.0"
+readme = "README.md"
+dependencies = [
+    "atlan-application-sdk[tests,workflows]==3.1.0",
+    "poethepoet==0.32.1",
+    "pyarrow==23.0.0",
+    "pyiceberg==0.10.0",
+    "httpx==0.28.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.0.2",
+    "pytest-asyncio==1.3.0",
+    "coverage==7.10.7",
+    "pre-commit==4.3.0",
+]
+
+[tool.poe.tasks]
+start-dapr = "dapr run --enable-api-logging --log-level debug --app-id app --app-port 3000 --scheduler-host-address '' --placement-host-address '' --max-body-size 1024Mi --dapr-http-port 3500 --dapr-grpc-port 50001 --resources-path components"
+start-temporal = "temporal server start-dev --db-filename ./temporal.db"
+start-deps.shell = "poe start-dapr & poe start-temporal &"
+stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || true"
+seed = "python scripts/seed_events.py"
+test = "pytest tests/ -v"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["./**/*.py"]
+
+[tool.hatch.build.targets.wheel]
+include = ["./**/*.py"]
+packages = ["app"]
+
+# For local development against an editable application-sdk checkout, uncomment:
+# [tool.uv.sources]
+# atlan-application-sdk = { path = "../../../application-sdk", editable = true }
