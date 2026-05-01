@@ -19,7 +19,7 @@ from pathlib import Path
 # Make the app/ package importable when run as a script
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.lakehouse import EVENTS_ARROW_SCHEMA, EVENTS_SCHEMA  # noqa: E402
+from app.lakehouse import EVENTS_SCHEMA  # noqa: E402
 from application_sdk.lakehouse import LakehouseWriter  # noqa: E402
 
 
@@ -41,11 +41,10 @@ def main() -> None:
         }
         for i in range(args.count)
     ]
-    rows = writer.write_records(
+    rows = writer.append(
         args.table,
         records,
         schema=EVENTS_SCHEMA,
-        arrow_schema=EVENTS_ARROW_SCHEMA,
         namespace=args.namespace,
     )
     print(f"Seeded {rows} events into {args.namespace}.{args.table}")

@@ -7,8 +7,12 @@ on top of ``application_sdk.lakehouse``):
   2. POST each event to a public hello-world API (httpbin.org/anything).
   3. Randomly classify the result as SUCCESS / RETRY / FAILED.
   4. Write results to an Iceberg results table via
-     ``LakehouseWriter.from_env(app_namespace)`` (auto-creates and
-     partitions by status; cross-namespace writes log a warning).
+     ``LakehouseWriter.from_env(app_namespace).append(records, schema=...)``
+     — auto-creates and partitions the table by status; cross-namespace
+     writes log a warning.
+
+No pyiceberg or pyarrow types appear anywhere in this app. The SDK
+schema is declared via :class:`Schema` / :class:`Field` / :class:`PartitionBy`.
 """
 
 from __future__ import annotations
@@ -146,11 +150,7 @@ class LakehouseBatchProcessorApp(App):
     async def write_results(self, input: WriteResultsInput) -> WriteResultsOutput:
         from datetime import UTC, datetime
 
-        from app.lakehouse import (
-            RESULTS_ARROW_SCHEMA,
-            RESULTS_SCHEMA,
-            results_partition_spec,
-        )
+        from app.lakehouse import RESULTS_SCHEMA
         from application_sdk.lakehouse import LakehouseWriter
 
         if not input.results:
@@ -168,12 +168,10 @@ class LakehouseBatchProcessorApp(App):
             }
             for r in input.results
         ]
-        rows = writer.write_records(
+        rows = writer.append(
             input.results_table,
             records,
             schema=RESULTS_SCHEMA,
-            partition_spec=results_partition_spec(),
-            arrow_schema=RESULTS_ARROW_SCHEMA,
             namespace=input.results_namespace,
         )
         return WriteResultsOutput(rows_written=rows)
