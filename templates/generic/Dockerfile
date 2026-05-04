@@ -1,5 +1,5 @@
 # Base image from application-sdk (includes Python, uv, Dapr, appuser, entrypoint)
-FROM registry.atlan.com/public/application-sdk:main-2.3.1
+FROM registry.atlan.com/public/application-sdk:main-2.8.7
 
 # Install dependencies first (better caching)
 COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
