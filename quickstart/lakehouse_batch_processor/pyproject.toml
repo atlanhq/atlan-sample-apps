@@ -31,6 +31,10 @@ stop-deps.shell = "lsof -ti:3000,3500,7233,50001 | xargs kill -9 2>/dev/null || 
 seed = "python scripts/seed_events.py"
 test = "pytest tests/ -v"
 
+# Contract generation (requires pkl CLI; mirrors databricks-app/pyproject.toml).
+# Outputs: app/generated/ingestion/{manifest.json, …, _input.py}
+generate.shell = "cd contract && pkl eval --ca-certificates ~/.pkl-ca-bundle.pem -m ../app/generated ingestion.pkl"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 filterwarnings = [

@@ -1,30 +1,20 @@
-"""SDK-shaped table schemas for the batch processor sample.
+"""Schema declarations for the AE events table the sample reads from.
 
-Schemas are declared via the SDK :class:`Schema` / :class:`Field` /
-:class:`PartitionBy` dataclasses — no pyiceberg or pyarrow types appear
-in this module. The SDK ``LakehouseWriter`` translates them internally
-when creating tables and building Arrow batches.
+The sample only **reads** events (AE writes them via its event consumer);
+it doesn't own a results table. The schema below is reference-only — used
+by ``scripts/seed_events.py`` to populate a local ``automation_engine``
+table for end-to-end local testing without a real AE running.
 """
 
 from __future__ import annotations
 
-from application_sdk.lakehouse import Field, PartitionBy, Schema
+from application_sdk.lakehouse import Field, Schema
 
 EVENTS_SCHEMA = Schema(
     fields=[
         Field("event_id", "string", nullable=False),
         Field("payload", "string", nullable=True),
         Field("received_at", "timestamp", nullable=False),
-    ]
-)
-
-RESULTS_SCHEMA = Schema(
-    fields=[
-        Field("event_id", "string", nullable=False),
         Field("status", "string", nullable=False),
-        Field("api_status_code", "int", nullable=True),
-        Field("error_message", "string", nullable=True),
-        Field("processed_at", "timestamp", nullable=False),
-    ],
-    partition_by=PartitionBy("status"),
+    ]
 )
