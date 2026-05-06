@@ -1,16 +1,17 @@
 [project]
 name = "lakehouse-batch-processor"
 version = "0.1.0"
-description = "Sample app: read events from Iceberg via SDK LakehouseInterface, call a hello-world API, randomly classify, write results."
+description = "Sample app: read events from Iceberg via SDK lakehouse Reader/Writer, call a hello-world API, randomly classify, write results."
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]
 requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
-    "atlan-application-sdk[tests,workflows]==3.1.0",
+    # [lakehouse] core covers Reader.fetch_records + Writer.append used here.
+    # No bulk writes (would need [lakehouse-bulk]) and no SQL queries
+    # (would need [lakehouse-sql]) in this sample.
+    "atlan-application-sdk[tests,workflows,lakehouse]==3.1.0",
     "poethepoet==0.32.1",
-    "pyarrow==23.0.0",
-    "pyiceberg==0.10.0",
     "httpx==0.28.1",
 ]
 
