@@ -47,7 +47,20 @@ export function useAtlanAuth(): UseAtlanAuthReturn {
         case "ATLAN_AUTH_CONTEXT": {
           const ctx = payload as AtlanAuthContext;
           setToken(ctx.token || DEV_TOKEN);
-          setBaseUrl(ctx.token ? event.origin : "");
+          // Route API calls through the app's own backend proxy to avoid CORS
+          // preflight failures.  When embedded in a sandboxed iframe (origin =
+          // "null"), direct browser fetch to /api/meta/* hits Kong which redirects
+          // OPTIONS to login.jsp — no CORS headers → "Failed to fetch".
+          // Routing through this app's URL (e.g. /dq_rules_monitor/api/meta/*)
+          // lets the FastAPI proxy handle OPTIONS correctly and forward requests
+          // to the Atlan API with the user's token.
+          // At root ("/") we keep baseUrl empty so the Vite dev proxy takes over.
+          const loc = window.location;
+          const appBase =
+            loc.pathname === "/"
+              ? ""
+              : `${loc.protocol}//${loc.host}${loc.pathname.replace(/\/$/, "")}`;
+          setBaseUrl(ctx.token ? appBase : "");
           setAssetId(ctx.page?.params?.id || DEV_ASSET_GUID);
           setUserEmail(ctx.user?.email || "");
           setAuthState("authenticated");

@@ -117,6 +117,7 @@ export function useDqRules(
         }
       } catch (e) {
         if (!cancelled) {
+          console.error("[DQ] fetch error", e, { baseUrl, assetId: assetId?.slice(0, 8) });
           setError(e instanceof Error ? e.message : "Failed to load DQ rules");
         }
       } finally {
