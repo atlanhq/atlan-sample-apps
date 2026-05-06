@@ -3,8 +3,8 @@
 # =============================================================================
 name: sample_event_processor_app                     # Deployment namespace name
 # app_id:                          # Get from Global Marketplace after registering your app
-display_name: "Sample Event Processor App"           # UI display name
-type: utility                       # AE-triggered ingestion sample, not a connector
+display_name: "sample_event_processor_app"           # UI display name
+type: connector                     # App type (e.g. connector, utility)
 
 # =============================================================================
 # APP METADATA (optional — have defaults)
