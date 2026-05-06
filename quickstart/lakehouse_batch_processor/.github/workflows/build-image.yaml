@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**'
+      - '!**.md'
+      - '!images/**'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or SHA to build (default: current ref)"
+        required: false
+        type: string
+
+jobs:
+  build:
+    uses: atlanhq/application-sdk/.github/workflows/build-apps-image.yaml@main
+    with:
+      ref: ${{ inputs.ref || github.ref }}
+    secrets: inherit
