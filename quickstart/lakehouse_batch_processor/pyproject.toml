@@ -53,7 +53,7 @@ include = ["./**/*.py"]
 packages = ["app"]
 
 [tool.uv.sources]
-# Local editable install for SDK lakehouse-interface integration.
-# Swap to git ref once SDK PR atlanhq/application-sdk#1628 lands:
-#   atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk.git", branch = "refactor-v4-ware-693-lakehouse-interface" }
-atlan-application-sdk = { path = "../../../application-sdk", editable = true }
+# SDK pinned to the lakehouse-interface PR branch
+# (atlanhq/application-sdk#1628). Swap to a published release once that
+# PR merges and a version is cut.
+atlan-application-sdk = { git = "https://github.com/atlanhq/application-sdk.git", branch = "refactor-v4-ware-693-lakehouse-interface" }
