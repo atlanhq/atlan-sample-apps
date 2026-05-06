@@ -1,5 +1,5 @@
 [project]
-name = "lakehouse-batch-processor"
+name = "sample-event-processor-app"
 version = "0.1.0"
 description = "Sample app: read events from Iceberg via SDK lakehouse Reader/Writer, call a hello-world API, randomly classify, write results."
 authors = [{ name = "Atlan App Team", email = "connect@atlan.com" }]

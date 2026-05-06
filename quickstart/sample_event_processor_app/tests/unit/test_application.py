@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from app.application import (
     HandleEventsOutput,
     IngestionInput,
-    LakehouseBatchProcessorApp,
+    SampleEventProcessorApp,
     WriteAckOutput,
 )
 
@@ -28,12 +28,12 @@ def _mock_workflow_module(run_id: str = "run-1"):
 
 class TestApp(unittest.TestCase):
     def test_app_metadata(self):
-        self.assertEqual(LakehouseBatchProcessorApp.name, "lakehouse-batch-processor")
-        self.assertEqual(LakehouseBatchProcessorApp.version, "0.1.0")
+        self.assertEqual(SampleEventProcessorApp.name, "sample-event-processor-app")
+        self.assertEqual(SampleEventProcessorApp.version, "0.1.0")
 
     def test_run_with_no_iceberg_table_name_returns_zero(self):
         """Trigger payload missing iceberg_table_name → clean no-op."""
-        app = LakehouseBatchProcessorApp()
+        app = SampleEventProcessorApp()
         with patch("app.application.workflow", _mock_workflow_module()):
             with (
                 patch.object(app, "handle_events", new=AsyncMock()) as handle,
@@ -45,7 +45,7 @@ class TestApp(unittest.TestCase):
                 write.assert_not_called()
 
     def test_run_with_empty_events_skips_ack(self):
-        app = LakehouseBatchProcessorApp()
+        app = SampleEventProcessorApp()
         with patch("app.application.workflow", _mock_workflow_module()):
             with (
                 patch.object(
@@ -64,7 +64,7 @@ class TestApp(unittest.TestCase):
                 write.assert_not_called()
 
     def test_run_with_events_aggregates_counts(self):
-        app = LakehouseBatchProcessorApp()
+        app = SampleEventProcessorApp()
         events = [
             {"event_id": "e1", "payload": "p1"},
             {"event_id": "e2", "payload": "p2"},

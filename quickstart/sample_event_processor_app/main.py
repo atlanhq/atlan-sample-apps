@@ -1,4 +1,4 @@
-"""Local-dev entrypoint for the Lakehouse Batch Processor sample.
+"""Local-dev entrypoint for the Sample Event Processor App.
 
 In production the SDK CLI runs the app:
 
@@ -16,20 +16,19 @@ import os
 
 # Pin the application name BEFORE importing the SDK; constants are read
 # at import time.
-os.environ.setdefault("ATLAN_APPLICATION_NAME", "lakehouse-batch-processor")
+os.environ.setdefault("ATLAN_APPLICATION_NAME", "sample-event-processor-app")
 os.environ.setdefault("ATLAN_LOCAL_DEVELOPMENT", "true")
 
-from application_sdk.main import AppConfig, run_combined_mode  # noqa: E402
-
 # Importing the App class triggers SDK auto-registration via __init_subclass__.
-from app.application import LakehouseBatchProcessorApp  # noqa: E402, F401
+from app.application import SampleEventProcessorApp  # noqa: E402, F401
+from application_sdk.main import AppConfig, run_combined_mode  # noqa: E402
 
 
 async def main() -> None:
     config = AppConfig(
         mode="combined",
-        app_module="app.application:LakehouseBatchProcessorApp",
-        task_queue="lakehouse-batch-processor-queue",
+        app_module="app.application:SampleEventProcessorApp",
+        task_queue="sample-event-processor-app-queue",
         handler_host="127.0.0.1",
         handler_port=int(os.environ.get("ATLAN_APP_HTTP_PORT", "8000")),
     )

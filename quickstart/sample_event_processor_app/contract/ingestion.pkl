@@ -21,10 +21,10 @@ import "@app-contract-toolkit/Connectors.pkl"
 
 // Card id (LM convention): "{appname}-{entrypoint}".
 // SDK registers this workflow as "{app-name}:{entrypoint-name}";
-// LakehouseBatchProcessorApp.run is the entrypoint.
-name = "lakehouse-batch-processor"
+// SampleEventProcessorApp.run is the entrypoint.
+name = "sample-event-processor-app"
 displayName = "Lakehouse Batch Processor (Sample)"
-workflowTypeOverride = "lakehouse-batch-processor:ingestion"
+workflowTypeOverride = "sample-event-processor-app:ingestion"
 
 // KAFKA is the closest connector category (event-streaming) — this is a
 // sample app demonstrating event-driven ingestion, not a connector to a

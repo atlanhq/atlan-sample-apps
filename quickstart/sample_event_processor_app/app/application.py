@@ -1,4 +1,4 @@
-"""LakehouseBatchProcessorApp — AE-triggered ingestion sample.
+"""SampleEventProcessorApp — AE-triggered ingestion sample.
 
 The flow this app demonstrates::
 
@@ -13,7 +13,7 @@ triggers this workflow with the events table name. The workflow:
      hello-world HTTP API and randomly classifies the result as
      ``SUCCESS`` / ``RETRY`` / ``FAILED``.
   3. Publishes a Parquet ack at
-     ``artifacts/lakehouse-batch-processor/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet``
+     ``artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet``
      via :class:`application_sdk.lakehouse.EventAckWriter` so AE can mark
      events as acknowledged.
 
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # Default AE namespace where the event-ingestion-app writes events.
 _DEFAULT_EVENTS_NAMESPACE = "automation_engine"
 
-_APP_NAME = "lakehouse-batch-processor"
+_APP_NAME = "sample-event-processor-app"
 _WORKFLOW_NAME = "ingestion"
 
 
@@ -99,7 +99,7 @@ class WriteAckOutput(Output):
 # ---------------------------------------------------------------------------
 
 
-class LakehouseBatchProcessorApp(App):
+class SampleEventProcessorApp(App):
     """AE-triggered ingestion sample app on top of the SDK lakehouse module."""
 
     name = _APP_NAME
