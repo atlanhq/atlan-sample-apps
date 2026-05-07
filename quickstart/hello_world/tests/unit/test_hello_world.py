@@ -1,22 +1,20 @@
 import pytest
-from app.activities import HelloWorldActivities
-from app.workflow import HelloWorldWorkflow
+from app.connector import HelloWorldApp
+from app.contracts import HelloInput, HelloOutput
 
 
-class TestHelloWorldWorkflowWorker:
+class TestHelloWorldApp:
     @pytest.fixture()
-    def workflow(self) -> HelloWorldWorkflow:
-        return HelloWorldWorkflow()
+    def app(self) -> HelloWorldApp:
+        return HelloWorldApp()
 
-    @pytest.fixture()
-    def activities(self) -> HelloWorldActivities:
-        return HelloWorldActivities()
-
-    @staticmethod
     @pytest.mark.asyncio
-    async def test_say_hello(activities: HelloWorldActivities):
-        result = await activities.say_hello("John Doe")
-        assert result == "Hello, John Doe!"
+    async def test_say_hello_returns_greeting(self, app: HelloWorldApp):
+        result = await app.say_hello(HelloInput(name="John Doe"))
+        assert isinstance(result, HelloOutput)
+        assert result.message == "Hello, John Doe!"
 
-        result = activities.say_hello_sync("John Doe")
-        assert result == "Hello, John Doe!"
+    @pytest.mark.asyncio
+    async def test_say_hello_default_name(self, app: HelloWorldApp):
+        result = await app.say_hello(HelloInput())
+        assert result.message == "Hello, World!"
