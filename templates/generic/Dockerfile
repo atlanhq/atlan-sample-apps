@@ -18,12 +18,12 @@ ARG APP_MODULE=app.connector:GenericConnector
 WORKDIR /app
 
 # Copy lock files first for dependency caching
-COPY --chown=appuser:appuser pyproject.toml uv.lock* ./
+COPY --chown=appuser:appuser pyproject.toml uv.lock ./
 
 # Install dependencies (excluding the project itself) into a new venv
 RUN --mount=type=cache,target=/home/appuser/.cache/uv,uid=1000,gid=1000 \
     uv venv .venv && \
-    uv sync --no-install-project --no-dev
+    uv sync --locked --no-install-project --no-dev
 
 # Copy application code
 COPY --chown=appuser:appuser app/ app/
