@@ -10,7 +10,6 @@ Usage:
 import asyncio
 
 from app.connector import HelloWorldApp
-
 from application_sdk.main import run_dev_combined
 
 if __name__ == "__main__":

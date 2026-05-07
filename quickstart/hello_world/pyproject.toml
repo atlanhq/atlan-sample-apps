@@ -49,9 +49,6 @@ for file_info in response.json():
         print(f"Downloaded: {file_info['name']}")
 """
 
-[tool.isort]
-known_first_party = ["app"]
-
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore::pydantic.warnings.PydanticDeprecatedSince20"
