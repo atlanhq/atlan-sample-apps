@@ -20,6 +20,8 @@ from app.contracts import (
     TransformOutput,
 )
 
+# Import handler so the SDK auto-discovers GenericConnectorHandler from this module.
+from app.handler import GenericConnectorHandler as GenericConnectorHandler
 from application_sdk.app import App, task
 from application_sdk.contracts.storage import UploadInput
 from application_sdk.contracts.types import FileReference, StorageTier
