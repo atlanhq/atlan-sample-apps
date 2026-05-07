@@ -760,26 +760,24 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "atlan-application-sdk" },
-    { name = "poethepoet" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
+    { name = "poethepoet" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "atlan-application-sdk", specifier = ">=3.3.0,<4.0.0" },
-    { name = "poethepoet" },
-]
+requires-dist = [{ name = "atlan-application-sdk", specifier = ">=3.3.0,<4.0.0" }]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage" },
+    { name = "poethepoet" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
