@@ -1,10 +1,5 @@
 {
-  "templates": {
-    "generic": {
-      "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
-      "path": "atlan-sample-apps-main/templates/generic"
-    }
-  },
+  "templates": {},
   "samples": {
     "anaplan": {
       "zipUrl": "https://github.com/atlanhq/atlan-sample-apps/archive/refs/heads/main.zip",
