@@ -2,8 +2,8 @@
 
 Without a real AE running, you can populate
 ``automation_engine.<table>`` directly to exercise the ingestion sample
-end-to-end. Each row gets ``status = 'unprocessed'`` so the SDK's
-default ``EventsConsumer`` filter (when supplied) picks them up.
+end-to-end. Each row gets ``status = 'unprocessed'`` so an
+``events_read`` call with ``where="status = 'unprocessed'"`` picks them up.
 
 Usage::
 

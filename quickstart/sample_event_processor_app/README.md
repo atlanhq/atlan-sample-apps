@@ -8,23 +8,22 @@ event-ingestion-app  ─►  AE event-consumer-node  ─►  this workflow
 
 When AE detects unprocessed rows in its events Iceberg table, it triggers
 this workflow with the table name. The workflow uses the SDK's
-`EventsConsumer` to read pending events, dispatches each to a hello-world
+`events_read` to read pending events, dispatches each to a hello-world
 HTTP API + random classifier, and publishes the Parquet ack AE expects via
-`EventAckWriter`.
+`events_ack`.
 
-The lakehouse is a blackbox — `EventsConsumer` is the only lakehouse
+The lakehouse is a blackbox — `events_read` is the only lakehouse
 touchpoint; no PyIceberg / pyarrow / daft types appear in app code.
 
 ## Pipeline
 
-1. **`handle_events`** — constructs `EventsConsumer(process_fn)`, calls
-   `handle_events(events_namespace, events_table)`. The `process_fn` POSTs
-   each event to `HELLO_API_URL` (default `https://httpbin.org/anything`)
-   and randomly classifies the result as `SUCCESS` (50%) / `RETRY` (30%) /
-   `FAILED` (20%).
+1. **`handle_events`** — calls `events_read(namespace, table, handler=...)`.
+   The `handler` POSTs each event to `HELLO_API_URL` (default
+   `https://httpbin.org/anything`) and randomly classifies the result as
+   `SUCCESS` (50%) / `RETRY` (30%) / `FAILED` (20%).
 2. **`write_ack`** — publishes the AE-expected Parquet ack at
    `artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet`
-   via `EventAckWriter`.
+   via `events_ack`.
 
 `run()` orchestrates the two tasks. The v3 SDK auto-generates the underlying
 Temporal workflow from `run()`.
@@ -136,8 +135,8 @@ orchestration with mocked tasks — no Iceberg or HTTP access required.
 
 - The random classifier and hello-world API call have no business meaning;
   they exist only to demonstrate the AE event-driven ingestion pattern
-  end-to-end against a real lakehouse via `EventsConsumer` + `EventAckWriter`.
-- `EventsConsumer` self-constructs its `LakehouseReader` from `ICEBERG_*`
-  env vars — apps never pass a catalog or credentials in code.
+  end-to-end against a real lakehouse via `events_read` + `events_ack`.
+- `events_read` builds its `LakehouseReader` from `ICEBERG_*` env vars on
+  each call — apps never pass a catalog or credentials in code.
 - The Parquet ack path layout matches what AE consumes downstream:
   `artifacts/<app>/<workflow>/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet`.

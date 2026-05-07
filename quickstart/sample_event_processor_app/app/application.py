@@ -8,17 +8,17 @@ When AE detects a batch of unprocessed rows in its events table, it
 triggers this workflow with the events table name. The workflow:
 
   1. Reads pending events from ``automation_engine.<events_table>`` via
-     :class:`application_sdk.lakehouse.EventsConsumer`.
-  2. Dispatches them to a ``process_fn`` that POSTs each event to a
+     :func:`application_sdk.lakehouse.events_read`.
+  2. Dispatches them to a ``handler`` that POSTs each event to a
      hello-world HTTP API and randomly classifies the result as
      ``SUCCESS`` / ``RETRY`` / ``FAILED``.
   3. Publishes a Parquet ack at
      ``artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet``
-     via :class:`application_sdk.lakehouse.EventAckWriter` so AE can mark
+     via :func:`application_sdk.lakehouse.events_ack` so AE can mark
      events as acknowledged.
 
 Inputs match the AE event-consumer trigger payload — the workflow does
-not expose a UI form. EventsConsumer is the only lakehouse touchpoint;
+not expose a UI form. ``events_read`` is the only lakehouse touchpoint;
 it talks to PyIceberg internally and the lakehouse stays a blackbox to
 this sample.
 """
@@ -80,7 +80,7 @@ class HandleEventsInput(Input):
 
 class HandleEventsOutput(Output, allow_unbounded_fields=True):
     events: list[Any] = []
-    results: list[Any] = []  # serialised ProcessingResult dicts
+    results: list[Any] = []  # serialised EventResult dicts
 
 
 class WriteAckInput(Input, allow_unbounded_fields=True):
@@ -106,25 +106,25 @@ class SampleEventProcessorApp(App):
     version = "0.1.0"
     description = (
         "Sample app demonstrating AE event-driven ingestion via the SDK "
-        "EventsConsumer. Reads events from an AE-vended Iceberg table, "
-        "POSTs each to a hello-world API, randomly classifies, and writes "
-        "the Parquet ack AE expects."
+        "events_read function. Reads events from an AE-vended Iceberg "
+        "table, POSTs each to a hello-world API, randomly classifies, and "
+        "writes the Parquet ack AE expects."
     )
 
-    # --- Task: handle events via SDK EventsConsumer ---
+    # --- Task: handle events via SDK events_read ---
 
     @task(timeout_seconds=600, heartbeat_timeout_seconds=60)
     async def handle_events(self, input: HandleEventsInput) -> HandleEventsOutput:
         from app.api_client import HelloApiCaller
         from app.models import RandomClassifier
-        from application_sdk.lakehouse import EventsConsumer, ProcessingResult
+        from application_sdk.lakehouse import EventResult, events_read
 
         caller = HelloApiCaller()
         classifier = RandomClassifier()
 
-        async def _process(events: list[dict[str, Any]]) -> list[ProcessingResult]:
+        async def _handler(events: list[dict[str, Any]]) -> list[EventResult]:
             """Per-event: POST to hello API; random classify the result."""
-            out: list[ProcessingResult] = []
+            out: list[EventResult] = []
             for raw in events:
                 event_id = raw["event_id"]
                 payload = raw.get("payload", "") or ""
@@ -132,50 +132,55 @@ class SampleEventProcessorApp(App):
                     status_code = await caller.call(event_id, payload)
                 except Exception as exc:
                     out.append(
-                        ProcessingResult(
-                            status="FAILED", error_message=f"api error: {exc}"
-                        )
+                        EventResult(status="FAILED", error_message=f"api error: {exc}")
                     )
                     continue
                 result = classifier.classify(event_id, status_code)
                 out.append(
-                    ProcessingResult(
+                    EventResult(
                         status=result.status,  # type: ignore[arg-type]
                         error_message=result.error_message,
                     )
                 )
             return out
 
-        consumer = EventsConsumer(_process)
-        events, results = await consumer.handle_events(
-            input.events_namespace,
-            input.events_table,
+        events, results = await events_read(
+            namespace=input.events_namespace,
+            table=input.events_table,
+            handler=_handler,
+            where="status = 'unprocessed'",
+            sort_by="received_at",
         )
-        # Serialise ProcessingResult to a plain dict so the Temporal payload
+        # Serialise EventResult to a plain dict so the Temporal payload
         # stays JSON-serialisable and the workflow keeps deterministic types.
         result_dicts = [
             {"status": r.status, "error_message": r.error_message} for r in results
         ]
         return HandleEventsOutput(events=events, results=result_dicts)
 
-    # --- Task: publish AE ack via SDK EventAckWriter ---
+    # --- Task: publish AE ack via SDK events_ack ---
 
     @task(timeout_seconds=120)
     async def write_ack(self, input: WriteAckInput) -> WriteAckOutput:
-        from application_sdk.lakehouse import EventAckWriter, ProcessingResult
+        from application_sdk.lakehouse import EventResult, events_ack
 
         if not input.events:
             return WriteAckOutput()
 
-        ack = EventAckWriter(app_name=_APP_NAME, workflow_name=_WORKFLOW_NAME)
         results = [
-            ProcessingResult(
+            EventResult(
                 status=r["status"],  # type: ignore[arg-type]
                 error_message=r.get("error_message"),
             )
             for r in input.results
         ]
-        ack_path = await ack.write(input.events, results, input.workflow_run_id)
+        ack_path = await events_ack(
+            input.events,
+            results,
+            app_name=_APP_NAME,
+            workflow_name=_WORKFLOW_NAME,
+            workflow_run_id=input.workflow_run_id,
+        )
         return WriteAckOutput(ack_path=ack_path, rows_written=len(input.events))
 
     # --- Orchestration ---
