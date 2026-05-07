@@ -10,7 +10,7 @@
 # from templates/_shared/workflows/, and generates atlan.yaml from the template
 # using the app name from the manifest.
 #
-# Per-app overrides (optional fields in atlan-app-registry.json):
+# Per-app overrides (optional atlan-scaffold-overrides.json alongside the registry):
 #   execution_mode       — overrides the template default (e.g. "native")
 #   split_deployment     — set to true to add splitDeploymentEnabled: true
 
@@ -59,17 +59,24 @@ for MANIFEST in $MANIFESTS; do
     *)          APP_TYPE="connector" ;;
   esac
 
-  # Read optional per-app overrides from the registry JSON (requires python3)
+  # Read optional per-app overrides from atlan-scaffold-overrides.json (requires python3)
+  OVERRIDES_FILE="$APP_DIR/atlan-scaffold-overrides.json"
   EXEC_MODE=$(python3 -c "
 import json, sys
-d = json.load(open('$MANIFEST'))
-print(d.get('execution_mode', ''))
+try:
+    d = json.load(open('$OVERRIDES_FILE'))
+    print(d.get('execution_mode', ''))
+except FileNotFoundError:
+    print('')
 " 2>/dev/null || true)
 
   SPLIT_DEPLOY=$(python3 -c "
 import json, sys
-d = json.load(open('$MANIFEST'))
-print('true' if d.get('split_deployment') else '')
+try:
+    d = json.load(open('$OVERRIDES_FILE'))
+    print('true' if d.get('split_deployment') else '')
+except FileNotFoundError:
+    print('')
 " 2>/dev/null || true)
 
   echo "Processing: $REL_PATH ($APP_NAME, type=$APP_TYPE)"
