@@ -4,24 +4,16 @@ import asyncio
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.application import (
-    HandleEventsOutput,
-    IngestionInput,
-    SampleEventProcessorApp,
-    WriteAckOutput,
-)
+from app.application import IngestionInput, IngestionOutput, SampleEventProcessorApp
 
 
 def _run(coro):
     return asyncio.new_event_loop().run_until_complete(coro)
 
 
-def _mock_workflow_module(run_id: str = "run-1"):
+def _mock_workflow_module():
     """Build a mock that mimics ``temporalio.workflow`` for unit tests."""
-    info = MagicMock()
-    info.run_id = run_id
     wf = MagicMock()
-    wf.info.return_value = info
     wf.logger = MagicMock()
     return wf
 
@@ -35,74 +27,33 @@ class TestApp(unittest.TestCase):
         """Trigger payload missing iceberg_table_name → clean no-op."""
         app = SampleEventProcessorApp()
         with patch("app.application.workflow", _mock_workflow_module()):
-            with (
-                patch.object(app, "handle_events", new=AsyncMock()) as handle,
-                patch.object(app, "write_ack", new=AsyncMock()) as write,
-            ):
+            with patch.object(app, "handle_events", new=AsyncMock()) as handle:
                 result = _run(app.run(IngestionInput()))
                 self.assertEqual(result.processed, 0)
                 handle.assert_not_called()
-                write.assert_not_called()
 
-    def test_run_with_empty_events_skips_ack(self):
+    def test_run_delegates_to_handle_events(self):
+        """When iceberg_table_name is set, run() invokes handle_events with the input."""
         app = SampleEventProcessorApp()
+        expected = IngestionOutput(
+            processed=3,
+            success=1,
+            retry=1,
+            failed=1,
+            ack_path="artifacts/.../events_ack.parquet",
+        )
         with patch("app.application.workflow", _mock_workflow_module()):
-            with (
-                patch.object(
-                    app,
-                    "handle_events",
-                    new=AsyncMock(
-                        return_value=HandleEventsOutput(events=[], results=[])
-                    ),
-                ),
-                patch.object(app, "write_ack", new=AsyncMock()) as write,
-            ):
-                result = _run(
-                    app.run(IngestionInput(iceberg_table_name="events_table"))
-                )
-                self.assertEqual(result.processed, 0)
-                write.assert_not_called()
-
-    def test_run_with_events_aggregates_counts(self):
-        app = SampleEventProcessorApp()
-        events = [
-            {"event_id": "e1", "payload": "p1"},
-            {"event_id": "e2", "payload": "p2"},
-            {"event_id": "e3", "payload": "p3"},
-        ]
-        results = [
-            {"status": "SUCCESS", "error_message": None},
-            {"status": "RETRY", "error_message": "x"},
-            {"status": "FAILED", "error_message": "y"},
-        ]
-        with patch("app.application.workflow", _mock_workflow_module(run_id="run-99")):
-            with (
-                patch.object(
-                    app,
-                    "handle_events",
-                    new=AsyncMock(
-                        return_value=HandleEventsOutput(events=events, results=results)
-                    ),
-                ),
-                patch.object(
-                    app,
-                    "write_ack",
-                    new=AsyncMock(
-                        return_value=WriteAckOutput(
-                            ack_path="artifacts/.../events_ack.parquet",
-                            rows_written=3,
-                        )
-                    ),
-                ),
-            ):
-                result = _run(
-                    app.run(IngestionInput(iceberg_table_name="reverse_sync_events"))
-                )
+            with patch.object(
+                app, "handle_events", new=AsyncMock(return_value=expected)
+            ) as handle:
+                input_ = IngestionInput(iceberg_table_name="reverse_sync_events")
+                result = _run(app.run(input_))
                 self.assertEqual(result.processed, 3)
                 self.assertEqual(result.success, 1)
                 self.assertEqual(result.retry, 1)
                 self.assertEqual(result.failed, 1)
                 self.assertIn("events_ack.parquet", result.ack_path)
+                handle.assert_awaited_once_with(input_)
 
 
 if __name__ == "__main__":

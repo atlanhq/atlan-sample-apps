@@ -5,11 +5,13 @@ The flow this app demonstrates::
     event-ingestion-app  ─►  AE event-consumer-node  ─►  this workflow
 
 When AE detects a batch of unprocessed rows in its events table, it
-triggers this workflow with the events table name. The workflow:
+triggers this workflow with the events table name. A single
+``handle_events`` activity:
 
   1. Reads pending events from ``automation_engine.<events_table>`` via
-     :func:`application_sdk.lakehouse.events_read`.
-  2. Dispatches them to a ``handler`` that POSTs each event to a
+     :func:`application_sdk.lakehouse.events_read`, which loops
+     internally in batches of 1000 (capped at 5000 total).
+  2. Dispatches each batch to a ``handler`` that POSTs each event to a
      hello-world HTTP API and randomly classifies the result as
      ``SUCCESS`` / ``RETRY`` / ``FAILED``.
   3. Publishes a Parquet ack at
@@ -31,7 +33,7 @@ from typing import Any
 from application_sdk.app import App
 from application_sdk.app.task import task
 from application_sdk.contracts.base import Input, Output
-from temporalio import workflow
+from temporalio import activity, workflow
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +43,15 @@ _DEFAULT_EVENTS_NAMESPACE = "automation_engine"
 _APP_NAME = "sample-event-processor-app"
 _WORKFLOW_NAME = "ingestion"
 
+# events_read batching: pull up to _BATCH_SIZE per fetch, stop after
+# _MAX_EVENTS total. Bounds activity run time and keeps each handler
+# call within heartbeat / memory limits.
+_BATCH_SIZE = 1000
+_MAX_EVENTS = 5000
+
 
 # ---------------------------------------------------------------------------
-# Workflow-level Input / Output (matches AE event-consumer trigger payload)
+# Workflow Input / Output (matches AE event-consumer trigger payload)
 # ---------------------------------------------------------------------------
 
 
@@ -69,32 +77,6 @@ class IngestionOutput(Output):
 
 
 # ---------------------------------------------------------------------------
-# Task-level Input / Output (one pair per @task)
-# ---------------------------------------------------------------------------
-
-
-class HandleEventsInput(Input):
-    events_namespace: str = ""
-    events_table: str = ""
-
-
-class HandleEventsOutput(Output, allow_unbounded_fields=True):
-    events: list[Any] = []
-    results: list[Any] = []  # serialised EventResult dicts
-
-
-class WriteAckInput(Input, allow_unbounded_fields=True):
-    events: list[Any] = []
-    results: list[Any] = []
-    workflow_run_id: str = ""
-
-
-class WriteAckOutput(Output):
-    ack_path: str = ""
-    rows_written: int = 0
-
-
-# ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
 
@@ -107,17 +89,23 @@ class SampleEventProcessorApp(App):
     description = (
         "Sample app demonstrating AE event-driven ingestion via the SDK "
         "events_read function. Reads events from an AE-vended Iceberg "
-        "table, POSTs each to a hello-world API, randomly classifies, and "
-        "writes the Parquet ack AE expects."
+        "table in batches, POSTs each to a hello-world API, randomly "
+        "classifies, and writes the Parquet ack AE expects."
     )
 
-    # --- Task: handle events via SDK events_read ---
+    @task(timeout_seconds=1800, heartbeat_timeout_seconds=60)
+    async def handle_events(self, input: IngestionInput) -> IngestionOutput:
+        """Read pending events in batches and publish the AE ack.
 
-    @task(timeout_seconds=600, heartbeat_timeout_seconds=60)
-    async def handle_events(self, input: HandleEventsInput) -> HandleEventsOutput:
+        ``events_read`` loops internally — each iteration fetches up to
+        ``_BATCH_SIZE`` events and dispatches them to ``_handler``. The
+        loop exits when the source is exhausted or ``_MAX_EVENTS`` total
+        events have been processed. Then ``events_ack`` writes a single
+        Parquet ack covering every event processed.
+        """
         from app.api_client import HelloApiCaller
         from app.models import RandomClassifier
-        from application_sdk.lakehouse import EventResult, events_read
+        from application_sdk.lakehouse import EventResult, events_ack, events_read
 
         caller = HelloApiCaller()
         classifier = RandomClassifier()
@@ -146,76 +134,38 @@ class SampleEventProcessorApp(App):
 
         events, results = await events_read(
             namespace=input.events_namespace,
-            table=input.events_table,
+            table=input.iceberg_table_name,
             handler=_handler,
             where="status = 'unprocessed'",
             sort_by="received_at",
+            batch_size=_BATCH_SIZE,
+            max_events=_MAX_EVENTS,
         )
-        # Serialise EventResult to a plain dict so the Temporal payload
-        # stays JSON-serialisable and the workflow keeps deterministic types.
-        result_dicts = [
-            {"status": r.status, "error_message": r.error_message} for r in results
-        ]
-        return HandleEventsOutput(events=events, results=result_dicts)
+        if not events:
+            logger.info("No events to process — clean exit")
+            return IngestionOutput()
 
-    # --- Task: publish AE ack via SDK events_ack ---
-
-    @task(timeout_seconds=120)
-    async def write_ack(self, input: WriteAckInput) -> WriteAckOutput:
-        from application_sdk.lakehouse import EventResult, events_ack
-
-        if not input.events:
-            return WriteAckOutput()
-
-        results = [
-            EventResult(
-                status=r["status"],  # type: ignore[arg-type]
-                error_message=r.get("error_message"),
-            )
-            for r in input.results
-        ]
         ack_path = await events_ack(
-            input.events,
+            events,
             results,
             app_name=_APP_NAME,
             workflow_name=_WORKFLOW_NAME,
-            workflow_run_id=input.workflow_run_id,
-        )
-        return WriteAckOutput(ack_path=ack_path, rows_written=len(input.events))
-
-    # --- Orchestration ---
-
-    async def run(self, input: IngestionInput) -> IngestionOutput:
-        if not input.iceberg_table_name:
-            workflow.logger.error("No iceberg_table_name provided in trigger payload")
-            return IngestionOutput()
-
-        run_id = workflow.info().run_id
-
-        handled = await self.handle_events(
-            HandleEventsInput(
-                events_namespace=input.events_namespace,
-                events_table=input.iceberg_table_name,
-            )
-        )
-        events = handled.events
-        results = handled.results
-        if not events:
-            workflow.logger.info("No events to process — clean exit")
-            return IngestionOutput()
-        _ = logger  # keep module logger reachable for non-workflow contexts
-
-        ack_result = await self.write_ack(
-            WriteAckInput(events=events, results=results, workflow_run_id=run_id)
+            workflow_run_id=activity.info().workflow_run_id,
         )
 
-        success = sum(1 for r in results if r.get("status") == "SUCCESS")
-        retry = sum(1 for r in results if r.get("status") == "RETRY")
-        failed = sum(1 for r in results if r.get("status") == "FAILED")
+        success = sum(1 for r in results if r.status == "SUCCESS")
+        retry = sum(1 for r in results if r.status == "RETRY")
+        failed = sum(1 for r in results if r.status == "FAILED")
         return IngestionOutput(
             processed=len(events),
             success=success,
             retry=retry,
             failed=failed,
-            ack_path=ack_result.ack_path,
+            ack_path=ack_path,
         )
+
+    async def run(self, input: IngestionInput) -> IngestionOutput:
+        if not input.iceberg_table_name:
+            workflow.logger.error("No iceberg_table_name provided in trigger payload")
+            return IngestionOutput()
+        return await self.handle_events(input)

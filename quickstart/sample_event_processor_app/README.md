@@ -17,16 +17,23 @@ touchpoint; no PyIceberg / pyarrow / daft types appear in app code.
 
 ## Pipeline
 
-1. **`handle_events`** — calls `events_read(namespace, table, handler=...)`.
-   The `handler` POSTs each event to `HELLO_API_URL` (default
+A single **`handle_events`** activity does the full read → process → ack cycle:
+
+1. **Read in batches** — calls `events_read(namespace, table, handler=...,
+   batch_size=1000, max_events=5000)`. The SDK loops internally: fetches up
+   to 1000 events per batch, dispatches each batch to the `handler`, and
+   stops when the source is exhausted or 5000 total events have been
+   processed (whichever comes first).
+2. **Handler logic** — POSTs each event to `HELLO_API_URL` (default
    `https://httpbin.org/anything`) and randomly classifies the result as
    `SUCCESS` (50%) / `RETRY` (30%) / `FAILED` (20%).
-2. **`write_ack`** — publishes the AE-expected Parquet ack at
-   `artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet`
-   via `events_ack`.
+3. **Publish ack** — calls `events_ack(events, results, app_name, ...)`
+   once after the loop, writing a single Parquet at
+   `artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet`.
 
-`run()` orchestrates the two tasks. The v3 SDK auto-generates the underlying
-Temporal workflow from `run()`.
+`run()` is a thin workflow body that just delegates to `handle_events`
+when the trigger payload includes `iceberg_table_name`. The v3 SDK
+auto-generates the underlying Temporal workflow from `run()`.
 
 ## Trigger payload
 
@@ -49,7 +56,7 @@ class IngestionInput(Input):
 ```
 sample_event_processor_app/
 ├── app/
-│   ├── application.py   # v3 App subclass (handle_events + write_ack + run)
+│   ├── application.py   # v3 App subclass (handle_events + run)
 │   ├── api_client.py    # HelloApiCaller (httpx)
 │   ├── lakehouse.py     # reference EVENTS_SCHEMA for local seeding
 │   └── models.py        # EventRecord, ResultRecord, RandomClassifier
