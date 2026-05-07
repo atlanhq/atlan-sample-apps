@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING
 import pytest
 from app.connector import GenericConnector
 from app.contracts import GenericConnectorInput, GenericConnectorOutput
-
 from application_sdk.contracts.types import ConnectionRef
 
 if TYPE_CHECKING:

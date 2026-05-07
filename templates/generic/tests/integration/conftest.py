@@ -22,8 +22,6 @@ import pytest_asyncio
 
 # Trigger GenericConnector app registration before create_worker is called.
 from app.connector import GenericConnector
-from temporalio.client import Client
-
 from application_sdk.execution._temporal.backend import TemporalExecutorBackend
 from application_sdk.execution._temporal.converter import create_data_converter_for_app
 from application_sdk.execution._temporal.worker import create_worker
@@ -34,6 +32,7 @@ from application_sdk.infrastructure.context import (
 from application_sdk.observability.observability import AtlanObservability
 from application_sdk.storage import create_local_store, create_memory_store
 from application_sdk.testing.mocks import MockSecretStore, MockStateStore
+from temporalio.client import Client
 
 # Pre-wire a memory store so periodic observability flush does not spam warnings.
 AtlanObservability._deployment_store = create_memory_store()
