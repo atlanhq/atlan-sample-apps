@@ -3,7 +3,6 @@ import type { AssetDetails, DqRule, ViewMode } from "../types/atlan";
 import {
   fetchAsset,
   fetchDqRules,
-  fetchDqTypedef,
   extractGuidsFromDsl,
   fetchMemberAssets,
   fetchDqRulesForMultipleAssets,
@@ -39,10 +38,7 @@ export function useDqRules(
       setLoading(true);
       setError(null);
       try {
-        const [a, td] = await Promise.all([
-          fetchAsset(baseUrl, token, assetId),
-          fetchDqTypedef(baseUrl, token),
-        ]);
+        const a = await fetchAsset(baseUrl, token, assetId);
         if (cancelled) return;
         setAsset(a);
         if (!a) {
@@ -99,8 +95,7 @@ export function useDqRules(
           const rs = await fetchDqRulesForMultipleAssets(
             baseUrl,
             token,
-            sqlMembers,
-            td
+            sqlMembers
           );
           if (cancelled) return;
           setRules(rs);
@@ -111,7 +106,7 @@ export function useDqRules(
             setRules([]);
             return;
           }
-          const rs = await fetchDqRules(baseUrl, token, a.qualified_name, td);
+          const rs = await fetchDqRules(baseUrl, token, a.qualified_name);
           if (cancelled) return;
           setRules(rs);
         }

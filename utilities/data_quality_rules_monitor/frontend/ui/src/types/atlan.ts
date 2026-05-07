@@ -41,26 +41,23 @@ export interface AssetDetails {
 
 export type RuleScope = "table" | "column";
 
-/** One DQ rule = one CustomEntity asset linked via applicationQualifiedName. */
+/** One DQ rule = one DataQualityRule asset. */
 export interface DqRule {
   guid: string;
   name: string;
   description: string;
+  /** dq_rule_base_column_qualified_name for column rules, dq_rule_base_dataset_qualified_name for table rules. */
   application_qualified_name: string;
-  /** "table" or "column" — derived from applicationQualifiedName vs asset QN. */
+  /** "table" or "column" — derived from dq_rule_base_column_qualified_name presence. */
   scope: RuleScope;
   /** Column name if scope is "column", empty string otherwise. */
   column_name: string;
   /** When in DataProduct mode, the member table this rule belongs to. */
   source_asset_name: string;
-  /** Last execution date parsed from DQ.Results (latest element). */
+  /** Last execution date from DQ.Results history, or dq_rule_latest_result_computed_at. */
   last_execution_date: string | null;
-  /** Last status parsed from DQ.Results (Passed / Failed / etc.). */
+  /** Last status from dq_rule_latest_result (PASS → "Passed", FAIL → "Failed"). */
   last_status: string | null;
-  /** Raw DQ.Results array (each entry is "execution_date|status"). */
-  results: string[];
-  /** gf_uuaa_id, pushed as DQ.ID. */
-  id: string | null;
 }
 
 /** View mode: single table vs data product (aggregated across member tables). */
