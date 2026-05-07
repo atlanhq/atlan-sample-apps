@@ -13,6 +13,7 @@ Replace the pass-through stubs below with logic specific to your source system.
 from __future__ import annotations
 
 from application_sdk.handler import (
+    ApiMetadataOutput,
     AuthInput,
     AuthOutput,
     AuthStatus,
@@ -21,7 +22,6 @@ from application_sdk.handler import (
     PreflightInput,
     PreflightOutput,
     PreflightStatus,
-    SqlMetadataOutput,
 )
 
 
@@ -43,8 +43,8 @@ class GenericConnectorHandler(DefaultHandler):
             try:
                 async with httpx.AsyncClient() as client:
                     resp = await client.get(
-                        input.connection.get("host", ""),
-                        headers={"Authorization": input.credentials.get("token", "")},
+                        input.connection_config.get("host", ""),
+                        headers={"Authorization": input.credentials[0].token if input.credentials else ""},
                         timeout=5.0,
                     )
                 resp.raise_for_status()
@@ -58,14 +58,14 @@ class GenericConnectorHandler(DefaultHandler):
         )
 
     async def preflight_check(self, input: PreflightInput) -> PreflightOutput:
-        """Run pre-workflow checks (permissions, quotas, connectivity).
+        """Run pre-workflow checks (permissions, connectivity, required fields).
 
         TODO: replace with checks specific to your source system.
 
         Example::
 
             issues = []
-            if not input.connection.get("host"):
+            if not input.connection_config.get("host"):
                 issues.append("host is required")
             if issues:
                 return PreflightOutput(
@@ -79,22 +79,29 @@ class GenericConnectorHandler(DefaultHandler):
             message="All preflight checks passed",
         )
 
-    async def fetch_metadata(self, input: MetadataInput) -> SqlMetadataOutput:
+    async def fetch_metadata(self, input: MetadataInput) -> ApiMetadataOutput:
         """Return a browsable tree of objects from the source system.
 
-        Used by the Atlan UI connection-browser widget.
+        Used by the Atlan UI apitree browser widget.
 
-        TODO: replace with real schema/table discovery.
+        TODO: replace with real resource discovery.
 
-        Example (SQL source)::
+        Example::
 
-            from application_sdk.handler import SqlMetadataOutput, SqlMetadataObject
-            tables = await my_client.list_tables(schema=input.get("schema", ""))
-            return SqlMetadataOutput(
+            resources = await my_client.list_resources()
+            return ApiMetadataOutput(
                 objects=[
-                    SqlMetadataObject(TABLE_CATALOG="DEFAULT", TABLE_SCHEMA=t.schema, TABLE_NAME=t.name)
-                    for t in tables
+                    ApiMetadataObject(
+                        value=r.id,
+                        title=r.name,
+                        node_type="resource",
+                        children=[
+                            ApiMetadataObject(value=f.id, title=f.name, node_type="field")
+                            for f in r.fields
+                        ],
+                    )
+                    for r in resources
                 ]
             )
         """
-        return SqlMetadataOutput(objects=[])
+        return ApiMetadataOutput(objects=[])
