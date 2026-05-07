@@ -9,6 +9,10 @@
 # Reads each atlan-app-registry.json, copies build-image.yaml and publish.yaml
 # from templates/_shared/workflows/, and generates atlan.yaml from the template
 # using the app name from the manifest.
+#
+# Per-app overrides (optional fields in atlan-app-registry.json):
+#   execution_mode       — overrides the template default (e.g. "native")
+#   split_deployment     — set to true to add splitDeploymentEnabled: true
 
 set -euo pipefail
 
@@ -55,6 +59,19 @@ for MANIFEST in $MANIFESTS; do
     *)          APP_TYPE="connector" ;;
   esac
 
+  # Read optional per-app overrides from the registry JSON (requires python3)
+  EXEC_MODE=$(python3 -c "
+import json, sys
+d = json.load(open('$MANIFEST'))
+print(d.get('execution_mode', ''))
+" 2>/dev/null || true)
+
+  SPLIT_DEPLOY=$(python3 -c "
+import json, sys
+d = json.load(open('$MANIFEST'))
+print('true' if d.get('split_deployment') else '')
+" 2>/dev/null || true)
+
   echo "Processing: $REL_PATH ($APP_NAME, type=$APP_TYPE)"
 
   # Copy workflow files
@@ -62,8 +79,32 @@ for MANIFEST in $MANIFESTS; do
   cp "$WORKFLOW_SRC/build-image.yaml" "$APP_DIR/.github/workflows/build-image.yaml"
   cp "$WORKFLOW_SRC/publish.yaml" "$APP_DIR/.github/workflows/publish.yaml"
 
-  # Generate atlan.yaml from template
-  sed -e "s/{{NAME}}/$APP_NAME/g" -e "s/{{TYPE}}/$APP_TYPE/g" "$ATLAN_YAML_TEMPLATE" > "$APP_DIR/atlan.yaml"
+  # Generate atlan.yaml from template, applying per-app overrides via Python
+  python3 - "$ATLAN_YAML_TEMPLATE" "$APP_DIR/atlan.yaml" "$APP_NAME" "$APP_TYPE" "$EXEC_MODE" "$SPLIT_DEPLOY" <<'PYEOF'
+import sys
+
+template_path, out_path, name, app_type, exec_mode, split_deploy = sys.argv[1:]
+
+with open(template_path) as f:
+    content = f.read()
+
+content = content.replace("{{NAME}}", name).replace("{{TYPE}}", app_type)
+
+if exec_mode:
+    lines = content.splitlines(keepends=True)
+    result = []
+    for line in lines:
+        if line.startswith("execution_mode:"):
+            result.append(f"execution_mode: {exec_mode}\n")
+            if split_deploy == "true":
+                result.append("splitDeploymentEnabled: true\n")
+        else:
+            result.append(line)
+    content = "".join(result)
+
+with open(out_path, "w") as f:
+    f.write(content)
+PYEOF
 
   UPDATED=$((UPDATED + 1))
   echo "  ✓ build-image.yaml, publish.yaml, atlan.yaml"

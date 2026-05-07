@@ -1,5 +1,7 @@
 {
   "name": "helloworld",
   "type": "sample",
-  "published": true
+  "published": true,
+  "execution_mode": "native",
+  "split_deployment": true
 }
