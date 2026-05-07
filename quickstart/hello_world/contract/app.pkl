@@ -1,0 +1,26 @@
+amends "@app-contract-toolkit/NativeApp.pkl"
+
+import "@app-contract-toolkit/Config.pkl"
+
+name = "helloworld"
+displayName = "Hello World"
+icon = "http://assets.atlan.com/assets/helloworld.png"
+workflowType = name
+hasCredentialConfig = false
+flatManifestArgs = true
+
+uiConfig {
+  tasks {
+    ["Configuration"] {
+      description = "Greeting configuration"
+      inputs {
+        ["name"] = new Config.TextInput {
+          title = "Name"
+          helpText = "Name to greet."
+          default = "World"
+          required = true
+        }
+      }
+    }
+  }
+}

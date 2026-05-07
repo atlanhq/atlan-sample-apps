@@ -4,7 +4,7 @@ Boots the worker and handler in a single process so you can test
 the full request→workflow→task round-trip without separate terminals.
 
 Usage:
-    uv run python run_dev.py
+    uv run python main.py
 """
 
 import asyncio

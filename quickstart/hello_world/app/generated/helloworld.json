@@ -1,0 +1,32 @@
+{
+  "id": "helloworld",
+  "name": "Hello World",
+  "logo": "http://assets.atlan.com/assets/helloworld.png",
+  "config": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "widget": "input",
+          "label": "Name",
+          "hidden": false,
+          "help": "Name to greet.",
+          "placeholder": "",
+          "grid": 8
+        },
+        "default": "World"
+      }
+    },
+    "steps": [
+      {
+        "title": "Configuration",
+        "description": "Greeting configuration",
+        "id": "configuration",
+        "properties": [
+          "name"
+        ]
+      }
+    ]
+  }
+}
