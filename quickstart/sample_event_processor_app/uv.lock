@@ -139,7 +139,7 @@ wheels = [
 [[package]]
 name = "atlan-application-sdk"
 version = "3.6.0"
-source = { git = "https://github.com/atlanhq/application-sdk.git?branch=refactor-v4-ware-693-lakehouse-interface#1a05939f1a4f2814f29cb1e5e21bf78d7e91102f" }
+source = { git = "https://github.com/atlanhq/application-sdk.git?branch=refactor-v4-ware-693-lakehouse-interface#98f412eda0a95510a8ded3669116c3997c18861f" }
 dependencies = [
     { name = "aiohttp" },
     { name = "fastapi", extra = ["standard"] },

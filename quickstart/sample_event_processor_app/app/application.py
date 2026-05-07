@@ -1,4 +1,4 @@
-"""SampleEventProcessorApp — AE-triggered ingestion sample.
+"""SampleEventProcessorApp — AE-triggered event-processing sample.
 
 The flow this app demonstrates::
 
@@ -15,7 +15,7 @@ triggers this workflow with the events table name. A single
      hello-world HTTP API and randomly classifies the result as
      ``SUCCESS`` / ``RETRY`` / ``FAILED``.
   3. Publishes a Parquet ack at
-     ``artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet``
+     ``artifacts/sample-event-processor-app/process-events/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet``
      via :func:`application_sdk.lakehouse.events_ack` so AE can mark
      events as acknowledged.
 
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_EVENTS_NAMESPACE = "automation_engine"
 
 _APP_NAME = "sample-event-processor-app"
-_WORKFLOW_NAME = "ingestion"
+_WORKFLOW_NAME = "process-events"
 
 # events_read batching: pull up to _BATCH_SIZE per fetch, stop after
 # _MAX_EVENTS total. Bounds activity run time and keeps each handler
@@ -55,7 +55,7 @@ _MAX_EVENTS = 5000
 # ---------------------------------------------------------------------------
 
 
-class IngestionInput(Input):
+class ProcessEventsInput(Input):
     """Payload AE's event-consumer-node passes when triggering this workflow."""
 
     iceberg_table_name: str = ""
@@ -68,7 +68,7 @@ class IngestionInput(Input):
     event_cleanup_ack_source: str = ""
 
 
-class IngestionOutput(Output):
+class ProcessEventsOutput(Output):
     processed: int = 0
     success: int = 0
     retry: int = 0
@@ -82,19 +82,19 @@ class IngestionOutput(Output):
 
 
 class SampleEventProcessorApp(App):
-    """AE-triggered ingestion sample app on top of the SDK lakehouse module."""
+    """AE-triggered event-processing sample app on top of the SDK lakehouse module."""
 
     name = _APP_NAME
     version = "0.1.0"
     description = (
-        "Sample app demonstrating AE event-driven ingestion via the SDK "
+        "Sample app demonstrating AE event-driven processing via the SDK "
         "events_read function. Reads events from an AE-vended Iceberg "
         "table in batches, POSTs each to a hello-world API, randomly "
         "classifies, and writes the Parquet ack AE expects."
     )
 
     @task(timeout_seconds=1800, heartbeat_timeout_seconds=60)
-    async def handle_events(self, input: IngestionInput) -> IngestionOutput:
+    async def handle_events(self, input: ProcessEventsInput) -> ProcessEventsOutput:
         """Read pending events in batches and publish the AE ack.
 
         ``events_read`` loops internally — each iteration fetches up to
@@ -143,7 +143,7 @@ class SampleEventProcessorApp(App):
         )
         if not events:
             logger.info("No events to process — clean exit")
-            return IngestionOutput()
+            return ProcessEventsOutput()
 
         ack_path = await events_ack(
             events,
@@ -156,7 +156,7 @@ class SampleEventProcessorApp(App):
         success = sum(1 for r in results if r.status == "SUCCESS")
         retry = sum(1 for r in results if r.status == "RETRY")
         failed = sum(1 for r in results if r.status == "FAILED")
-        return IngestionOutput(
+        return ProcessEventsOutput(
             processed=len(events),
             success=success,
             retry=retry,
@@ -164,8 +164,8 @@ class SampleEventProcessorApp(App):
             ack_path=ack_path,
         )
 
-    async def run(self, input: IngestionInput) -> IngestionOutput:
+    async def run(self, input: ProcessEventsInput) -> ProcessEventsOutput:
         if not input.iceberg_table_name:
             workflow.logger.error("No iceberg_table_name provided in trigger payload")
-            return IngestionOutput()
+            return ProcessEventsOutput()
         return await self.handle_events(input)

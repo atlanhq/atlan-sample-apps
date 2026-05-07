@@ -1,8 +1,8 @@
 """Seed sample events into a local Iceberg events table for E2E testing.
 
 Without a real AE running, you can populate
-``automation_engine.<table>`` directly to exercise the ingestion sample
-end-to-end. Each row gets ``status = 'unprocessed'`` so an
+``automation_engine.<table>`` directly to exercise the event-processing
+sample end-to-end. Each row gets ``status = 'unprocessed'`` so an
 ``events_read`` call with ``where="status = 'unprocessed'"`` picks them up.
 
 Usage::

@@ -32,8 +32,8 @@ seed = "python scripts/seed_events.py"
 test = "pytest tests/ -v"
 
 # Contract generation (requires pkl CLI; mirrors databricks-app/pyproject.toml).
-# Outputs: app/generated/ingestion/{manifest.json, …, _input.py}
-generate.shell = "cd contract && pkl eval --ca-certificates ~/.pkl-ca-bundle.pem -m ../app/generated ingestion.pkl"
+# Outputs: app/generated/process-events/{manifest.json, …, _input.py}
+generate.shell = "cd contract && pkl eval --ca-certificates ~/.pkl-ca-bundle.pem -m ../app/generated process-events.pkl"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

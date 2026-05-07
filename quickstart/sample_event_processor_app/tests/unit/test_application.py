@@ -1,10 +1,14 @@
-"""Smoke tests for the AE-triggered ingestion app."""
+"""Smoke tests for the AE-triggered event-processing app."""
 
 import asyncio
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.application import IngestionInput, IngestionOutput, SampleEventProcessorApp
+from app.application import (
+    ProcessEventsInput,
+    ProcessEventsOutput,
+    SampleEventProcessorApp,
+)
 
 
 def _run(coro):
@@ -28,14 +32,14 @@ class TestApp(unittest.TestCase):
         app = SampleEventProcessorApp()
         with patch("app.application.workflow", _mock_workflow_module()):
             with patch.object(app, "handle_events", new=AsyncMock()) as handle:
-                result = _run(app.run(IngestionInput()))
+                result = _run(app.run(ProcessEventsInput()))
                 self.assertEqual(result.processed, 0)
                 handle.assert_not_called()
 
     def test_run_delegates_to_handle_events(self):
         """When iceberg_table_name is set, run() invokes handle_events with the input."""
         app = SampleEventProcessorApp()
-        expected = IngestionOutput(
+        expected = ProcessEventsOutput(
             processed=3,
             success=1,
             retry=1,
@@ -46,7 +50,7 @@ class TestApp(unittest.TestCase):
             with patch.object(
                 app, "handle_events", new=AsyncMock(return_value=expected)
             ) as handle:
-                input_ = IngestionInput(iceberg_table_name="reverse_sync_events")
+                input_ = ProcessEventsInput(iceberg_table_name="reverse_sync_events")
                 result = _run(app.run(input_))
                 self.assertEqual(result.processed, 3)
                 self.assertEqual(result.success, 1)

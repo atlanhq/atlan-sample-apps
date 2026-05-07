@@ -1,6 +1,6 @@
 # Sample Event Processor App
 
-A minimal v3-SDK sample demonstrating the AE-driven event-ingestion pattern:
+A minimal v3-SDK sample demonstrating the AE-driven event-processing pattern:
 
 ```
 event-ingestion-app  ─►  AE event-consumer-node  ─►  this workflow
@@ -29,7 +29,7 @@ A single **`handle_events`** activity does the full read → process → ack cyc
    `SUCCESS` (50%) / `RETRY` (30%) / `FAILED` (20%).
 3. **Publish ack** — calls `events_ack(events, results, app_name, ...)`
    once after the loop, writing a single Parquet at
-   `artifacts/sample-event-processor-app/ingestion/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet`.
+   `artifacts/sample-event-processor-app/process-events/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet`.
 
 `run()` is a thin workflow body that just delegates to `handle_events`
 when the trigger payload includes `iceberg_table_name`. The v3 SDK
@@ -40,7 +40,7 @@ auto-generates the underlying Temporal workflow from `run()`.
 The workflow accepts the AE event-consumer payload directly — no UI form:
 
 ```python
-class IngestionInput(Input):
+class ProcessEventsInput(Input):
     iceberg_table_name: str = ""
     events_namespace: str = "automation_engine"
     workflow_id: str = ""
@@ -63,7 +63,7 @@ sample_event_processor_app/
 ├── contract/            # pkl manifest for AE / Marketplace
 │   ├── PklProject
 │   ├── PklProject.deps.json
-│   └── ingestion.pkl
+│   └── process-events.pkl
 ├── scripts/
 │   └── seed_events.py   # Local seeding into automation_engine.<table>
 ├── tests/unit/          # Unit tests
@@ -126,7 +126,7 @@ testing only.
 
 ```bash
 uv run poe generate          # requires the pkl CLI
-# → app/generated/ingestion/{manifest.json, sample-event-processor-app.json, _input.py}
+# → app/generated/process-events/{manifest.json, sample-event-processor-app.json, _input.py}
 ```
 
 ## Tests
@@ -141,7 +141,7 @@ orchestration with mocked tasks — no Iceberg or HTTP access required.
 ## Notes
 
 - The random classifier and hello-world API call have no business meaning;
-  they exist only to demonstrate the AE event-driven ingestion pattern
+  they exist only to demonstrate the AE event-driven processing pattern
   end-to-end against a real lakehouse via `events_read` + `events_ack`.
 - `events_read` builds its `LakehouseReader` from `ICEBERG_*` env vars on
   each call — apps never pass a catalog or credentials in code.
