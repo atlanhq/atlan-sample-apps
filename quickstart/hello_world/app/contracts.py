@@ -1,6 +1,5 @@
-from application_sdk.app import Input, Output
-
 from app.generated._input import AppInputContract
+from application_sdk.app import Input, Output
 
 # Top-level workflow input — generated from contract/app.pkl via `make generate`.
 # Never edit app/generated/_input.py directly.

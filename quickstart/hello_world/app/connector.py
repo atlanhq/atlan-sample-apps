@@ -1,8 +1,7 @@
+from app.contracts import HelloInput, HelloOutput, HelloWorldInput
 from application_sdk.app.base import App
 from application_sdk.app.task import task
 from application_sdk.observability.logger_adaptor import get_logger
-
-from app.contracts import HelloInput, HelloOutput, HelloWorldInput
 
 logger = get_logger(__name__)
 

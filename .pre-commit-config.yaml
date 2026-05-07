@@ -3,7 +3,9 @@ repos:
     rev: v0.6.4
     hooks:
       - id: ruff
+        exclude: ".*/app/generated/.*"
       - id: ruff-format
+        exclude: ".*/app/generated/.*"
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -19,6 +21,7 @@ repos:
         entry: isort
         types: [python]
         args: ["--profile", "black"]
+        exclude: ".*/app/generated/.*"
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
     hooks:
