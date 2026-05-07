@@ -4,31 +4,20 @@ All contracts extend Input/Output base classes for type safety and Temporal
 serialization compatibility.  Each App and @task method uses a single
 dataclass for input and output.
 
-Replace or extend these with fields specific to your source system.
+The top-level ``GenericConnectorInput`` is an alias for ``AppInputContract``,
+which is auto-generated from ``contract/app.pkl`` by ``make generate``.
+Extend the contract by editing ``contract/app.pkl`` and re-running ``make generate``.
 """
 
+from app.generated._input import AppInputContract
 from application_sdk.app import Input, Output
-from application_sdk.contracts.types import ConnectionRef, FileReference
+from application_sdk.contracts.types import FileReference
 
 # =============================================================================
 # App-level contracts
 # =============================================================================
 
-
-class GenericConnectorInput(Input):
-    """Top-level input for the Generic Connector workflow."""
-
-    connection: ConnectionRef | None = None
-    """Atlan connection reference — resolved from the workflow UI."""
-
-    source: str = ""
-    """Source identifier (URL, path, or connection string) for the data source."""
-
-    output_dir: str = ""
-    """Working directory for intermediate files.  Auto-generated if empty."""
-
-    load_to_atlan: bool = True
-    """Upload transformed assets to Atlan via publish-app when True."""
+GenericConnectorInput = AppInputContract
 
 
 class GenericConnectorOutput(Output):

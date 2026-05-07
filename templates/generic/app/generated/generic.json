@@ -1,0 +1,49 @@
+{
+  "id": "generic",
+  "name": "Generic Connector",
+  "logo": "https://assets.atlan.com/assets/ph-file-cloud-light.svg",
+  "config": {
+    "properties": {
+      "source": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "widget": "text",
+          "label": "Source",
+          "hidden": false,
+          "help": "URL, path, or connection string for the data source.",
+          "grid": 8
+        },
+        "default": "",
+        "placeholderText": "https://example.com/data"
+      },
+      "connection": {
+        "type": "string",
+        "required": true,
+        "ui": {
+          "widget": "connection",
+          "label": "Connection",
+          "hidden": false,
+          "help": "Atlan connection to create or reuse.",
+          "grid": 8
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "configuration",
+        "title": "Configuration",
+        "properties": [
+          "source"
+        ]
+      },
+      {
+        "id": "connection",
+        "title": "Connection",
+        "properties": [
+          "connection"
+        ]
+      }
+    ]
+  }
+}

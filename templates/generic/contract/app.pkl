@@ -1,0 +1,44 @@
+amends "@app-contract-toolkit/NativeApp.pkl"
+
+import "@app-contract-toolkit/Config.pkl"
+import "@app-contract-toolkit/Connectors.pkl"
+
+// TODO: set name, displayName, connector, and icon to match your source system.
+name = "generic"
+displayName = "Generic Connector"
+connector = Connectors.REST
+icon = "https://assets.atlan.com/assets/ph-file-cloud-light.svg"
+workflowType = name
+hasCredentialConfig = false
+flatManifestArgs = true
+
+uiConfig {
+  tasks {
+    ["Configuration"] {
+      description = "Source configuration"
+      inputs {
+        // TODO: replace with inputs specific to your source system.
+        ["source"] = new Config.TextInput {
+          title = "Source"
+          helpText = "URL, path, or connection string for the data source."
+          required = true
+          placeholderText = "https://example.com/data"
+        }
+      }
+    }
+    ["Connection"] {
+      description = "Connection details"
+      inputs {
+        ["connection"] = new Config.ConnectionCreator {
+          title = "Connection"
+          helpText = "Atlan connection to create or reuse."
+          required = true
+        }
+      }
+    }
+  }
+}
+
+manifestTopLevelArgs {
+  ["connection"] = "connection"
+}
