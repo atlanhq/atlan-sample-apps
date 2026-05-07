@@ -43,7 +43,7 @@ uv run poe start-deps
 
 **4. Run the app** (new terminal)
 ```bash
-uv run python run_dev.py
+uv run python main.py
 ```
 
 **5. Trigger a run**
@@ -65,7 +65,7 @@ hello_world/
 │   └── connector.py          # HelloWorldApp: @task + run()
 ├── tests/
 │   └── unit/                 # Unit tests (no Temporal needed)
-├── run_dev.py                # Local entry point (worker + handler in one process)
+├── main.py                   # Local entry point (worker + handler in one process)
 ├── Dockerfile                # Production image
 ├── atlan.yaml                # App manifest
 ├── atlan-scaffold-overrides.json  # Scaffold config (execution_mode, split_deployment)
