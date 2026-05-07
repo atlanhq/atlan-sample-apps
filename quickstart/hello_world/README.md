@@ -2,69 +2,75 @@
 
 A minimal starter app demonstrating how to build applications with the Atlan Application SDK (v3).
 
-The pattern here is the foundation for every app you'll build:
-- `app/contracts.py` — typed `Input` / `Output` models
-- `app/connector.py` — an `App` subclass with `@task`-decorated methods and a `run()` orchestrator
+Two files are all you need:
 
-For a full scaffold (auth, handler, Dapr secret store, SQL client), run the [`/scaffold-app`](https://github.com/atlanhq/application-sdk/blob/main/.claude/skills/scaffold-app/SKILL.md) skill.
+| File | Purpose |
+|---|---|
+| `app/contracts.py` | Typed `Input` / `Output` models |
+| `app/connector.py` | `App` subclass with `@task` methods and a `run()` orchestrator |
+
+The SDK handles Temporal workflow execution, the HTTP handler, retries, heartbeating, and observability — your code just defines the logic.
+
+> Want a full scaffold with auth, secrets, and a SQL client? Use the [`/scaffold-app`](https://github.com/atlanhq/application-sdk/blob/main/.claude/skills/scaffold-app/SKILL.md) skill.
 
 ## Prerequisites
 
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/) package manager
-- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
-- [Temporal CLI](https://docs.temporal.io/cli)
+| Tool | Install |
+|---|---|
+| Python 3.11+ | [python.org](https://www.python.org/downloads/) |
+| uv | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
+| Dapr CLI | [docs.dapr.io](https://docs.dapr.io/getting-started/install-dapr-cli/) |
+| Temporal CLI | [docs.temporal.io/cli](https://docs.temporal.io/cli) |
 
-### Setup guides
-- [macOS](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md)
-- [Linux](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md)
-- [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
+Platform-specific setup: [macOS](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/MAC.md) · [Linux](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/LINUX.md) · [Windows](https://github.com/atlanhq/application-sdk/blob/main/docs/docs/setup/WINDOWS.md)
 
 ## Quick Start
 
-1. **Install dependencies:**
-   ```bash
-   uv sync
-   ```
+**1. Install dependencies**
+```bash
+uv sync
+```
 
-2. **Download Dapr components:**
-   ```bash
-   uv run poe download-components
-   ```
+**2. Download Dapr components**
+```bash
+uv run poe download-components
+```
 
-3. **Start Temporal + Dapr (separate terminal):**
-   ```bash
-   uv run poe start-deps
-   ```
+**3. Start Temporal + Dapr** (leave this terminal running)
+```bash
+uv run poe start-deps
+```
 
-4. **Run the app:**
-   ```bash
-   uv run python run_dev.py
-   ```
+**4. Run the app** (new terminal)
+```bash
+uv run python run_dev.py
+```
 
-The app listens on **http://localhost:8000**. Trigger a run via:
+**5. Trigger a run**
 ```bash
 curl -X POST http://localhost:8000/workflow/run \
   -H "Content-Type: application/json" \
   -d '{"name": "World"}'
 ```
 
-Watch the Temporal UI at **http://localhost:8233**.
+- App: **http://localhost:8000**
+- Temporal UI: **http://localhost:8233**
 
 ## Project Structure
 
 ```
 hello_world/
 ├── app/
-│   ├── contracts.py    # HelloInput / HelloOutput models
-│   └── connector.py    # HelloWorldApp with @task + run()
+│   ├── contracts.py          # HelloInput / HelloOutput models
+│   └── connector.py          # HelloWorldApp: @task + run()
 ├── tests/
-│   └── unit/           # Unit tests for the App class
-├── run_dev.py          # Local dev entry point (worker + handler combined)
-├── atlan.yaml          # App manifest (execution_mode, dapr config)
-├── Dockerfile          # Container image definition
-├── .env.example        # Required environment variables
-└── pyproject.toml      # Dependencies and poe tasks
+│   └── unit/                 # Unit tests (no Temporal needed)
+├── run_dev.py                # Local entry point (worker + handler in one process)
+├── Dockerfile                # Production image
+├── atlan.yaml                # App manifest
+├── atlan-scaffold-overrides.json  # Scaffold config (execution_mode, split_deployment)
+├── .env.example              # Required env vars
+└── pyproject.toml            # Dependencies and dev tasks
 ```
 
 ## Running Tests
