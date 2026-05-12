@@ -1,0 +1,7 @@
+amends "pkl:Project"
+
+dependencies {
+  ["app-contract-toolkit"] {
+    uri = "package://atlanhq.github.io/app-contract-toolkit/app-contract-toolkit@0.4.1"
+  }
+}

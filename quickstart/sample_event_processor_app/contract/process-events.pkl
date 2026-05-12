@@ -1,0 +1,50 @@
+/// Sample Event Processor — AE-triggered event-processing sample.
+///
+/// Workflow chain this manifest describes::
+///
+///   event-ingestion-app  ─►  AE event-consumer-node  ─►  this workflow
+///
+/// AE's event consumer publishes events to ``automation_engine.<table>``,
+/// then triggers this workflow with the table name. The workflow uses the
+/// SDK's ``events_read`` to read pending events in batches, dispatches
+/// each batch to a hello-world API + random classifier, and publishes the
+/// Parquet ack AE expects via ``events_ack``.
+///
+/// No UI form: AE drives the trigger; this is a sample / learning app and
+/// has no manual config the operator needs to fill in.
+///
+/// Generates: app/generated/process-events/{manifest.json, atlan-…json, _input.py}
+amends "@app-contract-toolkit/NativeApp.pkl"
+
+import "@app-contract-toolkit/Config.pkl"
+import "@app-contract-toolkit/Connectors.pkl"
+
+// Card id (LM convention): "{appname}-{entrypoint}".
+// SDK registers this workflow as "{app-name}:{entrypoint-name}";
+// SampleEventProcessorApp.run is the entrypoint.
+name = "sample-event-processor-app"
+displayName = "Sample Event Processor"
+workflowTypeOverride = "sample-event-processor-app:process-events"
+
+// KAFKA is the closest connector category (event-streaming) — this is a
+// sample app demonstrating event-driven processing, not a connector to a
+// real source. Adjust if/when the toolkit grows a SAMPLE / EVENT_PROCESSOR
+// enum.
+connector = Connectors.KAFKA
+
+icon = "https://assets.atlan.com/assets/sample.svg"
+logo = "https://assets.atlan.com/assets/sample.svg"
+
+// AE drives the trigger — no credential block, no publish step, no UI form.
+// Inputs flow in from AE's event-consumer payload directly:
+//   { iceberg_table_name, workflow_id, triggered_by, trigger_id,
+//     trigger_name, event_cleanup_max_retries, event_cleanup_ack_source }
+// (See app/application.py:ProcessEventsInput for the Pydantic shape.)
+hasCredentialConfig = false
+hasPublishStep = false
+
+// Empty uiConfig satisfies the toolkit's required field. AE-triggered apps
+// don't render a UI form — the workflow accepts the AE payload directly.
+uiConfig {
+  tasks {}
+}
