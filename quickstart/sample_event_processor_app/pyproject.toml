@@ -13,6 +13,7 @@ dependencies = [
     "atlan-application-sdk[tests,workflows,lakehouse]==3.1.0",
     "poethepoet==0.32.1",
     "httpx==0.28.1",
+    "pyarrow>=15",
 ]
 
 [dependency-groups]

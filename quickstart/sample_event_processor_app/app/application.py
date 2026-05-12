@@ -8,8 +8,8 @@ When AE detects a batch of unprocessed rows in its events table, it
 triggers this workflow with the events table name. A single
 ``handle_events`` activity:
 
-  1. Reads pending events from ``automation_engine.<events_table>`` via
-     :func:`application_sdk.lakehouse.events_read`, which loops
+  1. Reads pending events from ``apps.automation-engine.<workflow_slug>``
+     via :func:`application_sdk.lakehouse.events_read`, which loops
      internally in batches of 1000 (capped at 5000 total).
   2. Dispatches each batch to a ``handler`` that POSTs each event to a
      hello-world HTTP API and randomly classifies the result as
@@ -18,6 +18,11 @@ triggers this workflow with the events table name. A single
      ``artifacts/sample-event-processor-app/process-events/<yyyy>/<mm>/<dd>/<run_id>/events_ack.parquet``
      via :func:`application_sdk.lakehouse.events_ack` so AE can mark
      events as acknowledged.
+
+AE writes events with CloudEvent column names (``id``, ``data``,
+``source``, ``topic``, ``time``, ...). ``events_ack`` keys the ack
+Parquet by ``event_id``, so before publishing the ack we map AE's
+``id`` column → the SDK's expected ``event_id`` key.
 
 Inputs match the AE event-consumer trigger payload — the workflow does
 not expose a UI form. ``events_read`` is the only lakehouse touchpoint;
@@ -38,7 +43,7 @@ from temporalio import activity, workflow
 logger = logging.getLogger(__name__)
 
 # Default AE namespace where the event-ingestion-app writes events.
-_DEFAULT_EVENTS_NAMESPACE = "automation_engine"
+_DEFAULT_EVENTS_NAMESPACE = "apps.automation-engine"
 
 _APP_NAME = "sample-event-processor-app"
 _WORKFLOW_NAME = "process-events"
@@ -111,11 +116,16 @@ class SampleEventProcessorApp(App):
         classifier = RandomClassifier()
 
         async def _handler(events: list[dict[str, Any]]) -> list[EventResult]:
-            """Per-event: POST to hello API; random classify the result."""
+            """Per-event: POST to hello API; random classify the result.
+
+            ``events`` carry AE's CloudEvent column names: ``id`` (event
+            identifier), ``data`` (JSON-stringified payload), plus
+            ``source`` / ``topic`` / ``time`` / ``received_at`` / ...
+            """
             out: list[EventResult] = []
             for raw in events:
-                event_id = raw["event_id"]
-                payload = raw.get("payload", "") or ""
+                event_id = raw["id"]
+                payload = raw.get("data", "") or ""
                 try:
                     status_code = await caller.call(event_id, payload)
                 except Exception as exc:
@@ -145,8 +155,13 @@ class SampleEventProcessorApp(App):
             logger.info("No events to process — clean exit")
             return ProcessEventsOutput()
 
+        # Map AE's CloudEvent ``id`` column to the ``event_id`` key that
+        # ``events_ack`` writes into the ack Parquet. Until the SDK key
+        # mismatch is resolved, every events_read→events_ack caller needs
+        # this shim.
+        events_for_ack = [{"event_id": e["id"]} for e in events]
         ack_path = await events_ack(
-            events,
+            events_for_ack,
             results,
             app_name=_APP_NAME,
             workflow_name=_WORKFLOW_NAME,

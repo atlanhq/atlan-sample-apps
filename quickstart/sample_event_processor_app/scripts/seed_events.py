@@ -1,9 +1,14 @@
 """Seed sample events into a local Iceberg events table for E2E testing.
 
 Without a real AE running, you can populate
-``automation_engine.<table>`` directly to exercise the event-processing
-sample end-to-end. Each row gets ``status = 'unprocessed'`` so an
-``events_read`` call with ``where="status = 'unprocessed'"`` picks them up.
+``apps.automation-engine.<table>`` directly to exercise the
+event-processing sample end-to-end. Each row gets
+``status = 'unprocessed'`` so an ``events_read`` call with
+``where="status = 'unprocessed'"`` picks them up.
+
+Rows are written with AE CloudEvent column names (``id``, ``data``,
+``received_at``, ``status``) — the same shape the sample reads in
+production.
 
 Usage::
 
@@ -32,8 +37,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Seed sample events.")
     parser.add_argument(
         "--namespace",
-        default="automation_engine",
-        help="Namespace where AE writes events (default: automation_engine)",
+        default="apps.automation-engine",
+        help="Namespace where AE writes events (default: apps.automation-engine)",
     )
     parser.add_argument(
         "--table",
@@ -49,8 +54,8 @@ def main() -> None:
     now = datetime.now(UTC).replace(tzinfo=None)
     records = [
         {
-            "event_id": str(uuid.uuid4()),
-            "payload": f"hello world #{i + 1}",
+            "id": str(uuid.uuid4()),
+            "data": f"hello world #{i + 1}",
             "received_at": now,
             "status": "unprocessed",
         }
